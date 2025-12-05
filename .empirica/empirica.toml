@@ -1,0 +1,9 @@
+name = "bayesian-role-specialization"
+
+[tajriba.auth]
+srtoken = "IebXqaTwlrmKALol"
+
+[[tajriba.auth.users]]
+name = "Admin"
+username = "admin"
+password = "kMFlDtwo"
