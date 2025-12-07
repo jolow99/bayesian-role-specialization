@@ -1,19 +1,72 @@
 factors:
-  - desc: playerCount determines the number of Players are in a Game.
+  - desc: How player stats are distributed
+    name: statProfile
+    values:
+      - value: specialist
+      - value: balanced
+      - value: random
+
+  - desc: Enemy difficulty multiplier
+    name: difficulty
+    values:
+      - value: 0.7
+      - value: 1.3
+
+  - desc: Maximum number of rounds before timeout (always 20)
+    name: maxRounds
+    values:
+      - value: 20
+
+  - desc: Number of players in the game (always 3)
     name: playerCount
     values:
-      - value: 1
-      - value: 2
       - value: 3
-      - value: 5
-      - value: 8
-      - value: 13
+
 treatments:
-  - desc: "Single-player Game"
+  - desc: "Specialist players with easy enemy"
     factors:
-      playerCount: 1
-    name: Solo
-  - desc: "Two-player Game"
+      statProfile: specialist
+      difficulty: 0.7
+      maxRounds: 20
+      playerCount: 3
+    name: Specialist Easy
+
+  - desc: "Specialist players with hard enemy"
     factors:
-      playerCount: 2
-    name: Two Players
+      statProfile: specialist
+      difficulty: 1.3
+      maxRounds: 20
+      playerCount: 3
+    name: Specialist Hard
+
+  - desc: "Balanced players with easy enemy"
+    factors:
+      statProfile: balanced
+      difficulty: 0.7
+      maxRounds: 20
+      playerCount: 3
+    name: Balanced Easy
+
+  - desc: "Balanced players with hard enemy"
+    factors:
+      statProfile: balanced
+      difficulty: 1.3
+      maxRounds: 20
+      playerCount: 3
+    name: Balanced Hard
+
+  - desc: "Random players with easy enemy"
+    factors:
+      statProfile: random
+      difficulty: 0.7
+      maxRounds: 20
+      playerCount: 3
+    name: Random Easy
+
+  - desc: "Random players with hard enemy"
+    factors:
+      statProfile: random
+      difficulty: 1.3
+      maxRounds: 20
+      playerCount: 3
+    name: Random Hard
