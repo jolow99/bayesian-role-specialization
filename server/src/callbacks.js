@@ -81,10 +81,6 @@ function addGameRound(game, roundNumber) {
   round.set("roundNumber", roundNumber);
   round.set("enemyHealth", game.get("enemyHealth"));
   round.set("teamHealth", game.get("teamHealth"));
-  // Enemy has 70% chance to attack
-  const intent = Math.random() > 0.3 ? "WILL_ATTACK" : "WILL_NOT_ATTACK";
-  console.log(`Round ${roundNumber}: Enemy intent set to ${intent}`);
-  round.set("enemyIntent", intent);
   round.set("actions", {});
 
   // Action selection stage (no timer - wait for all players)
@@ -104,51 +100,21 @@ function addGameRound(game, roundNumber) {
 }
 
 Empirica.onRoundStart(({ round }) => {
-  // Reset player submissions for this round
+  // Reset player actions for this round
   round.currentGame.players.forEach(player => {
     player.round.set("action", null);
-    player.round.set("submitted", false);
   });
+
+  // Set enemy intent for this round (70% chance to attack)
+  const intent = Math.random() > 0.3 ? "WILL_ATTACK" : "WILL_NOT_ATTACK";
+  const roundNumber = round.get("roundNumber");
+  console.log(`Round ${roundNumber}: Enemy intent set to ${intent}`);
+  round.set("enemyIntent", intent);
 });
 
 Empirica.onStageStart(({ stage }) => {
-  const round = stage.round;
-  const game = round.currentGame;
-
-  // Only set up polling for Action Selection stage
-  if (stage.get("name") !== "Action Selection") {
-    return;
-  }
-
-  // Initialize a flag to track if we've already triggered end
-  stage.set("checkingSubmissions", true);
-
-  // Set up a timer to check if all players have submitted (check every 500ms)
-  const checkInterval = setInterval(() => {
-    // Check if we've already triggered the end
-    if (!stage.get("checkingSubmissions")) {
-      clearInterval(checkInterval);
-      return;
-    }
-
-    // Check if all players have submitted
-    const allSubmitted = game.players.every(p => p.round.get("submitted") === true);
-
-    // If all players have submitted, end the stage immediately
-    if (allSubmitted) {
-      console.log("All players submitted! Ending stage early.");
-      stage.set("checkingSubmissions", false);
-      clearInterval(checkInterval);
-
-      // Directly end the stage by setting its remaining time to 0
-      stage.set("ended", true);
-
-      // Also mark all players as submitted for the stage
-      game.players.forEach(p => {
-        p.stage.set("submit", true);
-      });
-    }
-  }, 500); // Check every 500ms for faster response
+  // Empirica automatically advances stages when all players call player.stage.set("submit", true)
+  // No additional logic needed here
 });
 
 Empirica.onStageEnded(({ stage }) => {
@@ -170,26 +136,12 @@ Empirica.onStageEnded(({ stage }) => {
     // Resolve actions and update health
     resolveActions(game, round, actions);
 
-  } else if (stage.get("name") === "Reveal") {
-    // Check if game should end
+    // Just log the results after resolving actions
     const enemyHealth = game.get("enemyHealth");
     const teamHealth = game.get("teamHealth");
     const roundNumber = round.get("roundNumber");
-    const maxRounds = game.get("maxRounds");
 
-    if (enemyHealth <= 0) {
-      game.set("outcome", "WIN");
-      game.end("Victory! You defeated the enemy!");
-    } else if (teamHealth <= 0) {
-      game.set("outcome", "LOSE");
-      game.end("Defeat! Your team was defeated.");
-    } else if (roundNumber >= maxRounds) {
-      game.set("outcome", "TIMEOUT");
-      game.end("Time's up! The battle has ended.");
-    } else {
-      // Add next round
-      addGameRound(game, roundNumber + 1);
-    }
+    console.log(`After Round ${roundNumber} actions: Enemy HP=${enemyHealth}, Team HP=${teamHealth}`);
   }
 });
 
@@ -255,7 +207,7 @@ function resolveActions(game, round, actions) {
   game.set("enemyHealth", Math.round(newEnemyHealth));
   game.set("teamHealth", Math.round(newTeamHealth));
 
-  // Log action history for each player
+  // Log action history for each player (their own actions)
   game.players.forEach((player, idx) => {
     const history = player.get("actionHistory") || [];
     history.push({
@@ -266,10 +218,48 @@ function resolveActions(game, round, actions) {
     });
     player.set("actionHistory", history);
   });
+
+  // Also store the full team action history on the game
+  const gameHistory = game.get("teamActionHistory") || [];
+  gameHistory.push({
+    round: round.get("roundNumber"),
+    actions: actions.map((action, idx) => ({
+      playerId: idx,
+      action: ACTION_NAMES[action]
+    })),
+    enemyHealth: Math.round(newEnemyHealth),
+    teamHealth: Math.round(newTeamHealth)
+  });
+  game.set("teamActionHistory", gameHistory);
 }
 
 Empirica.onRoundEnded(({ round }) => {
-  // Nothing special to do on round end
+  const game = round.currentGame;
+  const enemyHealth = game.get("enemyHealth");
+  const teamHealth = game.get("teamHealth");
+  const roundNumber = round.get("roundNumber");
+  const maxRounds = game.get("maxRounds");
+
+  console.log(`Round ${roundNumber} ended. Enemy HP=${enemyHealth}, Team HP=${teamHealth}`);
+
+  // Check if game should end
+  if (enemyHealth <= 0) {
+    game.set("outcome", "WIN");
+    console.log("Calling game.end() with WIN");
+    game.end("Victory! You defeated the enemy!");
+  } else if (teamHealth <= 0) {
+    game.set("outcome", "LOSE");
+    console.log("Calling game.end() with LOSE");
+    game.end("Defeat! Your team was defeated.");
+  } else if (roundNumber >= maxRounds) {
+    game.set("outcome", "TIMEOUT");
+    console.log("Calling game.end() with TIMEOUT");
+    game.end("Time's up! The battle has ended.");
+  } else {
+    // Continue to next round
+    console.log(`Creating round ${roundNumber + 1}`);
+    addGameRound(game, roundNumber + 1);
+  }
 });
 
 Empirica.onGameEnded(({ game }) => {

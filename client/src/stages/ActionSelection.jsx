@@ -15,7 +15,7 @@ export function ActionSelection() {
 
   const [selectedAction, setSelectedAction] = useState(null);
 
-  const submitted = player.round.get("submitted");
+  const submitted = player.stage.get("submit");
   const stats = player.get("stats");
   const enemyHealth = round.get("enemyHealth") || 10;
   const teamHealth = round.get("teamHealth") || 10;
@@ -36,7 +36,7 @@ export function ActionSelection() {
   const handleSubmit = () => {
     if (selectedAction !== null) {
       player.round.set("action", selectedAction);
-      player.round.set("submitted", true);
+      player.stage.set("submit", true);
     }
   };
 
