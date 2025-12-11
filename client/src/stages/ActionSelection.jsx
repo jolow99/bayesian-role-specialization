@@ -14,6 +14,7 @@ export function ActionSelection() {
   const round = useRound();
 
   const [selectedRole, setSelectedRole] = useState(null);
+  const [showDamageAnimation, setShowDamageAnimation] = useState(false);
 
   const submitted = player.stage.get("submit");
   const enemyHealth = game.get("enemyHealth") || 10;
@@ -22,6 +23,20 @@ export function ActionSelection() {
   const roundNumber = round.get("roundNumber");
   const maxRounds = game.get("maxRounds");
   const maxHealth = game.get("maxHealth") || 10;
+  const currentStage = round.currentStage?.get("name");
+  const isRevealStage = currentStage === "Reveal";
+  const actions = round.get("actions") || [];
+  const damageToEnemy = round.get("damageToEnemy") || 0;
+  const damageToTeam = round.get("damageToTeam") || 0;
+  const healAmount = round.get("healAmount") || 0;
+  const previousEnemyHealth = round.get("previousEnemyHealth") || enemyHealth;
+  const previousTeamHealth = round.get("previousTeamHealth") || teamHealth;
+
+  const actionIcons = {
+    ATTACK: "⚔️",
+    DEFEND: "🛡️",
+    HEAL: "💚"
+  };
 
   // Role commitment state
   const currentRole = player.get("currentRole");
@@ -29,12 +44,27 @@ export function ActionSelection() {
   const isRoleCommitted = currentRole !== null;
   const roundsRemaining = isRoleCommitted ? (roleEndRound - roundNumber + 1) : 0;
 
-  // Auto-submit when role is already committed
+  // Auto-submit based on stage and role commitment
   useEffect(() => {
-    if (isRoleCommitted && !submitted) {
-      player.stage.set("submit", true);
+    if (submitted || isRevealStage) return;
+
+    // Auto-submit when role is committed (after a brief delay to see the screen)
+    if (isRoleCommitted) {
+      const timer = setTimeout(() => {
+        player.stage.set("submit", true);
+      }, 1000); // 1 second delay to see the locked role
+      return () => clearTimeout(timer);
     }
-  }, [isRoleCommitted, submitted, player]);
+  }, [isRoleCommitted, submitted, isRevealStage, player]);
+
+  // Trigger damage animation during reveal
+  useEffect(() => {
+    if (isRevealStage) {
+      setShowDamageAnimation(true);
+      const timer = setTimeout(() => setShowDamageAnimation(false), 5000); // Extended to 5 seconds for 10-second reveal
+      return () => clearTimeout(timer);
+    }
+  }, [isRevealStage, roundNumber]);
 
   const handleRoleSelect = (role) => {
     if (!submitted && !isRoleCommitted) {
@@ -43,38 +73,22 @@ export function ActionSelection() {
   };
 
   const handleSubmit = () => {
-    if (isRoleCommitted) {
-      player.stage.set("submit", true);
-    } else if (selectedRole !== null) {
-      player.round.set("selectedRole", selectedRole);
+    if (!submitted) {
+      if (!isRoleCommitted && selectedRole !== null) {
+        // New role selection
+        player.round.set("selectedRole", selectedRole);
+      }
+      // Always submit (whether role is committed or newly selected)
       player.stage.set("submit", true);
     }
   };
-
-  if (submitted) {
-    const roleNames = ["Fighter", "Tank", "Healer"];
-    const displayRole = isRoleCommitted ? roleNames[currentRole] : roleNames[selectedRole];
-
-    return (
-      <div className="flex flex-col items-center justify-center h-full bg-gradient-to-b from-blue-400 to-blue-600">
-        <div className="text-center text-white mb-4">
-          <div className="text-2xl mb-2">⏳</div>
-          <div className="text-lg font-semibold">Waiting for other players...</div>
-          <div className="text-sm mt-2">
-            Your role: {displayRole}
-            {isRoleCommitted && ` (${roundsRemaining} rounds remaining)`}
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   // Find current player index
   const currentPlayerIndex = players.findIndex(p => p.id === player.id);
 
   return (
-    <div className="w-full h-full bg-gradient-to-b from-blue-400 to-blue-600 flex items-center justify-center p-4">
-      <div className="w-full max-w-6xl">
+    <div className="w-full h-full bg-gradient-to-b from-blue-400 to-blue-600 flex items-center justify-center p-4 transition-all duration-300">
+      <div className="w-full max-w-6xl transition-all duration-300">
         {/* Battle Screen */}
         <div className="bg-white rounded-lg shadow-2xl overflow-hidden border-4 border-gray-800">
           {/* Round Header */}
@@ -91,7 +105,15 @@ export function ActionSelection() {
           <div className="bg-gradient-to-b from-green-200 to-green-300 p-8 relative" style={{ minHeight: '400px' }}>
             {/* Enemy Side (Top Right) */}
             <div className="absolute top-8 right-16 flex flex-col items-center">
-              <div className="text-9xl mb-4">👹</div>
+              <div className="relative">
+                <div className="text-9xl mb-4">👹</div>
+                {/* Damage animation */}
+                {isRevealStage && damageToEnemy > 0 && showDamageAnimation && (
+                  <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 text-3xl font-bold text-red-600 animate-bounce">
+                    -{damageToEnemy}
+                  </div>
+                )}
+              </div>
               {/* Enemy health bar below */}
               <div className="w-64">
                 <HealthBar label="" current={enemyHealth} max={maxHealth} color="red" />
@@ -129,6 +151,12 @@ export function ActionSelection() {
 
                     return (
                       <div key={p.id} className={`flex flex-col items-center ${orderClass}`}>
+                        {/* Action emoji (if reveal stage) */}
+                        {isRevealStage && actions[idx] && (
+                          <div className="text-4xl mb-1 animate-bounce">
+                            {actionIcons[actions[idx]]}
+                          </div>
+                        )}
                         {/* Stats above player */}
                         <div className="bg-white/90 rounded px-2 py-1 mb-2 text-xs font-mono whitespace-nowrap border border-gray-400">
                           {Math.round(stats.STR * 100)} STR / {Math.round(stats.DEF * 100)} DEF / {Math.round(stats.SUP * 100)} SUP
@@ -143,62 +171,161 @@ export function ActionSelection() {
                     );
                   })}
               </div>
-              {/* Team health bar below */}
-              <div className="w-64">
+              {/* Team health bar below with damage/heal animations */}
+              <div className="w-64 relative">
                 <HealthBar label="" current={teamHealth} max={maxHealth} color="green" />
+                {/* Damage/Heal animations */}
+                {isRevealStage && showDamageAnimation && (
+                  <>
+                    {damageToTeam > 0 && (
+                      <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 text-2xl font-bold text-orange-600 animate-bounce">
+                        -{damageToTeam}
+                      </div>
+                    )}
+                    {healAmount > 0 && (
+                      <div className="absolute -top-10 right-0 text-2xl font-bold text-green-600 animate-bounce">
+                        +{healAmount}
+                      </div>
+                    )}
+                  </>
+                )}
               </div>
             </div>
           </div>
 
-          {/* Action Menu */}
+          {/* Battle Results (during Reveal) or Action Menu (during Action Selection) */}
           <div className="bg-white border-t-4 border-gray-700">
             <div className="p-6">
-              <div className="bg-gray-800 text-white rounded-t-lg px-4 py-2 text-sm font-bold">
-                {isRoleCommitted
-                  ? "Your role is locked for this round"
-                  : "What role will you play?"}
-              </div>
-              <div className="bg-gray-100 rounded-b-lg border-2 border-gray-800 border-t-0 p-4">
-                <div className="grid grid-cols-3 gap-3 mb-3">
-                  <RoleButton
-                    role="FIGHTER"
-                    selected={selectedRole === ROLES.FIGHTER}
-                    onClick={() => handleRoleSelect(ROLES.FIGHTER)}
-                    disabled={submitted}
-                    locked={isRoleCommitted && currentRole === ROLES.FIGHTER}
-                  />
-                  <RoleButton
-                    role="TANK"
-                    selected={selectedRole === ROLES.TANK}
-                    onClick={() => handleRoleSelect(ROLES.TANK)}
-                    disabled={submitted}
-                    locked={isRoleCommitted && currentRole === ROLES.TANK}
-                  />
-                  <RoleButton
-                    role="HEALER"
-                    selected={selectedRole === ROLES.HEALER}
-                    onClick={() => handleRoleSelect(ROLES.HEALER)}
-                    disabled={submitted}
-                    locked={isRoleCommitted && currentRole === ROLES.HEALER}
-                  />
+              {submitted && !isRevealStage ? (
+                /* Waiting for other players */
+                <div className="text-center py-12">
+                  <div className="text-6xl mb-4">⏳</div>
+                  <div className="text-2xl font-bold text-gray-700 mb-2">Waiting for other players...</div>
+                  <div className="text-gray-500">
+                    {isRoleCommitted
+                      ? `Your role: ${["Fighter", "Tank", "Healer"][currentRole]} (${roundsRemaining} rounds remaining)`
+                      : `Your role: ${["Fighter", "Tank", "Healer"][selectedRole]}`
+                    }
+                  </div>
                 </div>
+              ) : isRevealStage ? (
+                /* Battle Results */
+                <div className="animate-fadeIn">
+                  <div className="bg-gray-800 text-white rounded-lg px-4 py-3 text-center mb-4">
+                    <h3 className="text-xl font-bold">Round {roundNumber} Results</h3>
+                  </div>
 
-                <button
-                  onClick={handleSubmit}
-                  disabled={!isRoleCommitted && selectedRole === null}
-                  className={`w-full py-3 px-4 rounded-lg font-bold text-white transition-all ${
-                    (!isRoleCommitted && selectedRole === null)
-                      ? "bg-gray-400 cursor-not-allowed"
-                      : "bg-blue-600 hover:bg-blue-700 shadow-lg"
-                  }`}
-                >
-                  {isRoleCommitted
-                    ? "▶ CONTINUE"
-                    : selectedRole === null
-                      ? "Select a role"
-                      : "✓ CONFIRM ROLE (3 rounds)"}
-                </button>
-              </div>
+                  {/* Health Changes Summary */}
+                  <div className="grid grid-cols-2 gap-4 mb-4">
+                    {/* Enemy Health Change */}
+                    <div className="bg-red-50 border-2 border-red-400 rounded-lg p-4">
+                      <div className="text-xs font-semibold text-gray-600 mb-2 uppercase tracking-wide">Enemy Health</div>
+                      <div className="flex items-center justify-center gap-2 mb-2">
+                        <span className="text-2xl font-bold text-gray-700">{previousEnemyHealth}</span>
+                        <span className="text-xl text-gray-400">→</span>
+                        <span className="text-2xl font-bold text-red-600">{enemyHealth}</span>
+                      </div>
+                      {damageToEnemy > 0 && (
+                        <div className="text-sm font-medium text-red-600">
+                          -{damageToEnemy} damage dealt
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Team Health Change */}
+                    <div className="bg-green-50 border-2 border-green-400 rounded-lg p-4">
+                      <div className="text-xs font-semibold text-gray-600 mb-2 uppercase tracking-wide">Team Health</div>
+                      <div className="flex items-center justify-center gap-2 mb-2">
+                        <span className="text-2xl font-bold text-gray-700">{previousTeamHealth}</span>
+                        <span className="text-xl text-gray-400">→</span>
+                        <span className={`text-2xl font-bold ${teamHealth > previousTeamHealth ? 'text-green-600' : teamHealth < previousTeamHealth ? 'text-orange-600' : 'text-gray-700'}`}>
+                          {teamHealth}
+                        </span>
+                      </div>
+                      <div className="text-sm font-medium space-y-1">
+                        {damageToTeam > 0 && (
+                          <div className="text-orange-600">-{damageToTeam} damage taken</div>
+                        )}
+                        {healAmount > 0 && (
+                          <div className="text-green-600">+{healAmount} healing received</div>
+                        )}
+                        {damageToTeam === 0 && healAmount === 0 && (
+                          <div className="text-gray-500">No change</div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Action Summary */}
+                  <div className="bg-blue-50 border-2 border-blue-300 rounded-lg p-3 mb-4">
+                    <div className="text-xs font-semibold text-gray-600 mb-2 uppercase tracking-wide">Team Actions</div>
+                    <div className="flex justify-center gap-4">
+                      {actions.map((action, idx) => (
+                        <div key={idx} className="flex flex-col items-center">
+                          <div className="text-3xl mb-1">{actionIcons[action]}</div>
+                          <div className="text-xs text-gray-600">{players[idx]?.id === player.id ? "YOU" : `P${idx + 1}`}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="text-center text-gray-500 text-sm">
+                    Next round starting...
+                  </div>
+                </div>
+              ) : (
+                /* Action Menu */
+                <div>
+                  <div className="bg-gray-800 text-white rounded-t-lg px-4 py-2 text-sm font-bold">
+                    {isRoleCommitted
+                      ? "Your role is locked for this round"
+                      : "What role will you play?"}
+                  </div>
+                  <div className="bg-gray-100 rounded-b-lg border-2 border-gray-800 border-t-0 p-4">
+                    <div className="grid grid-cols-3 gap-3 mb-3">
+                      <RoleButton
+                        role="FIGHTER"
+                        selected={selectedRole === ROLES.FIGHTER}
+                        onClick={() => handleRoleSelect(ROLES.FIGHTER)}
+                        disabled={submitted}
+                        locked={isRoleCommitted && currentRole === ROLES.FIGHTER}
+                      />
+                      <RoleButton
+                        role="TANK"
+                        selected={selectedRole === ROLES.TANK}
+                        onClick={() => handleRoleSelect(ROLES.TANK)}
+                        disabled={submitted}
+                        locked={isRoleCommitted && currentRole === ROLES.TANK}
+                      />
+                      <RoleButton
+                        role="HEALER"
+                        selected={selectedRole === ROLES.HEALER}
+                        onClick={() => handleRoleSelect(ROLES.HEALER)}
+                        disabled={submitted}
+                        locked={isRoleCommitted && currentRole === ROLES.HEALER}
+                      />
+                    </div>
+
+                    <button
+                      onClick={handleSubmit}
+                      disabled={!isRoleCommitted && selectedRole === null}
+                      className={`w-full py-3 px-4 rounded-lg font-bold text-white transition-all ${
+                        (!isRoleCommitted && selectedRole === null)
+                          ? "bg-gray-400 cursor-not-allowed"
+                          : isRoleCommitted
+                            ? "bg-green-600 hover:bg-green-700 shadow-lg"
+                            : "bg-blue-600 hover:bg-blue-700 shadow-lg"
+                      }`}
+                    >
+                      {isRoleCommitted
+                        ? `▶ READY (${roundsRemaining} rounds left)`
+                        : selectedRole === null
+                          ? "Select a role"
+                          : "✓ CONFIRM ROLE (3 rounds)"}
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 

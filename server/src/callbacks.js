@@ -146,10 +146,10 @@ function addGameRound(game, roundNumber) {
   // Store reference to stage on round for early termination
   round.set("actionStage", actionStage);
 
-  // Reveal stage (5 seconds)
+  // Reveal stage (10 seconds to see results)
   round.addStage({
     name: "Reveal",
-    duration: 5
+    duration: 10
   });
 }
 
@@ -157,15 +157,21 @@ Empirica.onRoundStart(({ round }) => {
   const game = round.currentGame;
   const roundNumber = round.get("roundNumber");
 
+  console.log(`=== Round ${roundNumber} Starting ===`);
+
   // Reset player actions and handle role commitments
-  game.players.forEach(player => {
+  game.players.forEach((player, idx) => {
     player.round.set("action", null);
 
     // Check if role commitment has expired
     const currentRole = player.get("currentRole");
+    const roleStartRound = player.get("roleStartRound");
     const roleEndRound = player.get("roleEndRound");
 
+    console.log(`Player ${idx}: currentRole=${currentRole}, roleStartRound=${roleStartRound}, roleEndRound=${roleEndRound}, roundNumber=${roundNumber}`);
+
     if (currentRole !== null && roundNumber > roleEndRound) {
+      console.log(`Player ${idx}: Role expired, clearing`);
       player.set("currentRole", null);
       player.set("roleStartRound", null);
       player.set("roleEndRound", null);
@@ -303,7 +309,9 @@ function resolveActions(game, round, actions) {
   const healAmount = totalHeal * 2;
   const newTeamHealth = Math.max(0, Math.min(10, currentTeamHealth - damageToTeam + healAmount));
 
-  // Store results in round
+  // Store results in round (including previous values for UI)
+  round.set("previousEnemyHealth", Math.round(currentEnemyHealth));
+  round.set("previousTeamHealth", Math.round(currentTeamHealth));
   round.set("damageToEnemy", Math.round(damageToEnemy));
   round.set("damageToTeam", Math.round(damageToTeam));
   round.set("healAmount", Math.round(healAmount));
