@@ -5,6 +5,8 @@ export const Empirica = new ClassicListenersCollector();
 const ACTIONS = { ATTACK: 0, DEFEND: 1, HEAL: 2 };
 const ACTION_NAMES = ["ATTACK", "DEFEND", "HEAL"];
 const ROLES = { FIGHTER: 0, TANK: 1, HEALER: 2 };
+const ROLE_NAMES = ["FIGHTER", "TANK", "HEALER"];
+const ROLE_COMMITMENT_ROUNDS = 3;
 
 // Helper function to generate player stats
 function generatePlayerStats(playerId, seed, mode) {
@@ -12,19 +14,28 @@ function generatePlayerStats(playerId, seed, mode) {
 
   if (mode === "balanced") {
     return { STR: 0.33, DEF: 0.33, SUP: 0.34 };
-  } else if (mode === "specialist") {
-    const dominantIdx = playerId % 3;
-    const dominantVal = 0.8 + rng() * 0.15;
-    const remainder = 1.0 - dominantVal;
-    const otherVal = remainder / 2;
-    const stats = [otherVal, otherVal, otherVal];
-    stats[dominantIdx] = dominantVal;
-    return { STR: stats[0], DEF: stats[1], SUP: stats[2] };
+
+  } else if (mode === "imbalanced-allunique") {
+    // Each player strong at different stat: [0.50, 0.25, 0.25]
+    const permutations = [
+      { STR: 0.50, DEF: 0.25, SUP: 0.25 }, // P0: Strong STR
+      { STR: 0.25, DEF: 0.50, SUP: 0.25 }, // P1: Strong DEF
+      { STR: 0.25, DEF: 0.25, SUP: 0.50 }, // P2: Strong SUP
+    ];
+    return permutations[playerId % 3];
+
+  } else if (mode === "imbalanced-oneunique") {
+    // Two players same, one different
+    const profiles = [
+      { STR: 0.25, DEF: 0.25, SUP: 0.50 }, // P0: Strong SUP
+      { STR: 0.25, DEF: 0.25, SUP: 0.50 }, // P1: Strong SUP
+      { STR: 0.25, DEF: 0.50, SUP: 0.25 }, // P2: Strong DEF (unique)
+    ];
+    return profiles[playerId % 3];
+
   } else {
-    // Random mode - Dirichlet-like distribution
-    const raw = [rng(), rng(), rng()];
-    const sum = raw.reduce((a, b) => a + b, 0);
-    return { STR: raw[0] / sum, DEF: raw[1] / sum, SUP: raw[2] / sum };
+    console.warn(`Unknown statProfile: ${mode}, using balanced`);
+    return { STR: 0.33, DEF: 0.33, SUP: 0.34 };
   }
 }
 
@@ -37,13 +48,42 @@ function seededRandom(seed) {
   };
 }
 
+// Convert role to action with probabilistic mapping
+function roleToAction(role, gameState, playerStats, rng) {
+  const { enemyIntent, teamHealth, maxHealth, epsilon } = gameState;
+
+  let primaryAction;
+  switch(role) {
+    case ROLES.FIGHTER:
+      primaryAction = ACTIONS.ATTACK;
+      break;
+    case ROLES.TANK:
+      primaryAction = (enemyIntent === "WILL_ATTACK") ? ACTIONS.DEFEND : ACTIONS.ATTACK;
+      break;
+    case ROLES.HEALER:
+      primaryAction = (teamHealth <= maxHealth * 0.5) ? ACTIONS.HEAL : ACTIONS.ATTACK;
+      break;
+    default:
+      primaryAction = ACTIONS.ATTACK;
+  }
+
+  // With probability epsilon, choose random action
+  const eps = epsilon || 0.1;
+  if (rng() < eps) {
+    return Math.floor(rng() * 3);
+  }
+
+  return primaryAction;
+}
+
 // Game initialization
 Empirica.onGameStart(({ game }) => {
   const treatment = game.get("treatment");
   const {
-    statProfile = "specialist",
+    statProfile = "balanced",
     maxRounds = 20,
-    difficulty = 1.0,
+    bossType = "lowDamage",  // NEW: replaces difficulty
+    epsilon = 0.1,            // NEW: configurable randomness
     gameSeed = Math.floor(Math.random() * 10000)
   } = treatment;
 
@@ -53,12 +93,18 @@ Empirica.onGameStart(({ game }) => {
     player.set("stats", stats);
     player.set("playerId", idx);
     player.set("actionHistory", []);
-    player.set("lastSwitchRound", 0);
+
+    // NEW: Role commitment state
+    player.set("currentRole", null);
+    player.set("roleStartRound", null);
+    player.set("roleEndRound", null);
+    player.set("roleHistory", []);
   });
 
   // Store game settings
   game.set("maxRounds", maxRounds);
-  game.set("difficulty", difficulty);
+  game.set("bossType", bossType);
+  game.set("epsilon", epsilon);
   game.set("statProfile", statProfile);
   game.set("gameSeed", gameSeed);
   game.set("maxHealth", 10);
@@ -66,6 +112,14 @@ Empirica.onGameStart(({ game }) => {
   game.set("initialTeamHealth", 10);
   game.set("enemyHealth", 10);
   game.set("teamHealth", 10);
+
+  // Calculate boss damage based on bossType
+  const maxPlayerDEF = Math.max(...game.players.map(p => p.get("stats").DEF));
+  if (bossType === "highDamage") {
+    game.set("bossDamage", (maxPlayerDEF * 3) + 1.5);
+  } else {
+    game.set("bossDamage", (maxPlayerDEF * 3) - 0.7);
+  }
 
   // Create first round
   addGameRound(game, 1);
@@ -100,14 +154,29 @@ function addGameRound(game, roundNumber) {
 }
 
 Empirica.onRoundStart(({ round }) => {
-  // Reset player actions for this round
-  round.currentGame.players.forEach(player => {
+  const game = round.currentGame;
+  const roundNumber = round.get("roundNumber");
+
+  // Reset player actions and handle role commitments
+  game.players.forEach(player => {
     player.round.set("action", null);
+
+    // Check if role commitment has expired
+    const currentRole = player.get("currentRole");
+    const roleEndRound = player.get("roleEndRound");
+
+    if (currentRole !== null && roundNumber > roleEndRound) {
+      player.set("currentRole", null);
+      player.set("roleStartRound", null);
+      player.set("roleEndRound", null);
+    }
+
+    // Flag if player needs to select role
+    player.round.set("needsRoleSelection", player.get("currentRole") === null);
   });
 
-  // Set enemy intent for this round (70% chance to attack)
-  const intent = Math.random() > 0.3 ? "WILL_ATTACK" : "WILL_NOT_ATTACK";
-  const roundNumber = round.get("roundNumber");
+  // Set enemy intent for this round (50% chance to attack)
+  const intent = Math.random() > 0.5 ? "WILL_ATTACK" : "WILL_NOT_ATTACK";
   console.log(`Round ${roundNumber}: Enemy intent set to ${intent}`);
   round.set("enemyIntent", intent);
 });
@@ -122,26 +191,66 @@ Empirica.onStageEnded(({ stage }) => {
   const game = round.currentGame;
 
   if (stage.get("name") === "Action Selection") {
-    // Collect all actions
+    const gameSeed = game.get("gameSeed");
+    const epsilon = game.get("epsilon");
+    const teamHealth = game.get("teamHealth");
+    const maxHealth = game.get("maxHealth");
+    const enemyIntent = round.get("enemyIntent");
+    const roundNumber = round.get("roundNumber");
+
     const actions = [];
     const actionNames = [];
-    game.players.forEach(player => {
-      const action = player.round.get("action");
-      actions.push(action !== null ? action : ACTIONS.ATTACK); // Default to attack if no action
-      actionNames.push(action !== null ? ACTION_NAMES[action] : "ATTACK");
+    const roleNames = [];
+
+    game.players.forEach((player, idx) => {
+      let currentRole = player.get("currentRole");
+
+      // Check if player just submitted a new role
+      const submittedRole = player.round.get("selectedRole");
+      if (submittedRole !== null && submittedRole !== undefined) {
+        currentRole = submittedRole;
+
+        // Set 3-round commitment
+        player.set("currentRole", currentRole);
+        player.set("roleStartRound", roundNumber);
+        player.set("roleEndRound", roundNumber + ROLE_COMMITMENT_ROUNDS - 1);
+
+        // Log to role history
+        const roleHistory = player.get("roleHistory") || [];
+        roleHistory.push({
+          round: roundNumber,
+          role: ROLE_NAMES[currentRole],
+          duration: ROLE_COMMITMENT_ROUNDS
+        });
+        player.set("roleHistory", roleHistory);
+      }
+
+      // Default to FIGHTER if no role (shouldn't happen)
+      if (currentRole === null || currentRole === undefined) {
+        console.warn(`Player ${idx} has no role in round ${roundNumber}, defaulting to FIGHTER`);
+        currentRole = ROLES.FIGHTER;
+      }
+
+      // Convert role to action
+      const rng = seededRandom(gameSeed + roundNumber * 100 + idx);
+      const gameState = { enemyIntent, teamHealth, maxHealth, epsilon };
+      const action = roleToAction(currentRole, gameState, player.get("stats"), rng);
+
+      actions.push(action);
+      actionNames.push(ACTION_NAMES[action]);
+      roleNames.push(ROLE_NAMES[currentRole]);
     });
 
     round.set("actions", actionNames);
+    round.set("roles", roleNames);
 
     // Resolve actions and update health
     resolveActions(game, round, actions);
 
-    // Just log the results after resolving actions
-    const enemyHealth = game.get("enemyHealth");
-    const teamHealth = game.get("teamHealth");
-    const roundNumber = round.get("roundNumber");
-
-    console.log(`After Round ${roundNumber} actions: Enemy HP=${enemyHealth}, Team HP=${teamHealth}`);
+    // Log the results
+    const updatedEnemyHealth = game.get("enemyHealth");
+    const updatedTeamHealth = game.get("teamHealth");
+    console.log(`After Round ${roundNumber} actions: Enemy HP=${updatedEnemyHealth}, Team HP=${updatedTeamHealth}`);
   }
 });
 
@@ -152,7 +261,7 @@ function resolveActions(game, round, actions) {
   const currentEnemyHealth = game.get("enemyHealth");
   const currentTeamHealth = game.get("teamHealth");
   const enemyIntent = round.get("enemyIntent");
-  const difficulty = game.get("difficulty");
+  const bossDamage = game.get("bossDamage");
 
   // Calculate total attack strength
   let totalAttack = 0;
@@ -186,9 +295,7 @@ function resolveActions(game, round, actions) {
   // Update team health (damage from enemy minus defense, plus healing)
   let damageToTeam = 0;
   if (enemyIntent === "WILL_ATTACK") {
-    // Base enemy damage scaled for 10 HP
-    const rawEnemyDamage = 2 * difficulty;
-    const mitigatedDamage = rawEnemyDamage - (maxDefense * 3);
+    const mitigatedDamage = bossDamage - (maxDefense * 3);
     damageToTeam = Math.max(0, mitigatedDamage);
   }
 
