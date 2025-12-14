@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { usePlayer, useGame, useRound, usePlayers } from "@empirica/core/player/classic/react";
+import { usePlayer, useGame, useRound, usePlayers, useStage } from "@empirica/core/player/classic/react";
 import { RoleButton } from "../components/RoleButton";
 import { HealthBar } from "../components/HealthBar";
 import { PlayerStats } from "../components/PlayerStats";
@@ -12,9 +12,11 @@ export function ActionSelection() {
   const players = usePlayers();
   const game = useGame();
   const round = useRound();
+  const stage = useStage();
 
   const [selectedRole, setSelectedRole] = useState(null);
   const [showDamageAnimation, setShowDamageAnimation] = useState(false);
+  const [countdown, setCountdown] = useState(null);
 
   const submitted = player.stage.get("submit");
   const enemyHealth = game.get("enemyHealth") || 10;
@@ -23,9 +25,11 @@ export function ActionSelection() {
   const roundNumber = round.get("roundNumber");
   const maxRounds = game.get("maxRounds");
   const maxHealth = game.get("maxHealth") || 10;
-  const currentStage = round.currentStage?.get("name");
+  const currentStage = stage.get("name");
   const isRevealStage = currentStage === "Reveal";
   const actions = round.get("actions") || [];
+
+  console.log(`[Client] Round ${roundNumber}, Stage: ${currentStage}, isRevealStage: ${isRevealStage}, submitted: ${submitted}`);
   const damageToEnemy = round.get("damageToEnemy") || 0;
   const damageToTeam = round.get("damageToTeam") || 0;
   const healAmount = round.get("healAmount") || 0;
@@ -46,13 +50,16 @@ export function ActionSelection() {
 
   // Auto-submit based on stage and role commitment
   useEffect(() => {
+    console.log(`[Auto-submit effect] isRoleCommitted: ${isRoleCommitted}, submitted: ${submitted}, isRevealStage: ${isRevealStage}`);
     if (submitted || isRevealStage) return;
 
-    // Auto-submit when role is committed (after a brief delay to see the screen)
+    // Auto-submit when role is committed (instant to avoid UI flash)
     if (isRoleCommitted) {
+      console.log(`[Auto-submit] Setting submit=true immediately`);
       const timer = setTimeout(() => {
+        console.log(`[Auto-submit] NOW setting submit=true`);
         player.stage.set("submit", true);
-      }, 1000); // 1 second delay to see the locked role
+      }, 0); // Instant submit to prevent UI flash
       return () => clearTimeout(timer);
     }
   }, [isRoleCommitted, submitted, isRevealStage, player]);
@@ -61,10 +68,46 @@ export function ActionSelection() {
   useEffect(() => {
     if (isRevealStage) {
       setShowDamageAnimation(true);
-      const timer = setTimeout(() => setShowDamageAnimation(false), 5000); // Extended to 5 seconds for 10-second reveal
+      const timer = setTimeout(() => setShowDamageAnimation(false), 12000); // Extended to 12 seconds for 15-second reveal
       return () => clearTimeout(timer);
     }
   }, [isRevealStage, roundNumber]);
+
+  // Auto-submit after reveal stage duration (15 seconds)
+  useEffect(() => {
+    if (isRevealStage && !submitted) {
+      console.log(`[Reveal] Auto-submitting after 15 seconds`);
+      const timer = setTimeout(() => {
+        console.log(`[Reveal] NOW submitting`);
+        player.stage.set("submit", true);
+      }, 15000); // Submit after 15 seconds
+      return () => clearTimeout(timer);
+    }
+  }, [isRevealStage, submitted, player]);
+
+  // Countdown timer for the last 5 seconds of reveal
+  useEffect(() => {
+    if (isRevealStage) {
+      // Start countdown at 10 seconds (showing countdown for last 5 seconds)
+      const countdownStart = setTimeout(() => {
+        setCountdown(5);
+      }, 10000);
+
+      return () => clearTimeout(countdownStart);
+    } else {
+      setCountdown(null);
+    }
+  }, [isRevealStage, roundNumber]);
+
+  // Update countdown every second
+  useEffect(() => {
+    if (countdown !== null && countdown > 0) {
+      const timer = setTimeout(() => {
+        setCountdown(countdown - 1);
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [countdown]);
 
   const handleRoleSelect = (role) => {
     if (!submitted && !isRoleCommitted) {
@@ -106,6 +149,12 @@ export function ActionSelection() {
             {/* Enemy Side (Top Right) */}
             <div className="absolute top-8 right-16 flex flex-col items-center">
               <div className="relative">
+                {/* Enemy action icon (if reveal stage) */}
+                {isRevealStage && (
+                  <div className="text-5xl mb-2 animate-bounce">
+                    {enemyIntent === "WILL_ATTACK" ? "⚔️" : "😴"}
+                  </div>
+                )}
                 <div className="text-9xl mb-4">👹</div>
                 {/* Damage animation */}
                 {isRevealStage && damageToEnemy > 0 && showDamageAnimation && (
@@ -258,19 +307,45 @@ export function ActionSelection() {
 
                   {/* Action Summary */}
                   <div className="bg-blue-50 border-2 border-blue-300 rounded-lg p-3 mb-4">
-                    <div className="text-xs font-semibold text-gray-600 mb-2 uppercase tracking-wide">Team Actions</div>
-                    <div className="flex justify-center gap-4">
-                      {actions.map((action, idx) => (
-                        <div key={idx} className="flex flex-col items-center">
-                          <div className="text-3xl mb-1">{actionIcons[action]}</div>
-                          <div className="text-xs text-gray-600">{players[idx]?.id === player.id ? "YOU" : `P${idx + 1}`}</div>
+                    <div className="text-xs font-semibold text-gray-600 mb-2 uppercase tracking-wide">What Happened This Round</div>
+
+                    {/* Team Actions */}
+                    <div className="mb-3">
+                      <div className="text-xs text-gray-500 mb-1">Team Actions:</div>
+                      <div className="flex justify-center gap-4">
+                        {actions.map((action, idx) => (
+                          <div key={idx} className="flex flex-col items-center">
+                            <div className="text-3xl mb-1">{actionIcons[action]}</div>
+                            <div className="text-xs text-gray-600">{players[idx]?.id === player.id ? "YOU" : `P${idx + 1}`}</div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Enemy Action */}
+                    <div className="border-t border-blue-200 pt-2">
+                      <div className="text-xs text-gray-500 mb-1">Enemy Action:</div>
+                      <div className="flex justify-center items-center gap-2">
+                        <div className="text-3xl">{enemyIntent === "WILL_ATTACK" ? "⚔️" : "😴"}</div>
+                        <div className="text-sm font-medium text-gray-700">
+                          {enemyIntent === "WILL_ATTACK" ? "Enemy attacked!" : "Enemy did nothing"}
                         </div>
-                      ))}
+                      </div>
                     </div>
                   </div>
 
                   <div className="text-center text-gray-500 text-sm">
-                    Next round starting...
+                    {countdown !== null && countdown > 0 ? (
+                      <div className="text-lg font-bold text-blue-600">
+                        Next round in {countdown}...
+                      </div>
+                    ) : countdown === 0 ? (
+                      <div className="text-lg font-bold text-green-600">
+                        Starting now!
+                      </div>
+                    ) : (
+                      "Next round starting soon..."
+                    )}
                   </div>
                 </div>
               ) : (

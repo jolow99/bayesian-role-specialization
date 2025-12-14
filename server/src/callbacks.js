@@ -146,16 +146,27 @@ function addGameRound(game, roundNumber) {
   // Store reference to stage on round for early termination
   round.set("actionStage", actionStage);
 
-  // Reveal stage (10 seconds to see results)
-  round.addStage({
+  // Reveal stage (15 seconds to see results)
+  // Duration must be in SECONDS (Empirica uses seconds, not milliseconds)
+  const revealStage = round.addStage({
     name: "Reveal",
-    duration: 10
+    duration: 15
   });
+
+  console.log(`Created Reveal stage with duration: ${revealStage.get("duration")}`);
 }
 
 Empirica.onRoundStart(({ round }) => {
   const game = round.currentGame;
   const roundNumber = round.get("roundNumber");
+
+  // GUARD: Check if this round has already been initialized
+  // This prevents double-initialization from multiple callback invocations
+  if (round.get("initialized")) {
+    console.log(`!!! Round ${roundNumber} already initialized, skipping onRoundStart`);
+    return;
+  }
+  round.set("initialized", true);
 
   console.log(`=== Round ${roundNumber} Starting ===`);
 
@@ -188,6 +199,20 @@ Empirica.onRoundStart(({ round }) => {
 });
 
 Empirica.onStageStart(({ stage }) => {
+  const round = stage.round;
+  const game = round.currentGame;
+  const stageName = stage.get("name");
+  const roundNumber = round.get("roundNumber");
+  console.log(`>>> STAGE START: Round ${roundNumber}, Stage: ${stageName}`);
+
+  // Log player submit states
+  if (stageName === "Reveal") {
+    game.players.forEach((player, idx) => {
+      const submitted = player.stage.get("submit");
+      console.log(`  Player ${idx} submit state: ${submitted}`);
+    });
+  }
+
   // Empirica automatically advances stages when all players call player.stage.set("submit", true)
   // No additional logic needed here
 });
@@ -195,8 +220,12 @@ Empirica.onStageStart(({ stage }) => {
 Empirica.onStageEnded(({ stage }) => {
   const round = stage.round;
   const game = round.currentGame;
+  const stageName = stage.get("name");
+  const roundNumber = round.get("roundNumber");
 
-  if (stage.get("name") === "Action Selection") {
+  console.log(`<<< STAGE END: Round ${roundNumber}, Stage: ${stageName}`);
+
+  if (stageName === "Action Selection") {
     const gameSeed = game.get("gameSeed");
     const epsilon = game.get("epsilon");
     const teamHealth = game.get("teamHealth");
