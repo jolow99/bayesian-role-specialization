@@ -5,6 +5,9 @@ import React from "react";
 import { Game } from "./Game";
 import { ExitSurvey } from "./intro-exit/ExitSurvey";
 import { Introduction } from "./intro-exit/Introduction";
+import { TutorialIntro } from "./intro-exit/TutorialIntro";
+import { Tutorial1 } from "./intro-exit/Tutorial1";
+import { Tutorial2 } from "./intro-exit/Tutorial2";
 
 export default function App() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -14,6 +17,12 @@ export default function App() {
   const url = `${protocol}//${host}/query`;
 
   function introSteps({ game, player }) {
+    // Check if tutorial should be shown from treatment configuration
+    const showTutorial = game?.get("treatment")?.showTutorial ?? true;
+
+    if (showTutorial) {
+      return [Introduction, TutorialIntro, Tutorial1, Tutorial2];
+    }
     return [Introduction];
   }
 

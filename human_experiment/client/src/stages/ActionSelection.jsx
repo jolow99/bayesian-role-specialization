@@ -198,6 +198,8 @@ export function ActionSelection() {
                       orderClass = 'order-3';
                     }
 
+                    const isBot = p.get("isBot");
+
                     return (
                       <div key={p.id} className={`flex flex-col items-center ${orderClass}`}>
                         {/* Action emoji (if reveal stage) */}
@@ -211,10 +213,11 @@ export function ActionSelection() {
                           {Math.round(stats.STR * 100)} STR / {Math.round(stats.DEF * 100)} DEF / {Math.round(stats.SUP * 100)} SUP
                         </div>
                         {/* Player sprite */}
-                        <div className={size}>👤</div>
+                        <div className={size}>{isBot ? '🤖' : '👤'}</div>
                         {/* Player label */}
                         <div className={`text-xs font-bold text-gray-700 mt-1 ${isCurrentPlayer ? 'text-sm' : ''}`}>
                           {isCurrentPlayer ? "YOU" : `P${idx + 1}`}
+                          {isBot && <span className="text-gray-500 ml-1">(Bot)</span>}
                         </div>
                       </div>
                     );

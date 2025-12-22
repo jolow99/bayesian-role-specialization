@@ -76,6 +76,37 @@ function roleToAction(role, gameState, playerStats, rng) {
   return primaryAction;
 }
 
+// Determine what role a bot should choose based on its strategy
+function getBotRoleChoice(player, roundNumber, game) {
+  const strategy = player.get("botStrategy");
+  if (!strategy) {
+    console.warn(`Bot player has no strategy, defaulting to FIGHTER`);
+    return ROLES.FIGHTER;
+  }
+
+  switch (strategy.type) {
+    case "fixed":
+      // Always choose the same role
+      return strategy.role;
+
+    case "scripted":
+      // Follow a predefined sequence of roles
+      // strategy.roles is an array like [ROLES.FIGHTER, ROLES.TANK, ...]
+      // Use roundNumber to index (1-based, so subtract 1)
+      const roleIndex = (roundNumber - 1) % strategy.roles.length;
+      return strategy.roles[roleIndex];
+
+    case "random":
+      // Choose a random role each time
+      const rng = seededRandom(game.get("gameSeed") + roundNumber * 1000 + player.get("playerId"));
+      return Math.floor(rng() * 3);
+
+    default:
+      console.warn(`Unknown bot strategy type: ${strategy.type}, defaulting to FIGHTER`);
+      return ROLES.FIGHTER;
+  }
+}
+
 // Game initialization
 Empirica.onGameStart(({ game }) => {
   const treatment = game.get("treatment");
@@ -84,7 +115,10 @@ Empirica.onGameStart(({ game }) => {
     maxRounds = 20,
     bossType = "lowDamage",  // NEW: replaces difficulty
     epsilon = 0.1,            // NEW: configurable randomness
-    gameSeed = Math.floor(Math.random() * 10000)
+    gameSeed = Math.floor(Math.random() * 10000),
+    // Bot configuration
+    botPlayers = [],  // Array of bot configs: [{playerId: 0, strategy: {type: "fixed", role: 0}}, ...]
+    isTutorial = false,  // Whether this is a tutorial game
   } = treatment;
 
   // Generate and assign player stats
@@ -99,6 +133,16 @@ Empirica.onGameStart(({ game }) => {
     player.set("roleStartRound", null);
     player.set("roleEndRound", null);
     player.set("roleHistory", []);
+
+    // NEW: Bot configuration
+    const botConfig = botPlayers.find(b => b.playerId === idx);
+    if (botConfig) {
+      player.set("isBot", true);
+      player.set("botStrategy", botConfig.strategy);
+      console.log(`Player ${idx} configured as bot with strategy:`, botConfig.strategy);
+    } else {
+      player.set("isBot", false);
+    }
   });
 
   // Store game settings
@@ -107,6 +151,7 @@ Empirica.onGameStart(({ game }) => {
   game.set("epsilon", epsilon);
   game.set("statProfile", statProfile);
   game.set("gameSeed", gameSeed);
+  game.set("isTutorial", isTutorial);
   game.set("maxHealth", 10);
   game.set("initialEnemyHealth", 10);
   game.set("initialTeamHealth", 10);
@@ -210,6 +255,28 @@ Empirica.onStageStart(({ stage }) => {
     game.players.forEach((player, idx) => {
       const submitted = player.stage.get("submit");
       console.log(`  Player ${idx} submit state: ${submitted}`);
+    });
+  }
+
+  // BOT AUTO-PLAY: Have bots automatically select roles and submit
+  if (stageName === "Action Selection") {
+    game.players.forEach((player, idx) => {
+      const isBot = player.get("isBot");
+      if (isBot) {
+        const currentRole = player.get("currentRole");
+        const needsRoleSelection = player.round.get("needsRoleSelection");
+
+        // If bot needs to select a role (commitment expired or first round)
+        if (needsRoleSelection || currentRole === null) {
+          const roleChoice = getBotRoleChoice(player, roundNumber, game);
+          player.round.set("selectedRole", roleChoice);
+          console.log(`Bot ${idx} auto-selected role: ${ROLE_NAMES[roleChoice]}`);
+        }
+
+        // Bots always submit immediately
+        player.stage.set("submit", true);
+        console.log(`Bot ${idx} auto-submitted`);
+      }
     });
   }
 

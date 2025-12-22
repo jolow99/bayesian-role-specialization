@@ -23,6 +23,20 @@ factors:
       desc: Number of players in the game
       values:
         - value: 3
+    - name: showTutorial
+      desc: Whether to show the interactive tutorial before the main game
+      values:
+        - value: true
+        - value: false
+    - name: botPlayers
+      desc: Array of bot player configurations (empty array for no bots)
+      values:
+        - value: []
+        - value: [{playerId: 0, strategy: {type: "fixed", role: 0}}]
+        - value: [{playerId: 1, strategy: {type: "fixed", role: 0}}]
+        - value: [{playerId: 0, strategy: {type: "scripted", roles: [0, 1, 2]}}]
+        - value: [{playerId: 0, strategy: {type: "random"}}]
+        - value: [{playerId: 0, strategy: {type: "fixed", role: 0}}, {playerId: 2, strategy: {type: "fixed", role: 1}}]
 treatments:
     - name: Balanced-HighDamage
       desc: Balanced players with high-damage boss
@@ -32,6 +46,8 @@ treatments:
         maxRounds: 20
         playerCount: 3
         statProfile: balanced
+        showTutorial: true
+        botPlayers: []
     - name: Balanced-LowDamage
       desc: Balanced players with low-damage boss
       factors:
@@ -40,6 +56,8 @@ treatments:
         maxRounds: 20
         playerCount: 3
         statProfile: balanced
+        showTutorial: true
+        botPlayers: []
     - name: AllUnique-HighDamage
       desc: All players unique specialists with high-damage boss
       factors:
@@ -48,6 +66,8 @@ treatments:
         maxRounds: 20
         playerCount: 3
         statProfile: imbalanced-allunique
+        showTutorial: true
+        botPlayers: []
     - name: AllUnique-LowDamage
       desc: All players unique specialists with low-damage boss
       factors:
@@ -56,6 +76,8 @@ treatments:
         maxRounds: 20
         playerCount: 3
         statProfile: imbalanced-allunique
+        showTutorial: true
+        botPlayers: []
     - name: OneUnique-HighDamage
       desc: Two similar, one unique with high-damage boss
       factors:
@@ -64,6 +86,8 @@ treatments:
         maxRounds: 20
         playerCount: 3
         statProfile: imbalanced-oneunique
+        showTutorial: true
+        botPlayers: []
     - name: OneUnique-LowDamage
       desc: Two similar, one unique with low-damage boss
       factors:
@@ -72,6 +96,8 @@ treatments:
         maxRounds: 20
         playerCount: 3
         statProfile: imbalanced-oneunique
+        showTutorial: true
+        botPlayers: []
     - name: Balanced-HighEpsilon
       desc: Balanced with high epsilon for testing randomness
       factors:
@@ -80,6 +106,8 @@ treatments:
         maxRounds: 20
         playerCount: 3
         statProfile: balanced
+        showTutorial: true
+        botPlayers: []
     - name: AllUnique-HighEpsilon
       desc: All unique with high epsilon
       factors:
@@ -88,3 +116,25 @@ treatments:
         maxRounds: 20
         playerCount: 3
         statProfile: imbalanced-allunique
+        showTutorial: true
+        botPlayers: []
+    - name: TestBot-StubbornFighter
+      desc: Testing with one stubborn bot Fighter (player 1)
+      factors:
+        bossType: lowDamage
+        epsilon: 0.05
+        maxRounds: 20
+        playerCount: 3
+        statProfile: balanced
+        showTutorial: true
+        botPlayers: [{playerId: 1, strategy: {type: "fixed", role: 0}}]
+    - name: TestBot-TwoBots
+      desc: Solo testing with two bots (Fighter and Tank)
+      factors:
+        bossType: lowDamage
+        epsilon: 0.05
+        maxRounds: 20
+        playerCount: 3
+        statProfile: imbalanced-allunique
+        showTutorial: false
+        botPlayers: [{playerId: 0, strategy: {type: "fixed", role: 0}}, {playerId: 2, strategy: {type: "fixed", role: 1}}]
