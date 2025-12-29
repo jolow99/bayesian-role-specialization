@@ -10,17 +10,36 @@ factors:
       values:
         - value: highDamage
         - value: lowDamage
-    - name: epsilon
+    - name: playerDeviateProbability
       desc: Probability of random action instead of role-primary action
       values:
         - value: 0.05
         - value: 0.1
+    - name: enemyAttackProbability
+      desc: Probability that enemy will attack each round
+      values:
+        - value: 0.8
+        - value: 1.0
     - name: maxRounds
       desc: Maximum number of rounds before timeout
       values:
         - value: 20
+    - name: maxEnemyHealth
+      desc: Maximum health of the enemy
+      values:
+        - value: 20
+    - name: maxTeamHealth
+      desc: Maximum health of the team
+      values:
+        - value: 10
     - name: playerCount
-      desc: Number of players in the game
+      desc: Number of human players needed to start the game
+      values:
+        - value: 1
+        - value: 2
+        - value: 3
+    - name: totalPlayers
+      desc: Total number of players in the game (including bots)
       values:
         - value: 3
     - name: showTutorial
@@ -38,13 +57,45 @@ factors:
         - value: [{playerId: 0, strategy: {type: "random"}}]
         - value: [{playerId: 0, strategy: {type: "fixed", role: 0}}, {playerId: 2, strategy: {type: "fixed", role: 1}}]
 treatments:
+    - name: SinglePlayer-TwoStubbornFighters-Balanced
+      desc: Testing with two stubborn fighter bots
+      factors:
+        bossType: lowDamage
+        playerDeviateProbability: 0.00
+        enemyAttackProbability: 1.0
+        maxRounds: 20
+        maxEnemyHealth: 31
+        maxTeamHealth: 10
+        playerCount: 1
+        totalPlayers: 3
+        statProfile: balanced
+        showTutorial: false
+        botPlayers: [{playerId: 1, strategy: {type: "fixed", role: 0}},{playerId: 2, strategy: {type: "fixed", role: 0}}]
+    - name: SinglePlayer-TwoStubbornTanks-Balanced
+      desc: Testing with two stubborn tank bots
+      factors:
+        bossType: highDamage
+        playerDeviateProbability: 0.00
+        enemyAttackProbability: 1.0
+        maxRounds: 20
+        maxEnemyHealth: 8
+        maxTeamHealth: 10
+        playerCount: 1
+        totalPlayers: 3
+        statProfile: balanced
+        showTutorial: false
+        botPlayers: [{playerId: 1, strategy: {type: "fixed", role: 1}},{playerId: 2, strategy: {type: "fixed", role: 1}}]
     - name: Balanced-HighDamage
       desc: Balanced players with high-damage boss
       factors:
         bossType: highDamage
-        epsilon: 0.05
+        playerDeviateProbability: 0.05
+        enemyAttackProbability: 0.8
         maxRounds: 20
+        maxEnemyHealth: 20
+        maxTeamHealth: 10
         playerCount: 3
+        totalPlayers: 3
         statProfile: balanced
         showTutorial: true
         botPlayers: []
@@ -52,9 +103,13 @@ treatments:
       desc: Balanced players with low-damage boss
       factors:
         bossType: lowDamage
-        epsilon: 0.05
+        playerDeviateProbability: 0.05
+        enemyAttackProbability: 0.8
         maxRounds: 20
+        maxEnemyHealth: 20
+        maxTeamHealth: 10
         playerCount: 3
+        totalPlayers: 3
         statProfile: balanced
         showTutorial: true
         botPlayers: []
@@ -62,9 +117,13 @@ treatments:
       desc: All players unique specialists with high-damage boss
       factors:
         bossType: highDamage
-        epsilon: 0.05
+        playerDeviateProbability: 0.05
+        enemyAttackProbability: 0.8
         maxRounds: 20
+        maxEnemyHealth: 20
+        maxTeamHealth: 10
         playerCount: 3
+        totalPlayers: 3
         statProfile: imbalanced-allunique
         showTutorial: true
         botPlayers: []
@@ -72,9 +131,13 @@ treatments:
       desc: All players unique specialists with low-damage boss
       factors:
         bossType: lowDamage
-        epsilon: 0.05
+        playerDeviateProbability: 0.05
+        enemyAttackProbability: 0.8
         maxRounds: 20
+        maxEnemyHealth: 20
+        maxTeamHealth: 10
         playerCount: 3
+        totalPlayers: 3
         statProfile: imbalanced-allunique
         showTutorial: true
         botPlayers: []
@@ -82,9 +145,13 @@ treatments:
       desc: Two similar, one unique with high-damage boss
       factors:
         bossType: highDamage
-        epsilon: 0.05
+        playerDeviateProbability: 0.05
+        enemyAttackProbability: 0.8
         maxRounds: 20
+        maxEnemyHealth: 20
+        maxTeamHealth: 10
         playerCount: 3
+        totalPlayers: 3
         statProfile: imbalanced-oneunique
         showTutorial: true
         botPlayers: []
@@ -92,49 +159,41 @@ treatments:
       desc: Two similar, one unique with low-damage boss
       factors:
         bossType: lowDamage
-        epsilon: 0.05
+        playerDeviateProbability: 0.05
+        enemyAttackProbability: 0.8
         maxRounds: 20
+        maxEnemyHealth: 20
+        maxTeamHealth: 10
         playerCount: 3
+        totalPlayers: 3
         statProfile: imbalanced-oneunique
         showTutorial: true
         botPlayers: []
-    - name: Balanced-HighEpsilon
-      desc: Balanced with high epsilon for testing randomness
+    - name: Balanced-HighDeviation
+      desc: Balanced with high player deviation for testing randomness
       factors:
         bossType: highDamage
-        epsilon: 0.1
+        playerDeviateProbability: 0.1
+        enemyAttackProbability: 0.8
         maxRounds: 20
+        maxEnemyHealth: 20
+        maxTeamHealth: 10
         playerCount: 3
+        totalPlayers: 3
         statProfile: balanced
         showTutorial: true
         botPlayers: []
-    - name: AllUnique-HighEpsilon
-      desc: All unique with high epsilon
+    - name: AllUnique-HighDeviation
+      desc: All unique with high player deviation
       factors:
         bossType: lowDamage
-        epsilon: 0.1
+        playerDeviateProbability: 0.1
+        enemyAttackProbability: 0.8
         maxRounds: 20
+        maxEnemyHealth: 20
+        maxTeamHealth: 10
         playerCount: 3
+        totalPlayers: 3
         statProfile: imbalanced-allunique
         showTutorial: true
         botPlayers: []
-    - name: TestBot-StubbornFighter
-      desc: Testing with one stubborn bot Fighter (player 1)
-      factors:
-        bossType: lowDamage
-        epsilon: 0.05
-        maxRounds: 20
-        playerCount: 3
-        statProfile: balanced
-        showTutorial: true
-        botPlayers: [{playerId: 1, strategy: {type: "fixed", role: 0}}]
-    - name: TestBot-TwoBots
-      desc: Solo testing with two bots (Fighter and Tank)
-      factors:
-        bossType: lowDamage
-        epsilon: 0.05
-        maxRounds: 20
-        playerCount: 3
-        statProfile: imbalanced-allunique
-        showTutorial: false
-        botPlayers: [{playerId: 0, strategy: {type: "fixed", role: 0}}, {playerId: 2, strategy: {type: "fixed", role: 1}}]

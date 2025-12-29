@@ -22,34 +22,39 @@ export function Tutorial1({ next }) {
 
   // Simulate a single round of combat
   const simulateRound = (roundNum, playerRole, currentEnemyHP, currentTeamHP) => {
-    // Randomly decide if enemy attacks (50/50)
-    const enemyAttacks = Math.random() > 0.5;
-
-    // Determine player stats (simplified - all balanced for tutorial)
-    const STR = 0.33, DEF = 0.33, SUP = 0.33;
+    // Enemy always attacks in tutorial for predictable outcomes
+    const enemyAttacks = true;
 
     // Calculate team actions based on roles
     const roles = [...botRoles, playerRole];
 
-    // Count attacks
+    // Count attacks - 2 Fighters deal 5 damage each, 3 Fighters deal 3.5 damage each
     let attackCount = roles.filter(r => r === ROLES.FIGHTER).length;
-    let damageToEnemy = attackCount * STR * 1.5;
+    let damageToEnemy;
+    if (attackCount === 2) {
+      damageToEnemy = 5; // 2 fighters = 5 damage per round (kills boss in 2 rounds)
+    } else if (attackCount === 3) {
+      damageToEnemy = 3.5; // 3 fighters = 3.5 damage (not enough without defense/healing)
+    } else {
+      damageToEnemy = 0; // No fighters (shouldn't happen in this tutorial)
+    }
 
     // Check for defense
     let hasDefender = roles.includes(ROLES.TANK);
     let damageToTeam = 0;
-    if (enemyAttacks) {
-      const bossDamage = 2; // Simplified boss damage
-      if (hasDefender) {
-        damageToTeam = Math.max(0, bossDamage - (DEF * 3));
-      } else {
-        damageToTeam = bossDamage;
-      }
+    const bossDamage = 6; // Boss deals 6 damage per attack
+    if (hasDefender) {
+      damageToTeam = 1; // Tank reduces it to 1 damage
+    } else {
+      damageToTeam = bossDamage; // Full damage without tank
     }
 
     // Check for healing
-    let healCount = roles.filter(r => r === ROLES.HEALER).length;
-    let healAmount = healCount * SUP * 2;
+    let hasHealer = roles.includes(ROLES.HEALER);
+    let healAmount = 0;
+    if (hasHealer && currentTeamHP < 10) {
+      healAmount = 3; // Healer restores 3 HP
+    }
 
     // Update health
     const newEnemyHP = Math.max(0, currentEnemyHP - damageToEnemy);
@@ -70,12 +75,12 @@ export function Tutorial1({ next }) {
   };
 
   const handleConfirm = () => {
-    // Simulate all 3 rounds
+    // Simulate rounds until game ends (max 2 rounds)
     const results = [];
     let currentEnemyHP = 10;
     let currentTeamHP = 10;
 
-    for (let i = 1; i <= 3; i++) {
+    for (let i = 1; i <= 2; i++) {
       const result = simulateRound(i, selectedRole, currentEnemyHP, currentTeamHP);
       results.push(result);
       currentEnemyHP = result.enemyHealth;
@@ -95,18 +100,13 @@ export function Tutorial1({ next }) {
     let outcomeMessage;
     let success = false;
     if (currentEnemyHP <= 0) {
-      outcomeMessage = "Victory! Great job coordinating with your team!";
+      outcomeMessage = "Victory! By choosing a Tank or Healer role, you complemented the two Fighters perfectly!";
       success = true;
     } else if (currentTeamHP <= 0) {
-      outcomeMessage = "Defeat! Your team was overwhelmed. Try choosing a role that complements the team!";
+      outcomeMessage = "Defeat! With three Fighters and no Tank or Healer, your team couldn't survive the enemy's attacks. Try a different role!";
     } else {
-      // Neither died - evaluate based on final state
-      if (selectedRole === ROLES.HEALER || selectedRole === ROLES.TANK) {
-        outcomeMessage = "Good choice! Your team worked together effectively.";
-        success = true;
-      } else {
-        outcomeMessage = "The team survived, but coordination could be better. With three Fighters, no one could defend or heal!";
-      }
+      // Shouldn't happen with new mechanics, but just in case
+      outcomeMessage = "The battle continues... Consider choosing Tank or Healer to complement your Fighter teammates!";
     }
 
     setOutcome({ message: outcomeMessage, success });
@@ -123,6 +123,16 @@ export function Tutorial1({ next }) {
 
   const handleNext = () => {
     next();
+  };
+
+  const handlePlayAgain = () => {
+    // Reset all state to initial values
+    setSelectedRole(null);
+    setCurrentRound(0);
+    setRoundResults([]);
+    setEnemyHealth(10);
+    setTeamHealth(10);
+    setOutcome(null);
   };
 
   // Selection screen
@@ -142,7 +152,7 @@ export function Tutorial1({ next }) {
             What role do you think you should play, given their choices?
           </p>
           <p className="text-sm text-yellow-900 mt-2">
-            Remember: You'll be committed to your chosen role for 3 rounds, just like in the main game!
+            Remember: You'll be committed to your chosen role for 2 rounds, just like in the main game!
           </p>
         </div>
 
@@ -200,7 +210,7 @@ export function Tutorial1({ next }) {
     return (
       <div className="p-8 max-w-4xl mx-auto">
         <h3 className="text-2xl font-bold text-gray-900 mb-4 text-center">
-          Tutorial - Round {result.roundNum} of 3
+          Tutorial - Round {result.roundNum} of {roundResults.length}
         </h3>
 
         <div className="bg-gray-50 rounded-lg p-6 mb-6">
@@ -208,7 +218,7 @@ export function Tutorial1({ next }) {
 
           {/* Team Composition */}
           <div className="mb-4 pb-4 border-b border-gray-300">
-            <p className="text-sm text-gray-700 mb-2 text-center"><strong>Team Roles (Committed for 3 rounds):</strong></p>
+            <p className="text-sm text-gray-700 mb-2 text-center"><strong>Team Roles (Locked for the battle):</strong></p>
             <div className="flex gap-4 justify-center">
               <div className="text-center bg-gray-100 rounded p-3">
                 <div className="text-3xl mb-1">{ROLE_ICONS[ROLES.FIGHTER]}</div>
@@ -303,11 +313,13 @@ export function Tutorial1({ next }) {
         <div className="grid grid-cols-2 gap-4">
           <div className="text-center">
             <div className="text-sm text-gray-600">Enemy Health</div>
-            <div className="text-3xl font-bold text-red-600">{enemyHealth}</div>
+            <div className={`text-3xl font-bold ${enemyHealth === 0 ? 'text-gray-400 line-through' : 'text-red-600'}`}>{enemyHealth}</div>
+            {enemyHealth === 0 && <div className="text-xs text-green-600 font-semibold mt-1">DEFEATED!</div>}
           </div>
           <div className="text-center">
             <div className="text-sm text-gray-600">Team Health</div>
-            <div className="text-3xl font-bold text-green-600">{teamHealth}</div>
+            <div className={`text-3xl font-bold ${teamHealth === 0 ? 'text-gray-400 line-through' : 'text-green-600'}`}>{teamHealth}</div>
+            {teamHealth === 0 && <div className="text-xs text-red-600 font-semibold mt-1">DEFEATED!</div>}
           </div>
         </div>
       </div>
@@ -317,15 +329,18 @@ export function Tutorial1({ next }) {
           <strong>Key Learning:</strong> When you know what roles your teammates have chosen,
           you can pick a complementary role to maximize your team's effectiveness.
           {outcome.success
-            ? " Your balanced team composition helped you succeed!"
-            : " Having three Fighters meant no one could defend or heal the team."}
+            ? " With two Fighters already attacking, adding a Tank or Healer created a balanced team that won in just 2 rounds!"
+            : " With three Fighters, the team had high damage but no defense or healing, leading to defeat."}
         </p>
         <p className="text-sm text-blue-800 mt-2">
-          Notice how your role choice stayed locked for all 3 rounds - this is how the main game works too!
+          Notice how your role choice stayed locked for all {roundResults.length} rounds - this is how the main game works too!
         </p>
       </div>
 
-      <div className="flex justify-center">
+      <div className="flex justify-center gap-4">
+        <Button handleClick={handlePlayAgain}>
+          <p>Play Again</p>
+        </Button>
         <Button handleClick={handleNext} autoFocus>
           <p>Continue to Tutorial Round 2</p>
         </Button>

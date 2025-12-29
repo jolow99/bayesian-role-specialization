@@ -5,7 +5,6 @@ import React from "react";
 import { Game } from "./Game";
 import { ExitSurvey } from "./intro-exit/ExitSurvey";
 import { Introduction } from "./intro-exit/Introduction";
-import { TutorialIntro } from "./intro-exit/TutorialIntro";
 import { Tutorial1 } from "./intro-exit/Tutorial1";
 import { Tutorial2 } from "./intro-exit/Tutorial2";
 
@@ -21,7 +20,7 @@ export default function App() {
     const showTutorial = game?.get("treatment")?.showTutorial ?? true;
 
     if (showTutorial) {
-      return [Introduction, TutorialIntro, Tutorial1, Tutorial2];
+      return [Introduction, Tutorial1, Tutorial2];
     }
     return [Introduction];
   }

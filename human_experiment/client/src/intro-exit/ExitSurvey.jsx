@@ -12,12 +12,7 @@ export function ExitSurvey({ next }) {
 
   const outcome = game.get("outcome") || "UNKNOWN";
 
-  // Role inference questions
-  const [yourRole, setYourRole] = useState("");
-  const [player1Role, setPlayer1Role] = useState("");
-  const [player2Role, setPlayer2Role] = useState("");
-  const [player3Role, setPlayer3Role] = useState("");
-  const [roleConfidence, setRoleConfidence] = useState("4");
+  // Strategy and coordination questions
   const [strategy, setStrategy] = useState("");
   const [coordinationQuality, setCoordinationQuality] = useState("4");
 
@@ -30,12 +25,7 @@ export function ExitSurvey({ next }) {
   function handleSubmit(event) {
     event.preventDefault();
     player.set("exitSurvey", {
-      // Role inference
-      yourRole,
-      player1Role,
-      player2Role,
-      player3Role,
-      roleConfidence,
+      // Strategy and coordination
       strategy,
       coordinationQuality,
       // Demographics
@@ -50,8 +40,6 @@ export function ExitSurvey({ next }) {
   function handleEducationChange(e) {
     setEducation(e.target.value);
   }
-
-  const playerId = player.get("playerId");
 
   return (
     <div className="py-8 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -76,11 +64,11 @@ export function ExitSurvey({ next }) {
         onSubmit={handleSubmit}
       >
         <div className="space-y-8 divide-y divide-gray-200">
-          {/* Role Inference Section */}
+          {/* Strategy and Coordination Section */}
           <div>
             <div>
               <h3 className="text-lg leading-6 font-medium text-gray-900">
-                Role and Strategy Questions
+                Strategy and Coordination Questions
               </h3>
               <p className="mt-1 text-sm text-gray-500">
                 Please answer the following questions about your gameplay experience.
@@ -88,104 +76,6 @@ export function ExitSurvey({ next }) {
             </div>
 
             <div className="space-y-6 mt-6">
-              <div>
-                <label className={labelClassName}>
-                  What role did you think you were playing?
-                </label>
-                <div className="grid gap-2">
-                  <Radio
-                    selected={yourRole}
-                    name="yourRole"
-                    value="fighter"
-                    label="⚔️ Fighter - Focused on attacking"
-                    onChange={(e) => setYourRole(e.target.value)}
-                  />
-                  <Radio
-                    selected={yourRole}
-                    name="yourRole"
-                    value="tank"
-                    label="🛡️ Tank - Focused on defending"
-                    onChange={(e) => setYourRole(e.target.value)}
-                  />
-                  <Radio
-                    selected={yourRole}
-                    name="yourRole"
-                    value="healer"
-                    label="💚 Healer - Focused on healing"
-                    onChange={(e) => setYourRole(e.target.value)}
-                  />
-                  <Radio
-                    selected={yourRole}
-                    name="yourRole"
-                    value="mixed"
-                    label="Mixed - I didn't stick to one role"
-                    onChange={(e) => setYourRole(e.target.value)}
-                  />
-                  <Radio
-                    selected={yourRole}
-                    name="yourRole"
-                    value="unsure"
-                    label="I'm not sure"
-                    onChange={(e) => setYourRole(e.target.value)}
-                  />
-                </div>
-              </div>
-
-              <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                <label className={labelClassName}>
-                  What roles do you think your teammates were playing?
-                </label>
-                <p className="text-xs text-gray-500 mb-3">
-                  Note: You were Player {playerId + 1}
-                </p>
-                <div className="space-y-4">
-                  {[0, 1, 2].filter(pid => pid !== playerId).map((pid, idx) => (
-                    <div key={pid}>
-                      <label className="text-sm font-medium text-gray-600 mb-1 block">
-                        Player {pid + 1}:
-                      </label>
-                      <select
-                        className={inputClassName}
-                        value={pid === 0 ? player1Role : pid === 1 ? player2Role : player3Role}
-                        onChange={(e) => {
-                          if (pid === 0) setPlayer1Role(e.target.value);
-                          else if (pid === 1) setPlayer2Role(e.target.value);
-                          else setPlayer3Role(e.target.value);
-                        }}
-                      >
-                        <option value="">Select a role...</option>
-                        <option value="fighter">⚔️ Fighter</option>
-                        <option value="tank">🛡️ Tank</option>
-                        <option value="healer">💚 Healer</option>
-                        <option value="mixed">Mixed</option>
-                        <option value="unsure">I'm not sure</option>
-                      </select>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <label className={labelClassName}>
-                  How confident are you in your assessment of the roles? (1 = Not at all, 7 = Very confident)
-                </label>
-                <div className="flex gap-2 items-center">
-                  {[1, 2, 3, 4, 5, 6, 7].map(val => (
-                    <label key={val} className="flex items-center">
-                      <input
-                        type="radio"
-                        name="roleConfidence"
-                        value={val}
-                        checked={roleConfidence === String(val)}
-                        onChange={(e) => setRoleConfidence(e.target.value)}
-                        className="mr-1"
-                      />
-                      <span className="text-sm">{val}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-
               <div>
                 <label className={labelClassName}>
                   How would you describe your strategy? What influenced your action choices?

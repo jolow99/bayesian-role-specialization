@@ -1,9 +1,5 @@
 lobbies:
-    - name: 3-Player Synchronous (Ignore Late)
-      kind: shared
-      duration: 30s
-      strategy: ignore
-    - name: 3-Player Synchronous Game
+    - name: Standard Lobby
       kind: shared
       duration: 30s
       strategy: fail

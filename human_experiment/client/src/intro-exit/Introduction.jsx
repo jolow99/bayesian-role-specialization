@@ -20,31 +20,36 @@ export function Introduction({ next, game }) {
           </p>
         </section>
 
-        {/* Actions */}
+        {/* Roles */}
         <section>
-          <h4 className="text-lg font-semibold text-gray-800 mb-3">Actions</h4>
+          <h4 className="text-lg font-semibold text-gray-800 mb-3">Roles</h4>
           <p className="text-sm text-gray-700 mb-3">
-            Each round, you'll choose one of three actions:
+            At the start, you'll choose one of three roles. Your role determines your action and you'll be committed to it for 2 rounds:
           </p>
           <div className="space-y-2 bg-gray-50 p-4 rounded">
             <div className="flex items-start gap-2">
               <span className="text-2xl">⚔️</span>
               <div>
-                <strong>Attack:</strong> Deal damage to the enemy
+                <strong>Fighter:</strong> Attacks almost all of the time.
               </div>
             </div>
             <div className="flex items-start gap-2">
               <span className="text-2xl">🛡️</span>
               <div>
-                <strong>Defend:</strong> Protect your team from enemy attacks
+                <strong>Tank:</strong> Defends when the enemy is attacking. Otherwise, attacks.
               </div>
             </div>
             <div className="flex items-start gap-2">
               <span className="text-2xl">💚</span>
               <div>
-                <strong>Heal:</strong> Restore your team's health
+                <strong>Healer:</strong> Heals if the team's health is less than 50%. Otherwise, attacks.
               </div>
             </div>
+          </div>
+          <div className="bg-blue-50 border border-blue-200 rounded p-3 mt-3">
+            <p className="text-sm text-blue-800">
+              <strong>Important:</strong> After 2 rounds, you'll get to choose a new role for the next 2 rounds.
+            </p>
           </div>
         </section>
 
@@ -56,57 +61,51 @@ export function Introduction({ next, game }) {
           </p>
           <div className="space-y-2 bg-gray-50 p-4 rounded">
             <div className="flex items-start gap-2">
-              <span className="text-xl">⚔️</span>
               <div>
                 <strong>Strength (STR):</strong> Determines attack damage
               </div>
             </div>
             <div className="flex items-start gap-2">
-              <span className="text-xl">🛡️</span>
               <div>
                 <strong>Defense (DEF):</strong> Determines damage blocked when defending
               </div>
             </div>
             <div className="flex items-start gap-2">
-              <span className="text-xl">💚</span>
               <div>
                 <strong>Support (SUP):</strong> Determines healing effectiveness
               </div>
             </div>
           </div>
           <div className="bg-blue-50 border border-blue-200 rounded p-3 mt-3">
-            <p className="text-sm text-blue-800">
-              <strong>Note:</strong> When multiple players defend, only the highest defense stat counts (not the sum).
+            <p className="text-sm text-blue-800 mb-2">
+              <strong>How stats combine:</strong>
             </p>
+            <ul className="text-sm text-blue-800 space-y-1 ml-4 list-disc">
+              <li><strong>Attack damage:</strong> All attackers' STR stats are added together</li>
+              <li><strong>Defense:</strong> Only the highest DEF stat among defenders counts (not the sum)</li>
+              <li><strong>Healing:</strong> All healers' SUP stats are added together (up to max team health)</li>
+            </ul>
           </div>
         </section>
 
-        {/* Game Mechanics */}
-        <section>
-          <h4 className="text-lg font-semibold text-gray-800 mb-3">Game Mechanics</h4>
-          <div className="space-y-3">
-            <div className="bg-green-50 border border-green-300 rounded p-3">
-              <div className="font-bold text-green-700 mb-1">Victory</div>
-              <p className="text-sm text-gray-700">
-                Reduce enemy health to 0
-              </p>
-            </div>
-            <div className="bg-red-50 border border-red-300 rounded p-3">
-              <div className="font-bold text-red-700 mb-1">Defeat</div>
-              <p className="text-sm text-gray-700">
-                Team health reaches 0
-              </p>
-            </div>
-          </div>
-          <p className="text-sm text-gray-700 mt-3">
-            The enemy will randomly decide each turn whether to attack or rest. When the enemy intends to attack, you'll see a warning.
+        {/* Tutorial Introduction */}
+        <section className="bg-yellow-50 border border-yellow-300 rounded-lg p-4">
+          <h4 className="text-lg font-semibold text-gray-800 mb-3">Tutorial</h4>
+          <p className="text-sm text-gray-700 mb-3">
+            Before we start the main game, you'll play through two short tutorial rounds
+            to familiarize yourself with the game mechanics.
+          </p>
+          <p className="text-sm text-gray-700">
+            In these tutorial rounds, you'll be playing with two other teammates.
+            Pay attention to how your choices affect the outcome of each round.
           </p>
         </section>
+
       </div>
 
       <div className="flex justify-center mt-8">
         <Button handleClick={next} autoFocus>
-          <p>Start Game</p>
+          <p>Start Tutorial</p>
         </Button>
       </div>
     </div>

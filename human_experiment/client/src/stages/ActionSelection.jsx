@@ -19,12 +19,13 @@ export function ActionSelection() {
   const [countdown, setCountdown] = useState(null);
 
   const submitted = player.stage.get("submit");
-  const enemyHealth = game.get("enemyHealth") || 10;
+  const enemyHealth = game.get("enemyHealth") || 20;
   const teamHealth = game.get("teamHealth") || 10;
   const enemyIntent = round.get("enemyIntent");
   const roundNumber = round.get("roundNumber");
   const maxRounds = game.get("maxRounds");
   const maxHealth = game.get("maxHealth") || 10;
+  const maxEnemyHealth = game.get("maxEnemyHealth") || 20;
   const currentStage = stage.get("name");
   const isRevealStage = currentStage === "Reveal";
   const actions = round.get("actions") || [];
@@ -126,8 +127,34 @@ export function ActionSelection() {
     }
   };
 
-  // Find current player index
-  const currentPlayerIndex = players.findIndex(p => p.id === player.id);
+  // Get virtual bots from game state
+  const virtualBots = game.get("virtualBots") || [];
+  const totalPlayers = game.get("totalPlayers") || 3;
+
+  // Build unified player array (real + virtual)
+  const allPlayers = [];
+  for (let i = 0; i < totalPlayers; i++) {
+    allPlayers[i] = null;
+  }
+
+  // Add real players
+  players.forEach(p => {
+    const playerId = p.get("playerId");
+    allPlayers[playerId] = { type: "real", player: p, playerId };
+  });
+
+  // Add virtual bots
+  virtualBots.forEach(bot => {
+    allPlayers[bot.playerId] = { type: "virtual", bot, playerId: bot.playerId };
+  });
+
+  // DEBUG: Log player count and info
+  console.log(`[DEBUG] Total players: ${allPlayers.length}`);
+  allPlayers.forEach((entry, idx) => {
+    if (entry) {
+      console.log(`[DEBUG] Player ${idx}: type=${entry.type}, playerId=${entry.playerId}`);
+    }
+  });
 
   return (
     <div className="w-full h-full bg-gradient-to-b from-blue-400 to-blue-600 flex items-center justify-center p-4 transition-all duration-300">
@@ -165,7 +192,7 @@ export function ActionSelection() {
               </div>
               {/* Enemy health bar below */}
               <div className="w-64">
-                <HealthBar label="" current={enemyHealth} max={maxHealth} color="red" />
+                <HealthBar label="" current={enemyHealth} max={maxEnemyHealth} color="red" />
               </div>
             </div>
 
@@ -173,19 +200,20 @@ export function ActionSelection() {
             <div className="absolute bottom-8 left-16 flex flex-col items-center">
               <div className="flex items-end justify-center gap-6 mb-4">
                 {/* Sort players: left teammate, YOU (center), right teammate */}
-                {players
-                  .map((p, idx) => ({ player: p, originalIdx: idx }))
+                {allPlayers
+                  .map((entry, playerId) => ({ entry, playerId }))
+                  .filter(({ entry }) => entry !== null)
                   .sort((a, b) => {
-                    const aIsYou = a.player.id === player.id;
-                    const bIsYou = b.player.id === player.id;
+                    const aIsYou = a.entry.type === "real" && a.entry.player.id === player.id;
+                    const bIsYou = b.entry.type === "real" && b.entry.player.id === player.id;
                     if (aIsYou) return 0; // YOU in middle
                     if (bIsYou) return 0;
                     // Others: maintain relative order
-                    return a.originalIdx - b.originalIdx;
+                    return a.playerId - b.playerId;
                   })
-                  .map(({ player: p, originalIdx: idx }, sortedIdx) => {
-                    const stats = p.get("stats");
-                    const isCurrentPlayer = p.id === player.id;
+                  .map(({ entry, playerId }, sortedIdx) => {
+                    const isCurrentPlayer = entry.type === "real" && entry.player.id === player.id;
+                    const stats = entry.type === "real" ? entry.player.get("stats") : entry.bot.stats;
                     const size = isCurrentPlayer ? "text-7xl" : "text-5xl";
 
                     // Determine order: left, center (YOU), right
@@ -198,26 +226,59 @@ export function ActionSelection() {
                       orderClass = 'order-3';
                     }
 
-                    const isBot = p.get("isBot");
+                    const maxStat = 6; // Stats sum to 6
 
                     return (
-                      <div key={p.id} className={`flex flex-col items-center ${orderClass}`}>
+                      <div key={playerId} className={`flex flex-col items-center ${orderClass}`}>
                         {/* Action emoji (if reveal stage) */}
-                        {isRevealStage && actions[idx] && (
+                        {isRevealStage && actions[playerId] && (
                           <div className="text-4xl mb-1 animate-bounce">
-                            {actionIcons[actions[idx]]}
+                            {actionIcons[actions[playerId]]}
                           </div>
                         )}
-                        {/* Stats above player */}
-                        <div className="bg-white/90 rounded px-2 py-1 mb-2 text-xs font-mono whitespace-nowrap border border-gray-400">
-                          {Math.round(stats.STR * 100)} STR / {Math.round(stats.DEF * 100)} DEF / {Math.round(stats.SUP * 100)} SUP
+                        {/* Stats above player with bars */}
+                        <div className="bg-white/90 rounded px-2 py-2 mb-2 border border-gray-400" style={{ width: '110px' }}>
+                          <div className="space-y-1">
+                            {/* STR */}
+                            <div className="flex items-center gap-1">
+                              <span className="text-xs font-semibold w-6">STR</span>
+                              <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
+                                <div
+                                  className="h-full bg-red-500 transition-all"
+                                  style={{ width: `${(stats.STR / maxStat) * 100}%` }}
+                                />
+                              </div>
+                              <span className="text-xs font-bold w-3 text-right">{stats.STR}</span>
+                            </div>
+                            {/* DEF */}
+                            <div className="flex items-center gap-1">
+                              <span className="text-xs font-semibold w-6">DEF</span>
+                              <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
+                                <div
+                                  className="h-full bg-blue-500 transition-all"
+                                  style={{ width: `${(stats.DEF / maxStat) * 100}%` }}
+                                />
+                              </div>
+                              <span className="text-xs font-bold w-3 text-right">{stats.DEF}</span>
+                            </div>
+                            {/* SUP */}
+                            <div className="flex items-center gap-1">
+                              <span className="text-xs font-semibold w-6">SUP</span>
+                              <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
+                                <div
+                                  className="h-full bg-green-500 transition-all"
+                                  style={{ width: `${(stats.SUP / maxStat) * 100}%` }}
+                                />
+                              </div>
+                              <span className="text-xs font-bold w-3 text-right">{stats.SUP}</span>
+                            </div>
+                          </div>
                         </div>
                         {/* Player sprite */}
-                        <div className={size}>{isBot ? '🤖' : '👤'}</div>
+                        <div className={size}>👤</div>
                         {/* Player label */}
                         <div className={`text-xs font-bold text-gray-700 mt-1 ${isCurrentPlayer ? 'text-sm' : ''}`}>
-                          {isCurrentPlayer ? "YOU" : `P${idx + 1}`}
-                          {isBot && <span className="text-gray-500 ml-1">(Bot)</span>}
+                          {isCurrentPlayer ? "YOU" : `P${playerId + 1}`}
                         </div>
                       </div>
                     );
@@ -316,12 +377,20 @@ export function ActionSelection() {
                     <div className="mb-3">
                       <div className="text-xs text-gray-500 mb-1">Team Actions:</div>
                       <div className="flex justify-center gap-4">
-                        {actions.map((action, idx) => (
-                          <div key={idx} className="flex flex-col items-center">
-                            <div className="text-3xl mb-1">{actionIcons[action]}</div>
-                            <div className="text-xs text-gray-600">{players[idx]?.id === player.id ? "YOU" : `P${idx + 1}`}</div>
-                          </div>
-                        ))}
+                        {actions.map((action, playerId) => {
+                          const entry = allPlayers[playerId];
+                          if (!entry) return null;
+                          const isCurrentPlayer = entry.type === "real" && entry.player.id === player.id;
+
+                          return (
+                            <div key={playerId} className="flex flex-col items-center">
+                              <div className="text-3xl mb-1">{actionIcons[action]}</div>
+                              <div className="text-xs text-gray-600">
+                                {isCurrentPlayer ? "YOU" : `P${playerId + 1}`}
+                              </div>
+                            </div>
+                          );
+                        })}
                       </div>
                     </div>
 
@@ -399,7 +468,7 @@ export function ActionSelection() {
                         ? `▶ READY (${roundsRemaining} rounds left)`
                         : selectedRole === null
                           ? "Select a role"
-                          : "✓ CONFIRM ROLE (3 rounds)"}
+                          : "✓ CONFIRM ROLE (2 rounds)"}
                     </button>
                   </div>
                 </div>
@@ -407,13 +476,40 @@ export function ActionSelection() {
             </div>
           </div>
 
-          {/* Battle History */}
+          {/* Battle History and Game Info */}
           <div className="bg-gray-50 border-t-2 border-gray-300 p-4">
-            <div className="bg-white rounded-lg border-2 border-gray-400 p-4">
-              <h3 className="text-lg font-bold text-gray-800 mb-3 flex items-center gap-2">
-                📜 Battle History
-              </h3>
-              <ActionHistory />
+            <div className="grid grid-cols-2 gap-4">
+              {/* Battle History */}
+              <div className="bg-white rounded-lg border-2 border-gray-400 p-4">
+                <h3 className="text-lg font-bold text-gray-800 mb-3 flex items-center gap-2">
+                  📜 Battle History
+                </h3>
+                <ActionHistory />
+              </div>
+
+              {/* Game Mechanics Info */}
+              <div className="bg-white rounded-lg border-2 border-blue-400 p-4">
+                <h3 className="text-lg font-bold text-gray-800 mb-3 flex items-center gap-2">
+                  ℹ️ How Stats Influence Actions
+                </h3>
+                <div className="space-y-2 text-sm">
+                  <div className="flex items-start gap-2">
+                    <div>
+                      <span className="font-semibold">Attacks:</span> STR stats of all attack actions add together
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <div>
+                      <span className="font-semibold">Defending:</span> Max DEF stat of all defend actions 
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <div>
+                      <span className="font-semibold">Healing:</span> SUP stats of all heal actions add together (up to max HP)
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
