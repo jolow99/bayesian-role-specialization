@@ -6,7 +6,7 @@ const ACTIONS = { ATTACK: 0, DEFEND: 1, HEAL: 2 };
 const ACTION_NAMES = ["ATTACK", "DEFEND", "HEAL"];
 const ROLES = { FIGHTER: 0, TANK: 1, HEALER: 2 };
 const ROLE_NAMES = ["FIGHTER", "TANK", "HEALER"];
-const ROLE_COMMITMENT_ROUNDS = 2;
+const TURNS_PER_ROLE = 2; // Each role selection lasts for 2 turns
 
 // Helper function to generate player stats
 // Stats now sum to 6
@@ -131,11 +131,7 @@ Empirica.onGameStart(({ game }) => {
     playerId: botConfig.playerId,
     strategy: botConfig.strategy,
     stats: generatePlayerStats(botConfig.playerId, gameSeed, statProfile),
-    currentRole: null,
-    roleStartRound: null,
-    roleEndRound: null,
-    roleHistory: [],
-    actionHistory: []
+    currentRole: null // Will be set each round during role selection
   }));
 
   virtualBots.forEach(bot => {
@@ -174,9 +170,6 @@ Empirica.onGameStart(({ game }) => {
     player.set("stats", stats);
     player.set("playerId", actualPlayerId);
     player.set("actionHistory", []);
-    player.set("currentRole", null);
-    player.set("roleStartRound", null);
-    player.set("roleEndRound", null);
     player.set("roleHistory", []);
     player.set("isBot", false);
 
@@ -197,25 +190,31 @@ function addGameRound(game, roundNumber) {
   round.set("roundNumber", roundNumber);
   round.set("enemyHealth", game.get("enemyHealth"));
   round.set("teamHealth", game.get("teamHealth"));
-  round.set("actions", {});
 
-  // Action selection stage (no timer - wait for all players)
-  const actionStage = round.addStage({
-    name: "Action Selection",
+  // Stage 1: Role Selection
+  const roleSelectionStage = round.addStage({
+    name: "Role Selection",
     duration: 300 // 5 minutes max as safety
   });
+  roleSelectionStage.set("stageType", "roleSelection");
 
-  // Store reference to stage on round for early termination
-  round.set("actionStage", actionStage);
-
-  // Reveal stage (8 seconds to see results)
-  // Duration must be in SECONDS (Empirica uses seconds, not milliseconds)
-  const revealStage = round.addStage({
-    name: "Reveal",
-    duration: 8
+  // Stage 2: Turn 1 (actions resolve and results shown)
+  const turn1Stage = round.addStage({
+    name: "Turn 1",
+    duration: 8 // 8 seconds to view results
   });
+  turn1Stage.set("stageType", "turn");
+  turn1Stage.set("turnNumber", 1);
 
-  console.log(`Created Reveal stage with duration: ${revealStage.get("duration")}`);
+  // Stage 3: Turn 2 (actions resolve and results shown)
+  const turn2Stage = round.addStage({
+    name: "Turn 2",
+    duration: 8 // 8 seconds to view results
+  });
+  turn2Stage.set("stageType", "turn");
+  turn2Stage.set("turnNumber", 2);
+
+  console.log(`Created Round ${roundNumber} with stages: Role Selection -> Turn 1 (8s) -> Turn 2 (8s)`);
 }
 
 Empirica.onRoundStart(({ round }) => {
@@ -232,133 +231,67 @@ Empirica.onRoundStart(({ round }) => {
 
   console.log(`=== Round ${roundNumber} Starting ===`);
 
-  // Reset player actions and handle role commitments for REAL players
-  game.players.forEach((player, idx) => {
-    player.round.set("action", null);
-
-    // Check if role commitment has expired
-    const currentRole = player.get("currentRole");
-    const roleStartRound = player.get("roleStartRound");
-    const roleEndRound = player.get("roleEndRound");
-    const playerId = player.get("playerId");
-
-    console.log(`Player ${playerId}: currentRole=${currentRole}, roleStartRound=${roleStartRound}, roleEndRound=${roleEndRound}, roundNumber=${roundNumber}`);
-
-    if (currentRole !== null && roundNumber > roleEndRound) {
-      console.log(`Player ${playerId}: Role expired, clearing`);
-      player.set("currentRole", null);
-      player.set("roleStartRound", null);
-      player.set("roleEndRound", null);
-    }
-
-    // Flag if player needs to select role
-    player.round.set("needsRoleSelection", player.get("currentRole") === null);
+  // Reset player round data
+  game.players.forEach((player) => {
+    player.round.set("selectedRole", null);
   });
 
-  // Handle virtual bot role commitments
-  const virtualBots = game.get("virtualBots") || [];
-
-  // Create new array with updated bots to ensure Empirica detects changes
-  const updatedBots = virtualBots.map(bot => {
-    if (bot.currentRole !== null && roundNumber > bot.roleEndRound) {
-      console.log(`Virtual Bot ${bot.playerId}: Role expired, clearing`);
-      return {
-        ...bot,
-        currentRole: null,
-        roleStartRound: null,
-        roleEndRound: null
-      };
-    }
-    return bot;
-  });
-
-  game.set("virtualBots", updatedBots);
-
-  // Set enemy intent for this round based on enemyAttackProbability
+  // Set enemy intents for BOTH turns in this round
   const treatment = game.get("treatment");
   const enemyAttackProbability = treatment.enemyAttackProbability;
-  const intent = Math.random() < enemyAttackProbability ? "WILL_ATTACK" : "WILL_NOT_ATTACK";
-  console.log(`Round ${roundNumber}: Enemy intent set to ${intent} (attack probability: ${enemyAttackProbability})`);
-  round.set("enemyIntent", intent);
+
+  const turn1Intent = Math.random() < enemyAttackProbability ? "WILL_ATTACK" : "WILL_NOT_ATTACK";
+  const turn2Intent = Math.random() < enemyAttackProbability ? "WILL_ATTACK" : "WILL_NOT_ATTACK";
+
+  round.set("turn1Intent", turn1Intent);
+  round.set("turn2Intent", turn2Intent);
+
+  console.log(`Round ${roundNumber}: Turn 1 intent=${turn1Intent}, Turn 2 intent=${turn2Intent}`);
 });
 
 Empirica.onStageStart(({ stage }) => {
   const round = stage.round;
   const game = round.currentGame;
   const stageName = stage.get("name");
+  const stageType = stage.get("stageType");
   const roundNumber = round.get("roundNumber");
-  console.log(`>>> STAGE START: Round ${roundNumber}, Stage: ${stageName}`);
+  console.log(`>>> STAGE START: Round ${roundNumber}, Stage: ${stageName} (type: ${stageType})`);
 
-  // Log player submit states
-  if (stageName === "Reveal") {
-    game.players.forEach((player, idx) => {
-      const submitted = player.stage.get("submit");
-      const playerId = player.get("playerId");
-      console.log(`  Player ${playerId} submit state: ${submitted}`);
-    });
-  }
-
-  // Handle virtual bot role selection during Action Selection stage
-  if (stageName === "Action Selection") {
-    // Auto-submit players with committed roles
-    game.players.forEach(player => {
-      const currentRole = player.get("currentRole");
-      const playerId = player.get("playerId");
-
-      if (currentRole !== null) {
-        // Player has committed role, auto-submit them
-        console.log(`[Server Auto-submit] Player ${playerId} has committed role ${ROLE_NAMES[currentRole]}, auto-submitting`);
-        player.stage.set("submit", true);
-      }
-    });
-
+  if (stageType === "roleSelection") {
+    // Role Selection stage - handle bot role selection
     const virtualBots = game.get("virtualBots") || [];
 
     // Create a new array with updated bots to ensure Empirica detects the change
     const updatedBots = virtualBots.map(bot => {
-      // If bot needs to select a role (commitment expired or first round)
-      if (bot.currentRole === null) {
-        const roleChoice = getBotRoleChoice(bot, roundNumber, game);
-        console.log(`Virtual Bot ${bot.playerId} auto-selected role: ${ROLE_NAMES[roleChoice]}`);
+      const roleChoice = getBotRoleChoice(bot, roundNumber, game);
+      console.log(`Virtual Bot ${bot.playerId} auto-selected role: ${ROLE_NAMES[roleChoice]}`);
 
-        return {
-          ...bot,
-          currentRole: roleChoice,
-          roleStartRound: roundNumber,
-          roleEndRound: roundNumber + ROLE_COMMITMENT_ROUNDS - 1
-        };
-      } else {
-        console.log(`Virtual Bot ${bot.playerId} keeping role: ${ROLE_NAMES[bot.currentRole]}`);
-        return bot;
-      }
+      return {
+        ...bot,
+        currentRole: roleChoice
+      };
     });
 
     game.set("virtualBots", updatedBots);
-  }
 
-  // Empirica automatically advances stages when all players call player.stage.set("submit", true)
-  // No additional logic needed here
-});
+    // Store bot roles for this round
+    round.set("botRoles", updatedBots.map(bot => ({
+      playerId: bot.playerId,
+      role: bot.currentRole
+    })));
+  } else if (stageType === "turn") {
+    // Turn stage - resolve actions immediately so results are available to display
+    const turnNumber = stage.get("turnNumber");
+    console.log(`Turn ${turnNumber} stage starting - resolving actions and showing results for 8 seconds`);
 
-Empirica.onStageEnded(({ stage }) => {
-  const round = stage.round;
-  const game = round.currentGame;
-  const stageName = stage.get("name");
-  const roundNumber = round.get("roundNumber");
-
-  console.log(`<<< STAGE END: Round ${roundNumber}, Stage: ${stageName}`);
-
-  if (stageName === "Action Selection") {
     const treatment = game.get("treatment");
     const gameSeed = game.get("gameSeed");
     const playerDeviateProbability = treatment.playerDeviateProbability;
     const teamHealth = game.get("teamHealth");
     const maxHealth = treatment.maxTeamHealth;
-    const enemyIntent = round.get("enemyIntent");
+    const enemyIntent = round.get(`turn${turnNumber}Intent`);
     const totalPlayers = treatment.totalPlayers;
     const virtualBots = game.get("virtualBots") || [];
-
-    console.log(`[onStageEnded] Retrieved ${virtualBots.length} virtual bots from game state`);
 
     // Build a unified array of all players (real + virtual) indexed by playerId
     const allPlayers = [];
@@ -370,13 +303,11 @@ Empirica.onStageEnded(({ stage }) => {
     game.players.forEach(player => {
       const playerId = player.get("playerId");
       allPlayers[playerId] = { type: "real", player };
-      console.log(`[onStageEnded] Added real player at playerId ${playerId}`);
     });
 
     // Add virtual bots
     virtualBots.forEach(bot => {
       allPlayers[bot.playerId] = { type: "virtual", bot };
-      console.log(`[onStageEnded] Added virtual bot at playerId ${bot.playerId}`);
     });
 
     const actions = [];
@@ -387,39 +318,17 @@ Empirica.onStageEnded(({ stage }) => {
     // Process each player slot
     allPlayers.forEach((entry, playerId) => {
       if (!entry) {
-        console.error(`[onStageEnded] ERROR: No player at playerId ${playerId}! (totalPlayers=${totalPlayers}, virtualBots.length=${virtualBots.length}, game.players.length=${game.players.length})`);
+        console.error(`ERROR: No player at playerId ${playerId}!`);
         return;
       }
-
-      console.log(`[onStageEnded] Processing playerId ${playerId}, type: ${entry.type}`);
 
       let currentRole = null;
       let playerStats = null;
 
       if (entry.type === "real") {
         const player = entry.player;
-        currentRole = player.get("currentRole");
-
-        // Check if player just submitted a new role
-        const submittedRole = player.round.get("selectedRole");
-        if (submittedRole !== null && submittedRole !== undefined) {
-          currentRole = submittedRole;
-
-          // Set 3-round commitment
-          player.set("currentRole", currentRole);
-          player.set("roleStartRound", roundNumber);
-          player.set("roleEndRound", roundNumber + ROLE_COMMITMENT_ROUNDS - 1);
-
-          // Log to role history
-          const roleHistory = player.get("roleHistory") || [];
-          roleHistory.push({
-            round: roundNumber,
-            role: ROLE_NAMES[currentRole],
-            duration: ROLE_COMMITMENT_ROUNDS
-          });
-          player.set("roleHistory", roleHistory);
-        }
-
+        // Get role selected during Role Selection stage
+        currentRole = player.round.get("selectedRole");
         playerStats = player.get("stats");
       } else if (entry.type === "virtual") {
         const bot = entry.bot;
@@ -429,12 +338,12 @@ Empirica.onStageEnded(({ stage }) => {
 
       // Default to FIGHTER if no role (shouldn't happen)
       if (currentRole === null || currentRole === undefined) {
-        console.warn(`Player ${playerId} has no role in round ${roundNumber}, defaulting to FIGHTER`);
+        console.warn(`Player ${playerId} has no role in turn ${turnNumber}, defaulting to FIGHTER`);
         currentRole = ROLES.FIGHTER;
       }
 
       // Convert role to action
-      const rng = seededRandom(gameSeed + roundNumber * 100 + playerId);
+      const rng = seededRandom(gameSeed + roundNumber * 1000 + turnNumber * 100 + playerId);
       const gameState = { enemyIntent, teamHealth, maxHealth, playerDeviateProbability };
       const action = roleToAction(currentRole, gameState, playerStats, rng);
 
@@ -444,24 +353,57 @@ Empirica.onStageEnded(({ stage }) => {
       stats.push(playerStats);
     });
 
-    round.set("actions", actionNames);
-    round.set("roles", roleNames);
+    // Store turn results on the round
+    round.set(`turn${turnNumber}Actions`, actionNames);
+    round.set(`turn${turnNumber}Roles`, roleNames);
 
     // Resolve actions and update health
-    resolveActions(game, round, actions, stats);
+    resolveTurnActions(game, round, turnNumber, actions, stats, enemyIntent);
 
     // Log the results
     const updatedEnemyHealth = game.get("enemyHealth");
     const updatedTeamHealth = game.get("teamHealth");
-    console.log(`After Round ${roundNumber} actions: Enemy HP=${updatedEnemyHealth}, Team HP=${updatedTeamHealth}`);
+    console.log(`After Turn ${turnNumber}: Enemy HP=${updatedEnemyHealth}, Team HP=${updatedTeamHealth}`);
   }
 });
 
-function resolveActions(game, round, actions, stats) {
+Empirica.onStageEnded(({ stage }) => {
+  const round = stage.round;
+  const game = round.currentGame;
+  const stageName = stage.get("name");
+  const stageType = stage.get("stageType");
+  const roundNumber = round.get("roundNumber");
+
+  console.log(`<<< STAGE END: Round ${roundNumber}, Stage: ${stageName} (type: ${stageType})`);
+
+  if (stageType === "roleSelection") {
+    // Role Selection stage ended - store player roles for this round
+    game.players.forEach(player => {
+      const submittedRole = player.round.get("selectedRole");
+      const playerId = player.get("playerId");
+
+      if (submittedRole !== null && submittedRole !== undefined) {
+        // Log to role history
+        const roleHistory = player.get("roleHistory") || [];
+        roleHistory.push({
+          round: roundNumber,
+          role: ROLE_NAMES[submittedRole]
+        });
+        player.set("roleHistory", roleHistory);
+
+        console.log(`Player ${playerId} selected role: ${ROLE_NAMES[submittedRole]}`);
+      } else {
+        console.warn(`Player ${playerId} did not select a role!`);
+      }
+    });
+  }
+  // Turn stages: No action needed here - actions were already resolved in onStageStart
+});
+
+function resolveTurnActions(game, round, turnNumber, actions, stats, enemyIntent) {
   const treatment = game.get("treatment");
   const currentEnemyHealth = game.get("enemyHealth");
   const currentTeamHealth = game.get("teamHealth");
-  const enemyIntent = round.get("enemyIntent");
   const bossDamage = treatment.bossDamage;
   const maxHealth = treatment.maxTeamHealth;
 
@@ -490,7 +432,6 @@ function resolveActions(game, round, actions, stats) {
   });
 
   // Update enemy health (damage dealt by team)
-  // Damage = sum of STR stats
   const damageToEnemy = totalAttack;
   const newEnemyHealth = Math.max(0, currentEnemyHealth - damageToEnemy);
 
@@ -501,29 +442,29 @@ function resolveActions(game, round, actions, stats) {
     damageToTeam = Math.max(0, mitigatedDamage);
   }
 
-  // Healing = sum of SUP stats
   const healAmount = totalHeal;
   const newTeamHealth = Math.max(0, Math.min(maxHealth, currentTeamHealth - damageToTeam + healAmount));
 
-  // Store results in round (including previous values for UI)
-  round.set("previousEnemyHealth", Math.round(currentEnemyHealth));
-  round.set("previousTeamHealth", Math.round(currentTeamHealth));
-  round.set("damageToEnemy", Math.round(damageToEnemy));
-  round.set("damageToTeam", Math.round(damageToTeam));
-  round.set("healAmount", Math.round(healAmount));
-  round.set("newEnemyHealth", Math.round(newEnemyHealth));
-  round.set("newTeamHealth", Math.round(newTeamHealth));
+  // Store results for this turn on the round
+  round.set(`turn${turnNumber}PreviousEnemyHealth`, Math.round(currentEnemyHealth));
+  round.set(`turn${turnNumber}PreviousTeamHealth`, Math.round(currentTeamHealth));
+  round.set(`turn${turnNumber}DamageToEnemy`, Math.round(damageToEnemy));
+  round.set(`turn${turnNumber}DamageToTeam`, Math.round(damageToTeam));
+  round.set(`turn${turnNumber}HealAmount`, Math.round(healAmount));
+  round.set(`turn${turnNumber}NewEnemyHealth`, Math.round(newEnemyHealth));
+  round.set(`turn${turnNumber}NewTeamHealth`, Math.round(newTeamHealth));
 
   // Update game state
   game.set("enemyHealth", Math.round(newEnemyHealth));
   game.set("teamHealth", Math.round(newTeamHealth));
 
-  // Log action history for each REAL player (their own actions)
+  // Log action history for each REAL player
   game.players.forEach((player) => {
     const playerId = player.get("playerId");
     const history = player.get("actionHistory") || [];
     history.push({
       round: round.get("roundNumber"),
+      turn: turnNumber,
       action: ACTION_NAMES[actions[playerId]],
       enemyHealth: Math.round(newEnemyHealth),
       teamHealth: Math.round(newTeamHealth)
@@ -535,6 +476,7 @@ function resolveActions(game, round, actions, stats) {
   const gameHistory = game.get("teamActionHistory") || [];
   gameHistory.push({
     round: round.get("roundNumber"),
+    turn: turnNumber,
     actions: actions.map((action, idx) => ({
       playerId: idx,
       action: ACTION_NAMES[action]

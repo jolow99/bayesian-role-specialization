@@ -24,83 +24,42 @@ function ActionSelection() {
   const [showDamageAnimation, setShowDamageAnimation] = useState(false);
   const [countdown, setCountdown] = useState(null);
 
-  // Cache the last valid data to show during transitions
-  const lastValidDataRef = React.useRef(null);
-
   // Get current data from Empirica
-  // Note: submitted is always read fresh (not cached) since it's stage-specific
   const treatment = game.get("treatment");
   const submitted = player.stage.get("submit");
-  const rawEnemyHealth = game.get("enemyHealth");
-  const rawTeamHealth = game.get("teamHealth");
-  const rawEnemyIntent = round.get("enemyIntent");
-  const rawRoundNumber = round.get("roundNumber");
-  const rawMaxRounds = treatment?.maxRounds;
-  const rawMaxHealth = treatment?.maxTeamHealth;
-  const rawMaxEnemyHealth = treatment?.maxEnemyHealth;
-  const rawCurrentStage = stage.get("name");
-  const rawActions = round.get("actions");
+  const enemyHealth = game.get("enemyHealth");
+  const teamHealth = game.get("teamHealth");
+  const roundNumber = round.get("roundNumber");
+  const maxRounds = treatment?.maxRounds;
+  const maxHealth = treatment?.maxTeamHealth;
+  const maxEnemyHealth = treatment?.maxEnemyHealth;
+  const currentStage = stage.get("name");
+  const stageType = stage.get("stageType");
+  const turnNumber = stage.get("turnNumber");
 
   // Check if we have valid data
-  const hasValidData = rawRoundNumber !== undefined && rawRoundNumber !== null;
-
-  // Use cached data during transitions, or update cache with new valid data
-  let enemyHealth, teamHealth, enemyIntent, roundNumber, maxRounds, maxHealth, maxEnemyHealth, currentStage, isRevealStage, actions;
-
-  if (hasValidData) {
-    // Valid data - use it and update cache
-    enemyHealth = rawEnemyHealth;
-    teamHealth = rawTeamHealth;
-    enemyIntent = rawEnemyIntent;
-    roundNumber = rawRoundNumber;
-    maxRounds = rawMaxRounds;
-    maxHealth = rawMaxHealth;
-    maxEnemyHealth = rawMaxEnemyHealth;
-    currentStage = rawCurrentStage;
-    isRevealStage = currentStage === "Reveal";
-    actions = rawActions || EMPTY_ARRAY;
-
-    // Update cache (note: submitted is NOT cached)
-    lastValidDataRef.current = {
-      enemyHealth, teamHealth, enemyIntent, roundNumber,
-      maxRounds, maxHealth, maxEnemyHealth, currentStage, isRevealStage, actions
-    };
-  } else if (lastValidDataRef.current) {
-    // Invalid data but we have cache - use cached values
-    console.log('[Client] Using cached data during transition');
-    ({ enemyHealth, teamHealth, enemyIntent, roundNumber,
-       maxRounds, maxHealth, maxEnemyHealth, currentStage, isRevealStage, actions } = lastValidDataRef.current);
-  } else {
-    // No valid data and no cache - first render, just return null
-    console.log('[Client] No valid data available yet');
+  if (roundNumber === undefined || roundNumber === null) {
     return null;
   }
 
-  // Get round-specific data (also cache these during transitions)
-  const rawDamageToEnemy = round.get("damageToEnemy");
-  const rawDamageToTeam = round.get("damageToTeam");
-  const rawHealAmount = round.get("healAmount");
-  const rawPreviousEnemyHealth = round.get("previousEnemyHealth");
-  const rawPreviousTeamHealth = round.get("previousTeamHealth");
+  // Determine which turn's data to show based on stage
+  let enemyIntent, actions, damageToEnemy, damageToTeam, healAmount, previousEnemyHealth, previousTeamHealth, roles;
 
-  let damageToEnemy, damageToTeam, healAmount, previousEnemyHealth, previousTeamHealth;
-
-  if (hasValidData) {
-    damageToEnemy = rawDamageToEnemy || 0;
-    damageToTeam = rawDamageToTeam || 0;
-    healAmount = rawHealAmount || 0;
-    previousEnemyHealth = rawPreviousEnemyHealth || enemyHealth;
-    previousTeamHealth = rawPreviousTeamHealth || teamHealth;
-
-    // Add to cache
-    lastValidDataRef.current = {
-      ...lastValidDataRef.current,
-      damageToEnemy, damageToTeam, healAmount, previousEnemyHealth, previousTeamHealth
-    };
-  } else if (lastValidDataRef.current) {
-    ({ damageToEnemy, damageToTeam, healAmount, previousEnemyHealth, previousTeamHealth } = lastValidDataRef.current);
+  if (stageType === "turn") {
+    // Show data for the current turn
+    enemyIntent = round.get(`turn${turnNumber}Intent`);
+    actions = round.get(`turn${turnNumber}Actions`) || EMPTY_ARRAY;
+    roles = round.get(`turn${turnNumber}Roles`) || EMPTY_ARRAY;
+    damageToEnemy = round.get(`turn${turnNumber}DamageToEnemy`) || 0;
+    damageToTeam = round.get(`turn${turnNumber}DamageToTeam`) || 0;
+    healAmount = round.get(`turn${turnNumber}HealAmount`) || 0;
+    previousEnemyHealth = round.get(`turn${turnNumber}PreviousEnemyHealth`) || enemyHealth;
+    previousTeamHealth = round.get(`turn${turnNumber}PreviousTeamHealth`) || teamHealth;
   } else {
-    // Defaults for first render
+    // Role selection stage - no turn data yet
+    enemyIntent = null;
+    actions = EMPTY_ARRAY;
+    roles = EMPTY_ARRAY;
     damageToEnemy = 0;
     damageToTeam = 0;
     healAmount = 0;
@@ -108,190 +67,88 @@ function ActionSelection() {
     previousTeamHealth = teamHealth;
   }
 
-  // Role commitment state
-  const currentRole = player.get("currentRole");
-  const roleEndRound = player.get("roleEndRound");
-  const isRoleCommitted = currentRole !== null;
-  const roundsRemaining = isRoleCommitted ? (roleEndRound - roundNumber + 1) : 0;
+  // Determine if this is a turn stage (showing results)
+  const isTurnStage = stageType === "turn";
+  const isRoleSelectionStage = stageType === "roleSelection";
 
   // Debug logging
-  console.log(`[Client RENDER] hasValidData: ${hasValidData}`);
-  console.log(`[Client RENDER] Round ${roundNumber}, Stage: ${currentStage}, isRevealStage: ${isRevealStage}, submitted: ${submitted}`);
+  console.log(`[Client RENDER] Round ${roundNumber}, Stage: ${currentStage}, Type: ${stageType}, Turn: ${turnNumber}`);
   console.log(`[Client RENDER] Enemy HP: ${enemyHealth}, Team HP: ${teamHealth}`);
-  console.log(`[Client RENDER] isRoleCommitted: ${isRoleCommitted}, currentRole: ${currentRole}, roleEndRound: ${roleEndRound}`);
-  console.log(`[Client RENDER] UI: waiting=${(submitted || isRoleCommitted) && !isRevealStage}, actionMenu=${!submitted && !isRevealStage && !isRoleCommitted}, reveal=${isRevealStage}`);
+  console.log(`[Client RENDER] submitted: ${submitted}, isRoleSelectionStage: ${isRoleSelectionStage}, isTurnStage: ${isTurnStage}`);
 
-  // Debug: Track round changes and component lifecycle
-  const prevRoundRef = React.useRef(null);
-  const mountTimeRef = React.useRef(Date.now());
-
-  // // Don't render during round transition if we don't have valid round data
-  // if (roundNumber === undefined || roundNumber === null) {
-  //   return null;
-  // }
-
+  // Trigger damage animation during turn stages
   useEffect(() => {
-    console.log(`[COMPONENT MOUNTED] at ${Date.now()}, mountTime: ${mountTimeRef.current}`);
-    return () => {
-      console.log(`[COMPONENT UNMOUNTING]`);
-    };
-  }, []); // Empty deps = runs on mount/unmount only
-
-  useEffect(() => {
-    if (hasValidData && prevRoundRef.current !== roundNumber) {
-      console.log(`[CLIENT ROUND CHANGE] ${prevRoundRef.current} → ${roundNumber}`);
-      prevRoundRef.current = roundNumber;
-    }
-  }, [roundNumber, hasValidData]);
-
-  // Auto-submit is now handled server-side in callbacks.js onStageStart
-  // Server auto-submits players with committed roles when Action Selection stage starts
-
-  // Trigger damage animation during reveal
-  useEffect(() => {
-    // Don't run effects during data transitions
-    if (!hasValidData) return;
-
-    if (isRevealStage) {
+    if (isTurnStage) {
       setShowDamageAnimation(true);
-      const timer = setTimeout(() => setShowDamageAnimation(false), 12000); // Extended to 12 seconds for 15-second reveal
+      const timer = setTimeout(() => setShowDamageAnimation(false), 7000); // Show animation for 7 seconds of the 8-second turn
       return () => clearTimeout(timer);
     }
-  }, [isRevealStage, roundNumber, hasValidData]);
+  }, [isTurnStage, turnNumber, roundNumber]);
 
-  // Auto-submit after reveal stage duration (15 seconds)
+  // Countdown timer for the last 3 seconds of turn stage
   useEffect(() => {
-    // Don't run effects during data transitions
-    if (!hasValidData) return;
-
-    if (isRevealStage && !submitted) {
-      console.log(`[Reveal] Auto-submitting after 15 seconds`);
-      const timer = setTimeout(() => {
-        console.log(`[Reveal] NOW submitting`);
-        player.stage.set("submit", true);
-      }, 15000); // Submit after 15 seconds
-      return () => clearTimeout(timer);
-    }
-  }, [isRevealStage, submitted, player, hasValidData]);
-
-  // Countdown timer for the last 5 seconds of reveal
-  useEffect(() => {
-    // Don't run effects during data transitions
-    if (!hasValidData) return;
-
-    if (isRevealStage) {
-      // Start countdown at 10 seconds (showing countdown for last 5 seconds)
+    if (isTurnStage) {
+      // Start countdown at 5 seconds (showing countdown for last 3 seconds)
       const countdownStart = setTimeout(() => {
-        setCountdown(5);
-      }, 10000);
+        setCountdown(3);
+      }, 5000);
 
       return () => clearTimeout(countdownStart);
     } else {
       setCountdown(null);
     }
-  }, [isRevealStage, roundNumber, hasValidData]);
+  }, [isTurnStage, turnNumber, roundNumber]);
 
   // Update countdown every second
   useEffect(() => {
-    // Don't run effects during data transitions
-    if (!hasValidData) return;
-
     if (countdown !== null && countdown > 0) {
       const timer = setTimeout(() => {
         setCountdown(countdown - 1);
       }, 1000);
       return () => clearTimeout(timer);
     }
-  }, [countdown, hasValidData]);
+  }, [countdown]);
 
   const handleRoleSelect = useCallback((role) => {
-    if (!submitted && !isRoleCommitted) {
+    if (!submitted && isRoleSelectionStage) {
       setSelectedRole(role);
     }
-  }, [submitted, isRoleCommitted]);
+  }, [submitted, isRoleSelectionStage]);
 
   const handleSubmit = useCallback(() => {
-    if (!submitted) {
-      if (!isRoleCommitted && selectedRole !== null) {
-        // New role selection
-        player.round.set("selectedRole", selectedRole);
-      }
-      // Always submit (whether role is committed or newly selected)
+    if (!submitted && selectedRole !== null) {
+      // Store the selected role for this round
+      player.round.set("selectedRole", selectedRole);
       player.stage.set("submit", true);
     }
-  }, [submitted, isRoleCommitted, selectedRole, player]);
+  }, [submitted, selectedRole, player]);
 
   // Get virtual bots from game state
   const virtualBots = game.get("virtualBots") || EMPTY_ARRAY;
   const totalPlayers = treatment?.totalPlayers;
 
-  // Build unified player array (real + virtual) - fully cached for stability
-  // Cache both the array AND the individual player objects to prevent any re-renders
-  const allPlayersRef = React.useRef(null);
-  const playerEntriesRef = React.useRef({});
+  // Build unified player array (real + virtual)
+  const allPlayers = new Array(totalPlayers).fill(null);
 
-  // Build current player array using Array constructor for stability
-  const currentPlayers = new Array(totalPlayers).fill(null);
-
-  // Add real players - reuse cached entry if player object is the same
+  // Add real players
   players.forEach(p => {
     const playerId = p.get("playerId");
-    const cacheKey = `real-${playerId}`;
-    const cached = playerEntriesRef.current[cacheKey];
-
-    // CRITICAL: Only reuse if the actual player object is the same
-    if (cached && cached.player === p) {
-      currentPlayers[playerId] = cached;  // Reuse exact same object reference
-    } else {
-      const newEntry = { type: "real", player: p, playerId };
-      currentPlayers[playerId] = newEntry;
-      playerEntriesRef.current[cacheKey] = newEntry;
-    }
+    allPlayers[playerId] = { type: "real", player: p, playerId };
   });
 
-  // Add virtual bots - deep compare stats, reuse if match
+  // Add virtual bots
   virtualBots.forEach(bot => {
-    const cacheKey = `virtual-${bot.playerId}`;
-    const cached = playerEntriesRef.current[cacheKey];
-
-    // Deep compare bot object (check if stats and role state are the same)
-    const botMatches = cached && cached.bot &&
-      cached.bot.playerId === bot.playerId &&
-      cached.bot.currentRole === bot.currentRole &&
-      cached.bot.roleEndRound === bot.roleEndRound &&  // FIX: was missing, causing cache misses
-      cached.bot.stats.STR === bot.stats.STR &&
-      cached.bot.stats.DEF === bot.stats.DEF &&
-      cached.bot.stats.SUP === bot.stats.SUP;
-
-    if (botMatches) {
-      currentPlayers[bot.playerId] = cached;  // Reuse exact same object reference
-    } else {
-      const newEntry = { type: "virtual", bot, playerId: bot.playerId };
-      currentPlayers[bot.playerId] = newEntry;
-      playerEntriesRef.current[cacheKey] = newEntry;
-    }
+    allPlayers[bot.playerId] = { type: "virtual", bot, playerId: bot.playerId };
   });
-
-  // Only update ref if structure actually changed (check entry identity)
-  const playersChanged = !allPlayersRef.current ||
-    allPlayersRef.current.length !== currentPlayers.length ||
-    allPlayersRef.current.some((entry, idx) => entry !== currentPlayers[idx]);
-
-  if (playersChanged) {
-    console.log(`[DEBUG] Player array structure changed, updating ref`);
-    allPlayersRef.current = currentPlayers;
-  }
-
-  const allPlayers = allPlayersRef.current;
 
   // Determine which UI to show based on state
   let currentUI;
-  if (isRevealStage) {
-    currentUI = 'reveal';
-  } else if (submitted || isRoleCommitted) {
+  if (isTurnStage) {
+    currentUI = 'turnResults';
+  } else if (submitted) {
     currentUI = 'waiting';
   } else {
-    currentUI = 'actionMenu';
+    currentUI = 'roleSelection';
   }
 
   return (
@@ -302,9 +159,9 @@ function ActionSelection() {
           {/* Round Header - Fixed height */}
           <div className="bg-gray-800 text-white text-center flex-shrink-0" style={{ height: '60px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
             <h1 className="text-xl font-bold">Round {roundNumber}/{maxRounds}</h1>
-            {isRoleCommitted && (
-              <p className="text-xs text-yellow-300">
-                Role: {["Fighter", "Tank", "Healer"][currentRole]} ({roundsRemaining} rounds left)
+            {isTurnStage && (
+              <p className="text-xs text-blue-300">
+                Turn {turnNumber} of 2
               </p>
             )}
           </div>
@@ -317,7 +174,7 @@ function ActionSelection() {
               teamHealth={teamHealth}
               maxHealth={maxHealth}
               enemyIntent={enemyIntent}
-              isRevealStage={isRevealStage}
+              isRevealStage={isTurnStage}
               showDamageAnimation={showDamageAnimation}
               damageToEnemy={damageToEnemy}
               damageToTeam={damageToTeam}
@@ -328,26 +185,25 @@ function ActionSelection() {
             />
           </div>
 
-          {/* Battle Results (during Reveal) or Action Menu (during Action Selection) - Fixed height */}
+          {/* Role Selection or Turn Results - Fixed height */}
           <div className="bg-white border-t-4 border-gray-700 flex-shrink-0 relative" style={{ height: '240px' }}>
             <div className="p-4 h-full overflow-auto">
-              {/* Conditional rendering instead of opacity toggling */}
+              {/* Waiting for other players after submitting role */}
               {currentUI === 'waiting' && (
                 <div className="text-center py-6">
                   <div className="text-4xl mb-3">⏳</div>
                   <div className="text-lg font-bold text-gray-700 mb-2">Waiting for other players...</div>
                   <div className="text-gray-500 text-sm">
-                    {isRoleCommitted
-                      ? `Your role: ${["Fighter", "Tank", "Healer"][currentRole]} (${roundsRemaining} rounds remaining)`
-                      : selectedRole !== null ? `Your role: ${["Fighter", "Tank", "Healer"][selectedRole]}` : ''
-                    }
+                    {selectedRole !== null && `Your selected role: ${["Fighter", "Tank", "Healer"][selectedRole]}`}
                   </div>
                 </div>
               )}
 
-              {currentUI === 'reveal' && (
+              {/* Turn Results - showing what happened in this turn */}
+              {currentUI === 'turnResults' && (
                 <ResultsPanel
                   roundNumber={roundNumber}
+                  turnNumber={turnNumber}
                   enemyHealth={enemyHealth}
                   previousEnemyHealth={previousEnemyHealth}
                   damageToEnemy={damageToEnemy}
@@ -363,14 +219,15 @@ function ActionSelection() {
                 />
               )}
 
-              {currentUI === 'actionMenu' && (
+              {/* Role Selection Menu */}
+              {currentUI === 'roleSelection' && (
                 <ActionMenu
                   selectedRole={selectedRole}
                   onRoleSelect={handleRoleSelect}
                   onSubmit={handleSubmit}
-                  isRoleCommitted={isRoleCommitted}
-                  currentRole={currentRole}
-                  roundsRemaining={roundsRemaining}
+                  isRoleCommitted={false}
+                  currentRole={null}
+                  roundsRemaining={0}
                   submitted={submitted}
                 />
               )}
