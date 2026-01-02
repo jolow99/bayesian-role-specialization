@@ -23,10 +23,11 @@ function ActionSelection() {
   const [selectedRole, setSelectedRole] = useState(null);
   const [showDamageAnimation, setShowDamageAnimation] = useState(false);
   const [countdown, setCountdown] = useState(null);
+  const [localSubmitted, setLocalSubmitted] = useState(false); // Local state to immediately show waiting screen
 
   // Get current data from Empirica
   const treatment = game.get("treatment");
-  const submitted = player.stage.get("submit");
+  const submitted = player.stage.get("submit") || localSubmitted; // Use local state during delay period
   const enemyHealth = game.get("enemyHealth");
   const teamHealth = game.get("teamHealth");
   const roundNumber = round.get("roundNumber");
@@ -76,6 +77,11 @@ function ActionSelection() {
   console.log(`[Client RENDER] Enemy HP: ${enemyHealth}, Team HP: ${teamHealth}`);
   console.log(`[Client RENDER] submitted: ${submitted}, isRoleSelectionStage: ${isRoleSelectionStage}, isTurnStage: ${isTurnStage}`);
 
+  // Reset local submitted state when moving to a new round or stage type changes
+  useEffect(() => {
+    setLocalSubmitted(false);
+  }, [roundNumber, stageType]);
+
   // Trigger damage animation during turn stages
   useEffect(() => {
     if (isTurnStage) {
@@ -117,9 +123,20 @@ function ActionSelection() {
 
   const handleSubmit = useCallback(() => {
     if (!submitted && selectedRole !== null) {
-      // Store the selected role for this round
+      // Add random delay (1-10 seconds) to prevent humans from detecting bots by response time
+      const randomDelay = Math.floor(Math.random() * 9000) + 1000; // 1000-10000ms
+      console.log(`Adding ${randomDelay}ms delay before submitting role to mask bot response times`);
+
+      // Store the selected role immediately so UI updates
       player.round.set("selectedRole", selectedRole);
-      player.stage.set("submit", true);
+
+      // Set local state to immediately show waiting screen
+      setLocalSubmitted(true);
+
+      // Delay the submit to mask bot response times
+      setTimeout(() => {
+        player.stage.set("submit", true);
+      }, randomDelay);
     }
   }, [submitted, selectedRole, player]);
 
