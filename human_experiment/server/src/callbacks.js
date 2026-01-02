@@ -325,6 +325,18 @@ Empirica.onStageStart(({ stage }) => {
 
   // Handle virtual bot role selection during Action Selection stage
   if (stageName === "Action Selection") {
+    // Auto-submit players with committed roles
+    game.players.forEach(player => {
+      const currentRole = player.get("currentRole");
+      const playerId = player.get("playerId");
+
+      if (currentRole !== null) {
+        // Player has committed role, auto-submit them
+        console.log(`[Server Auto-submit] Player ${playerId} has committed role ${ROLE_NAMES[currentRole]}, auto-submitting`);
+        player.stage.set("submit", true);
+      }
+    });
+
     const virtualBots = game.get("virtualBots") || [];
 
     // Create a new array with updated bots to ensure Empirica detects the change

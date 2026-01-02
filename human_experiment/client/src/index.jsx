@@ -8,8 +8,6 @@ import "./index.css";
 
 const container = document.getElementById("root");
 const root = createRoot(container); // createRoot(container!) if you use TypeScript
-root.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>
-);
+// Strict Mode disabled to reduce double-renders in development
+// Note: This only affects development builds, production is unaffected
+root.render(<App />);

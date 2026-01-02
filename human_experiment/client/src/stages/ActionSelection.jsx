@@ -1,13 +1,19 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { usePlayer, useGame, useRound, usePlayers, useStage } from "@empirica/core/player/classic/react";
-import { RoleButton } from "../components/RoleButton";
-import { HealthBar } from "../components/HealthBar";
-import { PlayerStats } from "../components/PlayerStats";
+import { BattleField } from "../components/BattleField";
+import { ActionMenu } from "../components/ActionMenu";
+import { ResultsPanel } from "../components/ResultsPanel";
 import { ActionHistory } from "../components/ActionHistory";
 
 const ROLES = { FIGHTER: 0, TANK: 1, HEALER: 2 };
+const EMPTY_ARRAY = []; // Stable reference to prevent unnecessary re-renders
 
-export function ActionSelection() {
+let renderCount = 0;
+
+function ActionSelection() {
+  renderCount++;
+  console.log(`[RENDER #${renderCount}] ActionSelection component rendering`);
+
   const player = usePlayer();
   const players = usePlayers();
   const game = useGame();
@@ -18,30 +24,88 @@ export function ActionSelection() {
   const [showDamageAnimation, setShowDamageAnimation] = useState(false);
   const [countdown, setCountdown] = useState(null);
 
+  // Cache the last valid data to show during transitions
+  const lastValidDataRef = React.useRef(null);
+
+  // Get current data from Empirica
+  // Note: submitted is always read fresh (not cached) since it's stage-specific
   const submitted = player.stage.get("submit");
-  const enemyHealth = game.get("enemyHealth") || 20;
-  const teamHealth = game.get("teamHealth") || 10;
-  const enemyIntent = round.get("enemyIntent");
-  const roundNumber = round.get("roundNumber");
-  const maxRounds = game.get("maxRounds");
-  const maxHealth = game.get("maxHealth") || 10;
-  const maxEnemyHealth = game.get("maxEnemyHealth") || 20;
-  const currentStage = stage.get("name");
-  const isRevealStage = currentStage === "Reveal";
-  const actions = round.get("actions") || [];
+  const rawEnemyHealth = game.get("enemyHealth");
+  const rawTeamHealth = game.get("teamHealth");
+  const rawEnemyIntent = round.get("enemyIntent");
+  const rawRoundNumber = round.get("roundNumber");
+  const rawMaxRounds = game.get("maxRounds");
+  const rawMaxHealth = game.get("maxHealth");
+  const rawMaxEnemyHealth = game.get("maxEnemyHealth");
+  const rawCurrentStage = stage.get("name");
+  const rawActions = round.get("actions");
 
-  console.log(`[Client] Round ${roundNumber}, Stage: ${currentStage}, isRevealStage: ${isRevealStage}, submitted: ${submitted}`);
-  const damageToEnemy = round.get("damageToEnemy") || 0;
-  const damageToTeam = round.get("damageToTeam") || 0;
-  const healAmount = round.get("healAmount") || 0;
-  const previousEnemyHealth = round.get("previousEnemyHealth") || enemyHealth;
-  const previousTeamHealth = round.get("previousTeamHealth") || teamHealth;
+  // Check if we have valid data
+  const hasValidData = rawRoundNumber !== undefined && rawRoundNumber !== null;
 
-  const actionIcons = {
-    ATTACK: "⚔️",
-    DEFEND: "🛡️",
-    HEAL: "💚"
-  };
+  // Use cached data during transitions, or update cache with new valid data
+  let enemyHealth, teamHealth, enemyIntent, roundNumber, maxRounds, maxHealth, maxEnemyHealth, currentStage, isRevealStage, actions;
+
+  if (hasValidData) {
+    // Valid data - use it and update cache
+    enemyHealth = rawEnemyHealth ?? 20;
+    teamHealth = rawTeamHealth ?? 10;
+    enemyIntent = rawEnemyIntent;
+    roundNumber = rawRoundNumber;
+    maxRounds = rawMaxRounds;
+    maxHealth = rawMaxHealth ?? 10;
+    maxEnemyHealth = rawMaxEnemyHealth ?? 20;
+    currentStage = rawCurrentStage;
+    isRevealStage = currentStage === "Reveal";
+    actions = rawActions || EMPTY_ARRAY;
+
+    // Update cache (note: submitted is NOT cached)
+    lastValidDataRef.current = {
+      enemyHealth, teamHealth, enemyIntent, roundNumber,
+      maxRounds, maxHealth, maxEnemyHealth, currentStage, isRevealStage, actions
+    };
+  } else if (lastValidDataRef.current) {
+    // Invalid data but we have cache - use cached values
+    console.log('[Client] Using cached data during transition');
+    ({ enemyHealth, teamHealth, enemyIntent, roundNumber,
+       maxRounds, maxHealth, maxEnemyHealth, currentStage, isRevealStage, actions } = lastValidDataRef.current);
+  } else {
+    // No valid data and no cache - first render, just return null
+    console.log('[Client] No valid data available yet');
+    return null;
+  }
+
+  // Get round-specific data (also cache these during transitions)
+  const rawDamageToEnemy = round.get("damageToEnemy");
+  const rawDamageToTeam = round.get("damageToTeam");
+  const rawHealAmount = round.get("healAmount");
+  const rawPreviousEnemyHealth = round.get("previousEnemyHealth");
+  const rawPreviousTeamHealth = round.get("previousTeamHealth");
+
+  let damageToEnemy, damageToTeam, healAmount, previousEnemyHealth, previousTeamHealth;
+
+  if (hasValidData) {
+    damageToEnemy = rawDamageToEnemy || 0;
+    damageToTeam = rawDamageToTeam || 0;
+    healAmount = rawHealAmount || 0;
+    previousEnemyHealth = rawPreviousEnemyHealth || enemyHealth;
+    previousTeamHealth = rawPreviousTeamHealth || teamHealth;
+
+    // Add to cache
+    lastValidDataRef.current = {
+      ...lastValidDataRef.current,
+      damageToEnemy, damageToTeam, healAmount, previousEnemyHealth, previousTeamHealth
+    };
+  } else if (lastValidDataRef.current) {
+    ({ damageToEnemy, damageToTeam, healAmount, previousEnemyHealth, previousTeamHealth } = lastValidDataRef.current);
+  } else {
+    // Defaults for first render
+    damageToEnemy = 0;
+    damageToTeam = 0;
+    healAmount = 0;
+    previousEnemyHealth = enemyHealth;
+    previousTeamHealth = teamHealth;
+  }
 
   // Role commitment state
   const currentRole = player.get("currentRole");
@@ -49,33 +113,56 @@ export function ActionSelection() {
   const isRoleCommitted = currentRole !== null;
   const roundsRemaining = isRoleCommitted ? (roleEndRound - roundNumber + 1) : 0;
 
-  // Auto-submit based on stage and role commitment
-  useEffect(() => {
-    console.log(`[Auto-submit effect] isRoleCommitted: ${isRoleCommitted}, submitted: ${submitted}, isRevealStage: ${isRevealStage}`);
-    if (submitted || isRevealStage) return;
+  // Debug logging
+  console.log(`[Client RENDER] hasValidData: ${hasValidData}`);
+  console.log(`[Client RENDER] Round ${roundNumber}, Stage: ${currentStage}, isRevealStage: ${isRevealStage}, submitted: ${submitted}`);
+  console.log(`[Client RENDER] Enemy HP: ${enemyHealth}, Team HP: ${teamHealth}`);
+  console.log(`[Client RENDER] isRoleCommitted: ${isRoleCommitted}, currentRole: ${currentRole}, roleEndRound: ${roleEndRound}`);
+  console.log(`[Client RENDER] UI: waiting=${(submitted || isRoleCommitted) && !isRevealStage}, actionMenu=${!submitted && !isRevealStage && !isRoleCommitted}, reveal=${isRevealStage}`);
 
-    // Auto-submit when role is committed (instant to avoid UI flash)
-    if (isRoleCommitted) {
-      console.log(`[Auto-submit] Setting submit=true immediately`);
-      const timer = setTimeout(() => {
-        console.log(`[Auto-submit] NOW setting submit=true`);
-        player.stage.set("submit", true);
-      }, 0); // Instant submit to prevent UI flash
-      return () => clearTimeout(timer);
+  // Debug: Track round changes and component lifecycle
+  const prevRoundRef = React.useRef(null);
+  const mountTimeRef = React.useRef(Date.now());
+
+  // // Don't render during round transition if we don't have valid round data
+  // if (roundNumber === undefined || roundNumber === null) {
+  //   return null;
+  // }
+
+  useEffect(() => {
+    console.log(`[COMPONENT MOUNTED] at ${Date.now()}, mountTime: ${mountTimeRef.current}`);
+    return () => {
+      console.log(`[COMPONENT UNMOUNTING]`);
+    };
+  }, []); // Empty deps = runs on mount/unmount only
+
+  useEffect(() => {
+    if (hasValidData && prevRoundRef.current !== roundNumber) {
+      console.log(`[CLIENT ROUND CHANGE] ${prevRoundRef.current} → ${roundNumber}`);
+      prevRoundRef.current = roundNumber;
     }
-  }, [isRoleCommitted, submitted, isRevealStage, player]);
+  }, [roundNumber, hasValidData]);
+
+  // Auto-submit is now handled server-side in callbacks.js onStageStart
+  // Server auto-submits players with committed roles when Action Selection stage starts
 
   // Trigger damage animation during reveal
   useEffect(() => {
+    // Don't run effects during data transitions
+    if (!hasValidData) return;
+
     if (isRevealStage) {
       setShowDamageAnimation(true);
       const timer = setTimeout(() => setShowDamageAnimation(false), 12000); // Extended to 12 seconds for 15-second reveal
       return () => clearTimeout(timer);
     }
-  }, [isRevealStage, roundNumber]);
+  }, [isRevealStage, roundNumber, hasValidData]);
 
   // Auto-submit after reveal stage duration (15 seconds)
   useEffect(() => {
+    // Don't run effects during data transitions
+    if (!hasValidData) return;
+
     if (isRevealStage && !submitted) {
       console.log(`[Reveal] Auto-submitting after 15 seconds`);
       const timer = setTimeout(() => {
@@ -84,10 +171,13 @@ export function ActionSelection() {
       }, 15000); // Submit after 15 seconds
       return () => clearTimeout(timer);
     }
-  }, [isRevealStage, submitted, player]);
+  }, [isRevealStage, submitted, player, hasValidData]);
 
   // Countdown timer for the last 5 seconds of reveal
   useEffect(() => {
+    // Don't run effects during data transitions
+    if (!hasValidData) return;
+
     if (isRevealStage) {
       // Start countdown at 10 seconds (showing countdown for last 5 seconds)
       const countdownStart = setTimeout(() => {
@@ -98,25 +188,28 @@ export function ActionSelection() {
     } else {
       setCountdown(null);
     }
-  }, [isRevealStage, roundNumber]);
+  }, [isRevealStage, roundNumber, hasValidData]);
 
   // Update countdown every second
   useEffect(() => {
+    // Don't run effects during data transitions
+    if (!hasValidData) return;
+
     if (countdown !== null && countdown > 0) {
       const timer = setTimeout(() => {
         setCountdown(countdown - 1);
       }, 1000);
       return () => clearTimeout(timer);
     }
-  }, [countdown]);
+  }, [countdown, hasValidData]);
 
-  const handleRoleSelect = (role) => {
+  const handleRoleSelect = useCallback((role) => {
     if (!submitted && !isRoleCommitted) {
       setSelectedRole(role);
     }
-  };
+  }, [submitted, isRoleCommitted]);
 
-  const handleSubmit = () => {
+  const handleSubmit = useCallback(() => {
     if (!submitted) {
       if (!isRoleCommitted && selectedRole !== null) {
         // New role selection
@@ -125,385 +218,194 @@ export function ActionSelection() {
       // Always submit (whether role is committed or newly selected)
       player.stage.set("submit", true);
     }
-  };
+  }, [submitted, isRoleCommitted, selectedRole, player]);
 
   // Get virtual bots from game state
-  const virtualBots = game.get("virtualBots") || [];
+  const virtualBots = game.get("virtualBots") || EMPTY_ARRAY;
   const totalPlayers = game.get("totalPlayers") || 3;
 
-  // Build unified player array (real + virtual)
-  const allPlayers = [];
-  for (let i = 0; i < totalPlayers; i++) {
-    allPlayers[i] = null;
-  }
+  // Build unified player array (real + virtual) - fully cached for stability
+  // Cache both the array AND the individual player objects to prevent any re-renders
+  const allPlayersRef = React.useRef(null);
+  const playerEntriesRef = React.useRef({});
 
-  // Add real players
+  // Build current player array using Array constructor for stability
+  const currentPlayers = new Array(totalPlayers).fill(null);
+
+  // Add real players - reuse cached entry if player object is the same
   players.forEach(p => {
     const playerId = p.get("playerId");
-    allPlayers[playerId] = { type: "real", player: p, playerId };
-  });
+    const cacheKey = `real-${playerId}`;
+    const cached = playerEntriesRef.current[cacheKey];
 
-  // Add virtual bots
-  virtualBots.forEach(bot => {
-    allPlayers[bot.playerId] = { type: "virtual", bot, playerId: bot.playerId };
-  });
-
-  // DEBUG: Log player count and info
-  console.log(`[DEBUG] Total players: ${allPlayers.length}`);
-  allPlayers.forEach((entry, idx) => {
-    if (entry) {
-      console.log(`[DEBUG] Player ${idx}: type=${entry.type}, playerId=${entry.playerId}`);
+    // CRITICAL: Only reuse if the actual player object is the same
+    if (cached && cached.player === p) {
+      currentPlayers[playerId] = cached;  // Reuse exact same object reference
+    } else {
+      const newEntry = { type: "real", player: p, playerId };
+      currentPlayers[playerId] = newEntry;
+      playerEntriesRef.current[cacheKey] = newEntry;
     }
   });
 
+  // Add virtual bots - deep compare stats, reuse if match
+  virtualBots.forEach(bot => {
+    const cacheKey = `virtual-${bot.playerId}`;
+    const cached = playerEntriesRef.current[cacheKey];
+
+    // Deep compare bot object (check if stats and role state are the same)
+    const botMatches = cached && cached.bot &&
+      cached.bot.playerId === bot.playerId &&
+      cached.bot.currentRole === bot.currentRole &&
+      cached.bot.roleEndRound === bot.roleEndRound &&  // FIX: was missing, causing cache misses
+      cached.bot.stats.STR === bot.stats.STR &&
+      cached.bot.stats.DEF === bot.stats.DEF &&
+      cached.bot.stats.SUP === bot.stats.SUP;
+
+    if (botMatches) {
+      currentPlayers[bot.playerId] = cached;  // Reuse exact same object reference
+    } else {
+      const newEntry = { type: "virtual", bot, playerId: bot.playerId };
+      currentPlayers[bot.playerId] = newEntry;
+      playerEntriesRef.current[cacheKey] = newEntry;
+    }
+  });
+
+  // Only update ref if structure actually changed (check entry identity)
+  const playersChanged = !allPlayersRef.current ||
+    allPlayersRef.current.length !== currentPlayers.length ||
+    allPlayersRef.current.some((entry, idx) => entry !== currentPlayers[idx]);
+
+  if (playersChanged) {
+    console.log(`[DEBUG] Player array structure changed, updating ref`);
+    allPlayersRef.current = currentPlayers;
+  }
+
+  const allPlayers = allPlayersRef.current;
+
+  // Determine which UI to show based on state
+  let currentUI;
+  if (isRevealStage) {
+    currentUI = 'reveal';
+  } else if (submitted || isRoleCommitted) {
+    currentUI = 'waiting';
+  } else {
+    currentUI = 'actionMenu';
+  }
+
   return (
-    <div className="w-full h-full bg-gradient-to-b from-blue-400 to-blue-600 flex items-center justify-center p-4 transition-all duration-300">
-      <div className="w-full max-w-6xl transition-all duration-300">
+    <div className="fixed inset-0 bg-gradient-to-b from-blue-400 to-blue-600 flex items-center justify-center p-4">
+      <div className="w-full max-w-6xl" style={{ height: 'calc(100vh - 32px)' }}>
         {/* Battle Screen */}
-        <div className="bg-white rounded-lg shadow-2xl overflow-hidden border-4 border-gray-800">
-          {/* Round Header */}
-          <div className="bg-gray-800 text-white text-center py-3">
-            <h1 className="text-2xl font-bold">Round {roundNumber}/{maxRounds}</h1>
+        <div className="bg-white rounded-lg shadow-2xl border-4 border-gray-800 h-full flex flex-col">
+          {/* Round Header - Fixed height */}
+          <div className="bg-gray-800 text-white text-center flex-shrink-0" style={{ height: '60px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+            <h1 className="text-xl font-bold">Round {roundNumber}/{maxRounds}</h1>
             {isRoleCommitted && (
-              <p className="text-sm text-yellow-300">
+              <p className="text-xs text-yellow-300">
                 Role: {["Fighter", "Tank", "Healer"][currentRole]} ({roundsRemaining} rounds left)
               </p>
             )}
           </div>
 
-          {/* Battle Field */}
-          <div className="bg-gradient-to-b from-green-200 to-green-300 p-8 relative" style={{ minHeight: '400px' }}>
-            {/* Enemy Side (Top Right) */}
-            <div className="absolute top-8 right-16 flex flex-col items-center">
-              <div className="relative">
-                {/* Enemy action icon (if reveal stage) */}
-                {isRevealStage && (
-                  <div className="text-5xl mb-2 animate-bounce">
-                    {enemyIntent === "WILL_ATTACK" ? "⚔️" : "😴"}
-                  </div>
-                )}
-                <div className="text-9xl mb-4">👹</div>
-                {/* Damage animation */}
-                {isRevealStage && damageToEnemy > 0 && showDamageAnimation && (
-                  <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 text-3xl font-bold text-red-600 animate-bounce">
-                    -{damageToEnemy}
-                  </div>
-                )}
-              </div>
-              {/* Enemy health bar below */}
-              <div className="w-64">
-                <HealthBar label="" current={enemyHealth} max={maxEnemyHealth} color="red" />
-              </div>
-            </div>
-
-            {/* Team Side (Bottom Left) */}
-            <div className="absolute bottom-8 left-16 flex flex-col items-center">
-              <div className="flex items-end justify-center gap-6 mb-4">
-                {/* Sort players: left teammate, YOU (center), right teammate */}
-                {allPlayers
-                  .map((entry, playerId) => ({ entry, playerId }))
-                  .filter(({ entry }) => entry !== null)
-                  .sort((a, b) => {
-                    const aIsYou = a.entry.type === "real" && a.entry.player.id === player.id;
-                    const bIsYou = b.entry.type === "real" && b.entry.player.id === player.id;
-                    if (aIsYou) return 0; // YOU in middle
-                    if (bIsYou) return 0;
-                    // Others: maintain relative order
-                    return a.playerId - b.playerId;
-                  })
-                  .map(({ entry, playerId }, sortedIdx) => {
-                    const isCurrentPlayer = entry.type === "real" && entry.player.id === player.id;
-                    const stats = entry.type === "real" ? entry.player.get("stats") : entry.bot.stats;
-                    const size = isCurrentPlayer ? "text-7xl" : "text-5xl";
-
-                    // Determine order: left, center (YOU), right
-                    let orderClass = '';
-                    if (isCurrentPlayer) {
-                      orderClass = 'order-2';
-                    } else if (sortedIdx === 0) {
-                      orderClass = 'order-1';
-                    } else {
-                      orderClass = 'order-3';
-                    }
-
-                    const maxStat = 6; // Stats sum to 6
-
-                    return (
-                      <div key={playerId} className={`flex flex-col items-center ${orderClass}`}>
-                        {/* Action emoji (if reveal stage) */}
-                        {isRevealStage && actions[playerId] && (
-                          <div className="text-4xl mb-1 animate-bounce">
-                            {actionIcons[actions[playerId]]}
-                          </div>
-                        )}
-                        {/* Stats above player with bars */}
-                        <div className="bg-white/90 rounded px-2 py-2 mb-2 border border-gray-400" style={{ width: '110px' }}>
-                          <div className="space-y-1">
-                            {/* STR */}
-                            <div className="flex items-center gap-1">
-                              <span className="text-xs font-semibold w-6">STR</span>
-                              <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
-                                <div
-                                  className="h-full bg-red-500 transition-all"
-                                  style={{ width: `${(stats.STR / maxStat) * 100}%` }}
-                                />
-                              </div>
-                              <span className="text-xs font-bold w-3 text-right">{stats.STR}</span>
-                            </div>
-                            {/* DEF */}
-                            <div className="flex items-center gap-1">
-                              <span className="text-xs font-semibold w-6">DEF</span>
-                              <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
-                                <div
-                                  className="h-full bg-blue-500 transition-all"
-                                  style={{ width: `${(stats.DEF / maxStat) * 100}%` }}
-                                />
-                              </div>
-                              <span className="text-xs font-bold w-3 text-right">{stats.DEF}</span>
-                            </div>
-                            {/* SUP */}
-                            <div className="flex items-center gap-1">
-                              <span className="text-xs font-semibold w-6">SUP</span>
-                              <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
-                                <div
-                                  className="h-full bg-green-500 transition-all"
-                                  style={{ width: `${(stats.SUP / maxStat) * 100}%` }}
-                                />
-                              </div>
-                              <span className="text-xs font-bold w-3 text-right">{stats.SUP}</span>
-                            </div>
-                          </div>
-                        </div>
-                        {/* Player sprite */}
-                        <div className={size}>👤</div>
-                        {/* Player label */}
-                        <div className={`text-xs font-bold text-gray-700 mt-1 ${isCurrentPlayer ? 'text-sm' : ''}`}>
-                          {isCurrentPlayer ? "YOU" : `P${playerId + 1}`}
-                        </div>
-                      </div>
-                    );
-                  })}
-              </div>
-              {/* Team health bar below with damage/heal animations */}
-              <div className="w-64 relative">
-                <HealthBar label="" current={teamHealth} max={maxHealth} color="green" />
-                {/* Damage/Heal animations */}
-                {isRevealStage && showDamageAnimation && (
-                  <>
-                    {damageToTeam > 0 && (
-                      <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 text-2xl font-bold text-orange-600 animate-bounce">
-                        -{damageToTeam}
-                      </div>
-                    )}
-                    {healAmount > 0 && (
-                      <div className="absolute -top-10 right-0 text-2xl font-bold text-green-600 animate-bounce">
-                        +{healAmount}
-                      </div>
-                    )}
-                  </>
-                )}
-              </div>
-            </div>
+          {/* Battle Field - Fixed height */}
+          <div className="flex-shrink-0" style={{ height: '320px' }}>
+            <BattleField
+              enemyHealth={enemyHealth}
+              maxEnemyHealth={maxEnemyHealth}
+              teamHealth={teamHealth}
+              maxHealth={maxHealth}
+              enemyIntent={enemyIntent}
+              isRevealStage={isRevealStage}
+              showDamageAnimation={showDamageAnimation}
+              damageToEnemy={damageToEnemy}
+              damageToTeam={damageToTeam}
+              healAmount={healAmount}
+              actions={actions}
+              allPlayers={allPlayers}
+              currentPlayerId={player.id}
+            />
           </div>
 
-          {/* Battle Results (during Reveal) or Action Menu (during Action Selection) */}
-          <div className="bg-white border-t-4 border-gray-700">
-            <div className="p-6">
-              {submitted && !isRevealStage ? (
-                /* Waiting for other players */
-                <div className="text-center py-12">
-                  <div className="text-6xl mb-4">⏳</div>
-                  <div className="text-2xl font-bold text-gray-700 mb-2">Waiting for other players...</div>
-                  <div className="text-gray-500">
+          {/* Battle Results (during Reveal) or Action Menu (during Action Selection) - Fixed height */}
+          <div className="bg-white border-t-4 border-gray-700 flex-shrink-0 relative" style={{ height: '240px' }}>
+            <div className="p-4 h-full overflow-auto">
+              {/* Conditional rendering instead of opacity toggling */}
+              {currentUI === 'waiting' && (
+                <div className="text-center py-6">
+                  <div className="text-4xl mb-3">⏳</div>
+                  <div className="text-lg font-bold text-gray-700 mb-2">Waiting for other players...</div>
+                  <div className="text-gray-500 text-sm">
                     {isRoleCommitted
                       ? `Your role: ${["Fighter", "Tank", "Healer"][currentRole]} (${roundsRemaining} rounds remaining)`
-                      : `Your role: ${["Fighter", "Tank", "Healer"][selectedRole]}`
+                      : selectedRole !== null ? `Your role: ${["Fighter", "Tank", "Healer"][selectedRole]}` : ''
                     }
                   </div>
                 </div>
-              ) : isRevealStage ? (
-                /* Battle Results */
-                <div className="animate-fadeIn">
-                  <div className="bg-gray-800 text-white rounded-lg px-4 py-3 text-center mb-4">
-                    <h3 className="text-xl font-bold">Round {roundNumber} Results</h3>
-                  </div>
+              )}
 
-                  {/* Health Changes Summary */}
-                  <div className="grid grid-cols-2 gap-4 mb-4">
-                    {/* Enemy Health Change */}
-                    <div className="bg-red-50 border-2 border-red-400 rounded-lg p-4">
-                      <div className="text-xs font-semibold text-gray-600 mb-2 uppercase tracking-wide">Enemy Health</div>
-                      <div className="flex items-center justify-center gap-2 mb-2">
-                        <span className="text-2xl font-bold text-gray-700">{previousEnemyHealth}</span>
-                        <span className="text-xl text-gray-400">→</span>
-                        <span className="text-2xl font-bold text-red-600">{enemyHealth}</span>
-                      </div>
-                      {damageToEnemy > 0 && (
-                        <div className="text-sm font-medium text-red-600">
-                          -{damageToEnemy} damage dealt
-                        </div>
-                      )}
-                    </div>
+              {currentUI === 'reveal' && (
+                <ResultsPanel
+                  roundNumber={roundNumber}
+                  enemyHealth={enemyHealth}
+                  previousEnemyHealth={previousEnemyHealth}
+                  damageToEnemy={damageToEnemy}
+                  teamHealth={teamHealth}
+                  previousTeamHealth={previousTeamHealth}
+                  damageToTeam={damageToTeam}
+                  healAmount={healAmount}
+                  actions={actions}
+                  allPlayers={allPlayers}
+                  currentPlayerId={player.id}
+                  enemyIntent={enemyIntent}
+                  countdown={countdown}
+                />
+              )}
 
-                    {/* Team Health Change */}
-                    <div className="bg-green-50 border-2 border-green-400 rounded-lg p-4">
-                      <div className="text-xs font-semibold text-gray-600 mb-2 uppercase tracking-wide">Team Health</div>
-                      <div className="flex items-center justify-center gap-2 mb-2">
-                        <span className="text-2xl font-bold text-gray-700">{previousTeamHealth}</span>
-                        <span className="text-xl text-gray-400">→</span>
-                        <span className={`text-2xl font-bold ${teamHealth > previousTeamHealth ? 'text-green-600' : teamHealth < previousTeamHealth ? 'text-orange-600' : 'text-gray-700'}`}>
-                          {teamHealth}
-                        </span>
-                      </div>
-                      <div className="text-sm font-medium space-y-1">
-                        {damageToTeam > 0 && (
-                          <div className="text-orange-600">-{damageToTeam} damage taken</div>
-                        )}
-                        {healAmount > 0 && (
-                          <div className="text-green-600">+{healAmount} healing received</div>
-                        )}
-                        {damageToTeam === 0 && healAmount === 0 && (
-                          <div className="text-gray-500">No change</div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Action Summary */}
-                  <div className="bg-blue-50 border-2 border-blue-300 rounded-lg p-3 mb-4">
-                    <div className="text-xs font-semibold text-gray-600 mb-2 uppercase tracking-wide">What Happened This Round</div>
-
-                    {/* Team Actions */}
-                    <div className="mb-3">
-                      <div className="text-xs text-gray-500 mb-1">Team Actions:</div>
-                      <div className="flex justify-center gap-4">
-                        {actions.map((action, playerId) => {
-                          const entry = allPlayers[playerId];
-                          if (!entry) return null;
-                          const isCurrentPlayer = entry.type === "real" && entry.player.id === player.id;
-
-                          return (
-                            <div key={playerId} className="flex flex-col items-center">
-                              <div className="text-3xl mb-1">{actionIcons[action]}</div>
-                              <div className="text-xs text-gray-600">
-                                {isCurrentPlayer ? "YOU" : `P${playerId + 1}`}
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-
-                    {/* Enemy Action */}
-                    <div className="border-t border-blue-200 pt-2">
-                      <div className="text-xs text-gray-500 mb-1">Enemy Action:</div>
-                      <div className="flex justify-center items-center gap-2">
-                        <div className="text-3xl">{enemyIntent === "WILL_ATTACK" ? "⚔️" : "😴"}</div>
-                        <div className="text-sm font-medium text-gray-700">
-                          {enemyIntent === "WILL_ATTACK" ? "Enemy attacked!" : "Enemy did nothing"}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="text-center text-gray-500 text-sm">
-                    {countdown !== null && countdown > 0 ? (
-                      <div className="text-lg font-bold text-blue-600">
-                        Next round in {countdown}...
-                      </div>
-                    ) : countdown === 0 ? (
-                      <div className="text-lg font-bold text-green-600">
-                        Starting now!
-                      </div>
-                    ) : (
-                      "Next round starting soon..."
-                    )}
-                  </div>
-                </div>
-              ) : (
-                /* Action Menu */
-                <div>
-                  <div className="bg-gray-800 text-white rounded-t-lg px-4 py-2 text-sm font-bold">
-                    {isRoleCommitted
-                      ? "Your role is locked for this round"
-                      : "What role will you play?"}
-                  </div>
-                  <div className="bg-gray-100 rounded-b-lg border-2 border-gray-800 border-t-0 p-4">
-                    <div className="grid grid-cols-3 gap-3 mb-3">
-                      <RoleButton
-                        role="FIGHTER"
-                        selected={selectedRole === ROLES.FIGHTER}
-                        onClick={() => handleRoleSelect(ROLES.FIGHTER)}
-                        disabled={submitted}
-                        locked={isRoleCommitted && currentRole === ROLES.FIGHTER}
-                      />
-                      <RoleButton
-                        role="TANK"
-                        selected={selectedRole === ROLES.TANK}
-                        onClick={() => handleRoleSelect(ROLES.TANK)}
-                        disabled={submitted}
-                        locked={isRoleCommitted && currentRole === ROLES.TANK}
-                      />
-                      <RoleButton
-                        role="HEALER"
-                        selected={selectedRole === ROLES.HEALER}
-                        onClick={() => handleRoleSelect(ROLES.HEALER)}
-                        disabled={submitted}
-                        locked={isRoleCommitted && currentRole === ROLES.HEALER}
-                      />
-                    </div>
-
-                    <button
-                      onClick={handleSubmit}
-                      disabled={!isRoleCommitted && selectedRole === null}
-                      className={`w-full py-3 px-4 rounded-lg font-bold text-white transition-all ${
-                        (!isRoleCommitted && selectedRole === null)
-                          ? "bg-gray-400 cursor-not-allowed"
-                          : isRoleCommitted
-                            ? "bg-green-600 hover:bg-green-700 shadow-lg"
-                            : "bg-blue-600 hover:bg-blue-700 shadow-lg"
-                      }`}
-                    >
-                      {isRoleCommitted
-                        ? `▶ READY (${roundsRemaining} rounds left)`
-                        : selectedRole === null
-                          ? "Select a role"
-                          : "✓ CONFIRM ROLE (2 rounds)"}
-                    </button>
-                  </div>
-                </div>
+              {currentUI === 'actionMenu' && (
+                <ActionMenu
+                  selectedRole={selectedRole}
+                  onRoleSelect={handleRoleSelect}
+                  onSubmit={handleSubmit}
+                  isRoleCommitted={isRoleCommitted}
+                  currentRole={currentRole}
+                  roundsRemaining={roundsRemaining}
+                  submitted={submitted}
+                />
               )}
             </div>
           </div>
 
-          {/* Battle History and Game Info */}
-          <div className="bg-gray-50 border-t-2 border-gray-300 p-4">
-            <div className="grid grid-cols-2 gap-4">
+          {/* Battle History and Game Info - Takes remaining space */}
+          <div className="bg-gray-50 border-t-2 border-gray-300 flex-1 min-h-0 overflow-hidden">
+            <div className="grid grid-cols-2 gap-3 h-full p-3">
               {/* Battle History */}
-              <div className="bg-white rounded-lg border-2 border-gray-400 p-4">
-                <h3 className="text-lg font-bold text-gray-800 mb-3 flex items-center gap-2">
-                  📜 Battle History
-                </h3>
-                <ActionHistory />
+              <div className="bg-white rounded-lg border-2 border-gray-400 overflow-hidden flex flex-col">
+                <div className="p-3 border-b border-gray-300 flex-shrink-0">
+                  <h3 className="text-sm font-bold text-gray-800 flex items-center gap-2">
+                    📜 Battle History
+                  </h3>
+                </div>
+                <div className="flex-1 overflow-auto p-3 pt-2">
+                  <ActionHistory />
+                </div>
               </div>
 
               {/* Game Mechanics Info */}
-              <div className="bg-white rounded-lg border-2 border-blue-400 p-4">
-                <h3 className="text-lg font-bold text-gray-800 mb-3 flex items-center gap-2">
-                  ℹ️ How Stats Influence Actions
-                </h3>
-                <div className="space-y-2 text-sm">
-                  <div className="flex items-start gap-2">
+              <div className="bg-white rounded-lg border-2 border-blue-400 overflow-hidden flex flex-col">
+                <div className="p-3 border-b border-blue-300 flex-shrink-0">
+                  <h3 className="text-sm font-bold text-gray-800 flex items-center gap-2">
+                    ℹ️ How Stats Influence Actions
+                  </h3>
+                </div>
+                <div className="flex-1 overflow-auto p-3 pt-2">
+                  <div className="space-y-2 text-xs">
                     <div>
                       <span className="font-semibold">Attacks:</span> STR stats of all attack actions add together
                     </div>
-                  </div>
-                  <div className="flex items-start gap-2">
                     <div>
-                      <span className="font-semibold">Defending:</span> Max DEF stat of all defend actions 
+                      <span className="font-semibold">Defending:</span> Max DEF stat of all defend actions
                     </div>
-                  </div>
-                  <div className="flex items-start gap-2">
                     <div>
                       <span className="font-semibold">Healing:</span> SUP stats of all heal actions add together (up to max HP)
                     </div>
@@ -517,3 +419,11 @@ export function ActionSelection() {
     </div>
   );
 }
+
+// Wrap with React.memo to prevent parent re-renders from cascading down
+// Empirica hooks use reactive subscriptions that bypass memo, so this only prevents prop-based re-renders
+export default React.memo(ActionSelection, () => {
+  // ActionSelection has no props, so always prevent re-render from parent
+  // Hooks will still trigger re-renders automatically
+  return true;
+});

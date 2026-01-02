@@ -24,32 +24,27 @@ export function Introduction({ next, game }) {
         <section>
           <h4 className="text-lg font-semibold text-gray-800 mb-3">Roles</h4>
           <p className="text-sm text-gray-700 mb-3">
-            At the start, you'll choose one of three roles. Your role determines your action and you'll be committed to it for 2 rounds:
+            At the start, you'll choose one of three roles. Your role determines your action and you'll be committed to the role for 2 rounds after which you can select your role again:
           </p>
           <div className="space-y-2 bg-gray-50 p-4 rounded">
             <div className="flex items-start gap-2">
               <span className="text-2xl">⚔️</span>
               <div>
-                <strong>Fighter:</strong> Attacks almost all of the time.
+                <strong>Fighter:</strong> Attacks most of the time.
               </div>
             </div>
             <div className="flex items-start gap-2">
               <span className="text-2xl">🛡️</span>
               <div>
-                <strong>Tank:</strong> Defends when the enemy is attacking. Otherwise, attacks.
+                <strong>Tank:</strong> Defends when the enemy is attacking, most of the time. Otherwise, acts like a fighter
               </div>
             </div>
             <div className="flex items-start gap-2">
               <span className="text-2xl">💚</span>
               <div>
-                <strong>Healer:</strong> Heals if the team's health is less than 50%. Otherwise, attacks.
+                <strong>Healer:</strong> Heals if the team's health is less than 50%, most of the time. Otherwise, acts like a fighter.
               </div>
             </div>
-          </div>
-          <div className="bg-blue-50 border border-blue-200 rounded p-3 mt-3">
-            <p className="text-sm text-blue-800">
-              <strong>Important:</strong> After 2 rounds, you'll get to choose a new role for the next 2 rounds.
-            </p>
           </div>
         </section>
 
@@ -92,12 +87,8 @@ export function Introduction({ next, game }) {
         <section className="bg-yellow-50 border border-yellow-300 rounded-lg p-4">
           <h4 className="text-lg font-semibold text-gray-800 mb-3">Tutorial</h4>
           <p className="text-sm text-gray-700 mb-3">
-            Before we start the main game, you'll play through two short tutorial rounds
+            Before we start the main game, you'll play through a short tutorial
             to familiarize yourself with the game mechanics.
-          </p>
-          <p className="text-sm text-gray-700">
-            In these tutorial rounds, you'll be playing with two other teammates.
-            Pay attention to how your choices affect the outcome of each round.
           </p>
         </section>
 
