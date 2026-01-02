@@ -25,17 +25,17 @@ export const BattleField = React.memo(function BattleField({
   previousTeamHealth
 }) {
   return (
-    <div className="bg-gradient-to-b from-green-200 to-green-300 p-8 relative overflow-hidden" style={{ minHeight: '320px' }}>
+    <div className="bg-gradient-to-b from-green-200 to-green-300 p-6 relative h-full overflow-hidden">
       {/* Enemy Side (Top Right) */}
-      <div className="absolute top-8 right-16 flex flex-col items-center">
+      <div className="absolute top-4 right-12 flex flex-col items-center">
         <div className="relative">
           {/* Enemy action icon (if reveal stage) */}
           {isRevealStage && (
-            <div className="text-5xl mb-2 animate-bounce">
+            <div className="text-4xl mb-1 animate-bounce">
               {enemyIntent === "WILL_ATTACK" ? "⚔️" : "😴"}
             </div>
           )}
-          <div className="text-9xl mb-4">👹</div>
+          <div className="text-8xl mb-2">👹</div>
           {/* Damage animation */}
           {isRevealStage && damageToEnemy > 0 && showDamageAnimation && (
             <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 text-3xl font-bold text-red-600 animate-bounce">
@@ -44,7 +44,7 @@ export const BattleField = React.memo(function BattleField({
           )}
         </div>
         {/* Enemy health bar below */}
-        <div className="w-64">
+        <div className="w-56">
           <HealthBar
             label=""
             current={enemyHealth}
@@ -59,8 +59,8 @@ export const BattleField = React.memo(function BattleField({
       </div>
 
       {/* Team Side (Bottom Left) */}
-      <div className="absolute bottom-8 left-16 flex flex-col items-center">
-        <div className="flex items-end justify-center gap-6 mb-4">
+      <div className="absolute bottom-4 left-12 flex flex-col items-center">
+        <div className="flex items-end justify-center gap-4 mb-3">
           {/* Sort players: left teammate, YOU (center), right teammate */}
           {allPlayers
             .map((entry, playerId) => ({ entry, playerId }))
@@ -76,7 +76,7 @@ export const BattleField = React.memo(function BattleField({
             .map(({ entry, playerId }, sortedIdx) => {
               const isCurrentPlayer = entry.type === "real" && entry.player?.id === currentPlayerId;
               const stats = entry.type === "real" ? entry.player.get("stats") : entry.bot.stats;
-              const size = isCurrentPlayer ? "text-7xl" : "text-5xl";
+              const size = isCurrentPlayer ? "text-6xl" : "text-4xl";
 
               // Determine order: left, center (YOU), right
               let orderClass = '';
@@ -94,12 +94,12 @@ export const BattleField = React.memo(function BattleField({
                 <div key={playerId} className={`flex flex-col items-center ${orderClass}`}>
                   {/* Action emoji (if reveal stage) */}
                   {isRevealStage && actions[playerId] && (
-                    <div className="text-4xl mb-1 animate-bounce">
+                    <div className="text-3xl mb-1 animate-bounce">
                       {actionIcons[actions[playerId]]}
                     </div>
                   )}
                   {/* Stats above player with bars */}
-                  <div className="bg-white/90 rounded px-2 py-2 mb-2 border border-gray-400" style={{ width: '110px' }}>
+                  <div className="bg-white/90 rounded px-2 py-1 mb-1 border border-gray-400" style={{ width: '100px' }}>
                     <div className="space-y-1">
                       {/* STR */}
                       <div className="flex items-center gap-1">
@@ -147,7 +147,7 @@ export const BattleField = React.memo(function BattleField({
             })}
         </div>
         {/* Team health bar below */}
-        <div className="w-64 relative">
+        <div className="w-56 relative">
           <HealthBar
             label=""
             current={teamHealth}

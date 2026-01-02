@@ -183,118 +183,98 @@ function ActionSelection() {
 
   return (
     <div className="fixed inset-0 bg-gradient-to-b from-blue-400 to-blue-600 flex items-center justify-center p-4">
-      <div className="w-full max-w-6xl" style={{ height: 'calc(100vh - 32px)' }}>
+      <div className="w-full max-w-7xl h-full flex items-center justify-center">
         {/* Battle Screen */}
-        <div className="bg-white rounded-lg shadow-2xl border-4 border-gray-800 h-full flex flex-col">
-          {/* Round Header - Fixed height */}
-          <div className="bg-gray-800 text-white text-center flex-shrink-0" style={{ height: '60px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-            <h1 className="text-xl font-bold">Round {roundNumber}/{maxRounds}</h1>
-            {isTurnStage && (
-              <p className="text-xs text-blue-300">
-                Turn {turnNumber} of 2
-              </p>
-            )}
-          </div>
+        <div className="bg-white rounded-lg shadow-2xl border-4 border-gray-800 w-full flex" style={{ height: 'calc(100vh - 32px)' }}>
+          {/* Left Column - Game Interface and Role Selection */}
+          <div className="flex-1 flex flex-col min-w-0">
+            {/* Round Header */}
+            <div className="bg-gray-800 text-white text-center flex-shrink-0 rounded-tl-lg py-2">
+              <h1 className="text-lg font-bold">Round {roundNumber}/{maxRounds}</h1>
+              {isTurnStage && (
+                <p className="text-xs text-blue-300">
+                  Turn {turnNumber} of 2
+                </p>
+              )}
+            </div>
 
-          {/* Battle Field - Fixed height */}
-          <div className="flex-shrink-0" style={{ height: '320px' }}>
-            <BattleField
-              enemyHealth={enemyHealth}
-              maxEnemyHealth={maxEnemyHealth}
-              teamHealth={teamHealth}
-              maxHealth={maxHealth}
-              enemyIntent={enemyIntent}
-              isRevealStage={isTurnStage}
-              showDamageAnimation={showDamageAnimation}
-              damageToEnemy={damageToEnemy}
-              damageToTeam={damageToTeam}
-              healAmount={healAmount}
-              actions={actions}
-              allPlayers={allPlayers}
-              currentPlayerId={player.id}
-              previousEnemyHealth={previousEnemyHealth}
-              previousTeamHealth={previousTeamHealth}
-            />
-          </div>
+            {/* Battle Field */}
+            <div className="flex-shrink-0 overflow-hidden" style={{ height: '300px' }}>
+              <BattleField
+                enemyHealth={enemyHealth}
+                maxEnemyHealth={maxEnemyHealth}
+                teamHealth={teamHealth}
+                maxHealth={maxHealth}
+                enemyIntent={enemyIntent}
+                isRevealStage={isTurnStage}
+                showDamageAnimation={showDamageAnimation}
+                damageToEnemy={damageToEnemy}
+                damageToTeam={damageToTeam}
+                healAmount={healAmount}
+                actions={actions}
+                allPlayers={allPlayers}
+                currentPlayerId={player.id}
+                previousEnemyHealth={previousEnemyHealth}
+                previousTeamHealth={previousTeamHealth}
+              />
+            </div>
 
-          {/* Role Selection or Turn Results - Fixed height */}
-          <div className="bg-white border-t-4 border-gray-700 flex-shrink-0 relative" style={{ height: '240px' }}>
-            <div className="p-4 h-full overflow-auto">
-              {/* Waiting for other players after submitting role */}
-              {currentUI === 'waiting' && (
-                <div className="text-center py-6">
-                  <div className="text-4xl mb-3">⏳</div>
-                  <div className="text-lg font-bold text-gray-700 mb-2">Waiting for other players...</div>
-                  <div className="text-gray-500 text-sm">
-                    {selectedRole !== null && `Your selected role: ${["Fighter", "Tank", "Healer"][selectedRole]}`}
+            {/* Role Selection or Turn Results */}
+            <div className="bg-white border-t-4 border-gray-700 flex-1 min-h-0 flex flex-col">
+              <div className="flex-1 p-4 flex items-center justify-center">
+                {/* Waiting for other players after submitting role */}
+                {currentUI === 'waiting' && (
+                  <div className="text-center">
+                    <div className="text-4xl mb-3">⏳</div>
+                    <div className="text-lg font-bold text-gray-700 mb-2">Waiting for other players...</div>
+                    <div className="text-gray-500 text-sm">
+                      {selectedRole !== null && `Your selected role: ${["Fighter", "Tank", "Healer"][selectedRole]}`}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
 
-              {/* Turn Results - showing what happened in this turn */}
-              {currentUI === 'turnResults' && (
-                <ResultsPanel
-                  roundNumber={roundNumber}
-                  actions={actions}
-                  allPlayers={allPlayers}
-                  currentPlayerId={player.id}
-                  enemyIntent={enemyIntent}
-                  countdown={countdown}
-                />
-              )}
+                {/* Turn Results - showing what happened in this turn */}
+                {currentUI === 'turnResults' && (
+                  <div className="w-full">
+                    <ResultsPanel
+                      roundNumber={roundNumber}
+                      actions={actions}
+                      allPlayers={allPlayers}
+                      currentPlayerId={player.id}
+                      enemyIntent={enemyIntent}
+                      countdown={countdown}
+                    />
+                  </div>
+                )}
 
-              {/* Role Selection Menu */}
-              {currentUI === 'roleSelection' && (
-                <ActionMenu
-                  selectedRole={selectedRole}
-                  onRoleSelect={handleRoleSelect}
-                  onSubmit={handleSubmit}
-                  isRoleCommitted={false}
-                  currentRole={null}
-                  roundsRemaining={0}
-                  submitted={submitted}
-                  roleOrder={roleOrder}
-                />
-              )}
+                {/* Role Selection Menu */}
+                {currentUI === 'roleSelection' && (
+                  <div className="w-full max-w-4xl">
+                    <ActionMenu
+                      selectedRole={selectedRole}
+                      onRoleSelect={handleRoleSelect}
+                      onSubmit={handleSubmit}
+                      isRoleCommitted={false}
+                      currentRole={null}
+                      roundsRemaining={0}
+                      submitted={submitted}
+                      roleOrder={roleOrder}
+                    />
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
-          {/* Battle History and Game Info - Takes remaining space */}
-          <div className="bg-gray-50 border-t-2 border-gray-300 flex-1 min-h-0 overflow-hidden">
-            <div className="grid grid-cols-2 gap-3 h-full p-3">
-              {/* Battle History */}
-              <div className="bg-white rounded-lg border-2 border-gray-400 overflow-hidden flex flex-col">
-                <div className="p-3 border-b border-gray-300 flex-shrink-0">
-                  <h3 className="text-sm font-bold text-gray-800 flex items-center gap-2">
-                    📜 Battle History
-                  </h3>
-                </div>
-                <div className="flex-1 overflow-auto p-3 pt-2">
-                  <ActionHistory />
-                </div>
-              </div>
-
-              {/* Game Mechanics Info */}
-              <div className="bg-white rounded-lg border-2 border-blue-400 overflow-hidden flex flex-col">
-                <div className="p-3 border-b border-blue-300 flex-shrink-0">
-                  <h3 className="text-sm font-bold text-gray-800 flex items-center gap-2">
-                    ℹ️ How Stats Influence Actions
-                  </h3>
-                </div>
-                <div className="flex-1 overflow-auto p-3 pt-2">
-                  <div className="space-y-2 text-xs">
-                    <div>
-                      <span className="font-semibold">Attacks:</span> STR stats of all attack actions add together
-                    </div>
-                    <div>
-                      <span className="font-semibold">Defending:</span> Max DEF stat of all defend actions
-                    </div>
-                    <div>
-                      <span className="font-semibold">Healing:</span> SUP stats of all heal actions add together (up to max HP)
-                    </div>
-                  </div>
-                </div>
-              </div>
+          {/* Right Column - Battle History (full height) */}
+          <div className="bg-gray-50 border-l-4 border-gray-700 overflow-hidden flex flex-col" style={{ width: '320px' }}>
+            <div className="bg-gray-800 text-white p-3 flex-shrink-0 rounded-tr-lg">
+              <h3 className="text-sm font-bold flex items-center gap-2">
+                📜 Battle History
+              </h3>
+            </div>
+            <div className="flex-1 overflow-auto p-3 bg-white">
+              <ActionHistory />
             </div>
           </div>
         </div>

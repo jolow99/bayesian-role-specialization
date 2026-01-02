@@ -6,25 +6,28 @@ export function RoleButton({ role, selected, onClick, disabled, locked }) {
       label: "Fighter",
       icon: "⚔️",
       description: "Attacks enemies (1-ε), random action otherwise",
+      statInfo: "STR boosts attack damage",
       color: "red"
     },
     TANK: {
       label: "Tank",
       icon: "🛡️",
       description: "Defends when enemy attacks (1-ε), otherwise attacks",
+      statInfo: "DEF reduces damage taken",
       color: "blue"
     },
     HEALER: {
       label: "Healer",
       icon: "💚",
       description: "Heals when team health ≤50% (1-ε), otherwise attacks",
+      statInfo: "SUP increases healing",
       color: "green"
     }
   };
 
   const config = roleConfig[role];
 
-  const baseClasses = "flex flex-col items-center justify-center p-6 rounded-lg border-2 transition-all duration-200";
+  const baseClasses = "flex flex-col items-center justify-center p-4 rounded-lg border-2 transition-all duration-200";
 
   const colorClasses = {
     red: locked
@@ -52,11 +55,14 @@ export function RoleButton({ role, selected, onClick, disabled, locked }) {
       disabled={disabled || locked}
       className={`${baseClasses} ${colorClasses[config.color]} ${(disabled && !locked) ? disabledClasses : ""}`}
     >
-      <div className="text-5xl mb-2">{config.icon}</div>
-      <div className="text-xl font-bold text-gray-800 mb-1">{config.label}</div>
-      <div className="text-xs text-gray-600 text-center">{config.description}</div>
+      <div className="text-4xl mb-1">{config.icon}</div>
+      <div className="text-lg font-bold text-gray-800 mb-1">{config.label}</div>
+      <div className="text-xs text-gray-600 text-center mb-1">{config.description}</div>
+      <div className="text-xs font-semibold text-gray-700 text-center bg-white bg-opacity-60 px-2 py-0.5 rounded">
+        {config.statInfo}
+      </div>
       {locked && (
-        <div className="mt-2 text-xs font-bold text-gray-700 bg-white px-2 py-1 rounded">
+        <div className="mt-1 text-xs font-bold text-gray-700 bg-white px-2 py-1 rounded">
           ACTIVE
         </div>
       )}
