@@ -221,20 +221,7 @@ Empirica.onRoundStart(({ round }) => {
   const game = round.currentGame;
   const roundNumber = round.get("roundNumber");
 
-  // GUARD: Check if this round has already been initialized
-  // This prevents double-initialization from multiple callback invocations
-  if (round.get("initialized")) {
-    console.log(`!!! Round ${roundNumber} already initialized, skipping onRoundStart`);
-    return;
-  }
-  round.set("initialized", true);
-
   console.log(`=== Round ${roundNumber} Starting ===`);
-
-  // Reset player round data
-  game.players.forEach((player) => {
-    player.round.set("selectedRole", null);
-  });
 
   // Set enemy intents for BOTH turns in this round
   const treatment = game.get("treatment");
@@ -334,12 +321,6 @@ Empirica.onStageStart(({ stage }) => {
         const bot = entry.bot;
         currentRole = bot.currentRole;
         playerStats = bot.stats;
-      }
-
-      // Default to FIGHTER if no role (shouldn't happen)
-      if (currentRole === null || currentRole === undefined) {
-        console.warn(`Player ${playerId} has no role in turn ${turnNumber}, defaulting to FIGHTER`);
-        currentRole = ROLES.FIGHTER;
       }
 
       // Convert role to action
@@ -496,6 +477,11 @@ Empirica.onRoundEnded(({ round }) => {
   const maxRounds = treatment.maxRounds;
 
   console.log(`Round ${roundNumber} ended. Enemy HP=${enemyHealth}, Team HP=${teamHealth}`);
+
+  // Clean up round-specific player data
+  game.players.forEach((player) => {
+    player.round.set("selectedRole", null);
+  });
 
   // Check if game should end
   if (enemyHealth <= 0) {
