@@ -14,8 +14,9 @@ export function Profile() {
   const stage = useStage();
   const game = useGame();
 
+  const treatment = game?.get("treatment");
   const roundNumber = round ? round.get("roundNumber") : 0;
-  const maxRounds = game ? game.get("maxRounds") : 20;
+  const maxRounds = treatment?.maxRounds;
 
   return (
     <div className="min-w-lg md:min-w-2xl mt-2 m-x-auto px-3 py-2 text-gray-500 rounded-md grid grid-cols-3 items-center border-.5">

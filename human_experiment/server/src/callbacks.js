@@ -112,45 +112,41 @@ function getBotRoleChoice(bot, roundNumber, game) {
 Empirica.onGameStart(({ game }) => {
   const treatment = game.get("treatment");
   const {
-    statProfile = "balanced",
-    maxRounds = 20,
-    bossType = "lowDamage",  // NEW: replaces difficulty
-    playerDeviateProbability = 0.1,  // Probability of random action instead of role-primary action
-    enemyAttackProbability = 0.8,    // Probability that enemy will attack each round
-    totalPlayers = 3,         // Total number of players (human + bots)
-    gameSeed = Math.floor(Math.random() * 10000),
-    maxEnemyHealth = 20,      // Maximum enemy health
-    maxTeamHealth = 10,       // Maximum team health
-    // Bot configuration
-    botPlayers = [],  // Array of bot configs: [{playerId: 0, strategy: {type: "fixed", role: 0}}, ...]
-    isTutorial = false,  // Whether this is a tutorial game
+    statProfile,
+    totalPlayers,
+    maxEnemyHealth,
+    maxTeamHealth,
+    botPlayers,
   } = treatment;
+
+  // Generate random seed for this game (not from treatment)
+  const gameSeed = Math.floor(Math.random() * 10000);
 
   console.log(`\n===== BOT CONFIGURATION DEBUG =====`);
   console.log(`Game starting with ${game.players.length} human players, target totalPlayers: ${totalPlayers}`);
   console.log(`botPlayers config:`, botPlayers);
 
-  // Store virtual bot configuration on the game
-  // Bots are tracked as virtual entities, not as actual player objects
-  const virtualBots = [];
-
   // Create virtual bot entries for each configured bot
-  botPlayers.forEach(botConfig => {
-    virtualBots.push({
-      playerId: botConfig.playerId,
-      strategy: botConfig.strategy,
-      stats: generatePlayerStats(botConfig.playerId, gameSeed, statProfile),
-      currentRole: null,
-      roleStartRound: null,
-      roleEndRound: null,
-      roleHistory: [],
-      actionHistory: []
-    });
-    console.log(`Configured virtual bot at playerId ${botConfig.playerId} with strategy:`, botConfig.strategy);
+  const virtualBots = botPlayers.map(botConfig => ({
+    playerId: botConfig.playerId,
+    strategy: botConfig.strategy,
+    stats: generatePlayerStats(botConfig.playerId, gameSeed, statProfile),
+    currentRole: null,
+    roleStartRound: null,
+    roleEndRound: null,
+    roleHistory: [],
+    actionHistory: []
+  }));
+
+  virtualBots.forEach(bot => {
+    console.log(`Configured virtual bot at playerId ${bot.playerId} with strategy:`, bot.strategy);
   });
 
+  // Store only dynamic game state and generated values (not treatment config)
   game.set("virtualBots", virtualBots);
-  game.set("totalPlayers", totalPlayers);
+  game.set("gameSeed", gameSeed); // Generated at runtime, not from treatment
+  game.set("enemyHealth", maxEnemyHealth);
+  game.set("teamHealth", maxTeamHealth);
 
   console.log(`Virtual bots configured: ${virtualBots.length}`);
   console.log(`==============================\n`);
@@ -173,6 +169,8 @@ Empirica.onGameStart(({ game }) => {
     }
 
     const stats = generatePlayerStats(actualPlayerId, gameSeed, statProfile);
+
+    // Set player properties
     player.set("stats", stats);
     player.set("playerId", actualPlayerId);
     player.set("actionHistory", []);
@@ -184,30 +182,6 @@ Empirica.onGameStart(({ game }) => {
 
     console.log(`Player ${actualPlayerId} (id: ${player.id}) is a human player`);
   });
-
-  // Store game settings
-  game.set("maxRounds", maxRounds);
-  game.set("bossType", bossType);
-  game.set("playerDeviateProbability", playerDeviateProbability);
-  game.set("enemyAttackProbability", enemyAttackProbability);
-  game.set("statProfile", statProfile);
-  game.set("gameSeed", gameSeed);
-  game.set("isTutorial", isTutorial);
-  game.set("maxHealth", maxTeamHealth);
-  game.set("maxEnemyHealth", maxEnemyHealth);
-  game.set("initialEnemyHealth", maxEnemyHealth);
-  game.set("initialTeamHealth", maxTeamHealth);
-  game.set("enemyHealth", maxEnemyHealth);
-  game.set("teamHealth", maxTeamHealth);
-
-  // Calculate boss damage based on bossType
-  // With stats summing to 6, max DEF is typically 2-3
-  // Boss damage should be balanced so defense matters but isn't overwhelming
-  if (bossType === "highDamage") {
-    game.set("bossDamage", 4);  // High damage boss
-  } else {
-    game.set("bossDamage", 2);  // Low damage boss
-  }
 
   // Create first round
   addGameRound(game, 1);
@@ -301,7 +275,8 @@ Empirica.onRoundStart(({ round }) => {
   game.set("virtualBots", updatedBots);
 
   // Set enemy intent for this round based on enemyAttackProbability
-  const enemyAttackProbability = game.get("enemyAttackProbability") || 0.8;
+  const treatment = game.get("treatment");
+  const enemyAttackProbability = treatment.enemyAttackProbability;
   const intent = Math.random() < enemyAttackProbability ? "WILL_ATTACK" : "WILL_NOT_ATTACK";
   console.log(`Round ${roundNumber}: Enemy intent set to ${intent} (attack probability: ${enemyAttackProbability})`);
   round.set("enemyIntent", intent);
@@ -374,12 +349,13 @@ Empirica.onStageEnded(({ stage }) => {
   console.log(`<<< STAGE END: Round ${roundNumber}, Stage: ${stageName}`);
 
   if (stageName === "Action Selection") {
+    const treatment = game.get("treatment");
     const gameSeed = game.get("gameSeed");
-    const playerDeviateProbability = game.get("playerDeviateProbability");
+    const playerDeviateProbability = treatment.playerDeviateProbability;
     const teamHealth = game.get("teamHealth");
-    const maxHealth = game.get("maxHealth");
+    const maxHealth = treatment.maxTeamHealth;
     const enemyIntent = round.get("enemyIntent");
-    const totalPlayers = game.get("totalPlayers") || 3;
+    const totalPlayers = treatment.totalPlayers;
     const virtualBots = game.get("virtualBots") || [];
 
     console.log(`[onStageEnded] Retrieved ${virtualBots.length} virtual bots from game state`);
@@ -482,11 +458,12 @@ Empirica.onStageEnded(({ stage }) => {
 });
 
 function resolveActions(game, round, actions, stats) {
+  const treatment = game.get("treatment");
   const currentEnemyHealth = game.get("enemyHealth");
   const currentTeamHealth = game.get("teamHealth");
   const enemyIntent = round.get("enemyIntent");
-  const bossDamage = game.get("bossDamage");
-  const maxHealth = game.get("maxHealth");
+  const bossDamage = treatment.bossDamage;
+  const maxHealth = treatment.maxTeamHealth;
 
   // Calculate total attack strength (additive)
   let totalAttack = 0;
@@ -570,10 +547,11 @@ function resolveActions(game, round, actions, stats) {
 
 Empirica.onRoundEnded(({ round }) => {
   const game = round.currentGame;
+  const treatment = game.get("treatment");
   const enemyHealth = game.get("enemyHealth");
   const teamHealth = game.get("teamHealth");
   const roundNumber = round.get("roundNumber");
-  const maxRounds = game.get("maxRounds");
+  const maxRounds = treatment.maxRounds;
 
   console.log(`Round ${roundNumber} ended. Enemy HP=${enemyHealth}, Team HP=${teamHealth}`);
 
@@ -600,7 +578,6 @@ Empirica.onRoundEnded(({ round }) => {
 Empirica.onGameEnded(({ game }) => {
   // Calculate final scores/metrics if needed
   const outcome = game.get("outcome");
-  const finalRound = game.get("maxRounds");
 
   game.players.forEach(player => {
     player.set("finalOutcome", outcome);

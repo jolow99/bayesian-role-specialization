@@ -29,14 +29,15 @@ function ActionSelection() {
 
   // Get current data from Empirica
   // Note: submitted is always read fresh (not cached) since it's stage-specific
+  const treatment = game.get("treatment");
   const submitted = player.stage.get("submit");
   const rawEnemyHealth = game.get("enemyHealth");
   const rawTeamHealth = game.get("teamHealth");
   const rawEnemyIntent = round.get("enemyIntent");
   const rawRoundNumber = round.get("roundNumber");
-  const rawMaxRounds = game.get("maxRounds");
-  const rawMaxHealth = game.get("maxHealth");
-  const rawMaxEnemyHealth = game.get("maxEnemyHealth");
+  const rawMaxRounds = treatment?.maxRounds;
+  const rawMaxHealth = treatment?.maxTeamHealth;
+  const rawMaxEnemyHealth = treatment?.maxEnemyHealth;
   const rawCurrentStage = stage.get("name");
   const rawActions = round.get("actions");
 
@@ -48,13 +49,13 @@ function ActionSelection() {
 
   if (hasValidData) {
     // Valid data - use it and update cache
-    enemyHealth = rawEnemyHealth ?? 20;
-    teamHealth = rawTeamHealth ?? 10;
+    enemyHealth = rawEnemyHealth;
+    teamHealth = rawTeamHealth;
     enemyIntent = rawEnemyIntent;
     roundNumber = rawRoundNumber;
     maxRounds = rawMaxRounds;
-    maxHealth = rawMaxHealth ?? 10;
-    maxEnemyHealth = rawMaxEnemyHealth ?? 20;
+    maxHealth = rawMaxHealth;
+    maxEnemyHealth = rawMaxEnemyHealth;
     currentStage = rawCurrentStage;
     isRevealStage = currentStage === "Reveal";
     actions = rawActions || EMPTY_ARRAY;
@@ -222,7 +223,7 @@ function ActionSelection() {
 
   // Get virtual bots from game state
   const virtualBots = game.get("virtualBots") || EMPTY_ARRAY;
-  const totalPlayers = game.get("totalPlayers") || 3;
+  const totalPlayers = treatment?.totalPlayers;
 
   // Build unified player array (real + virtual) - fully cached for stability
   // Cache both the array AND the individual player objects to prevent any re-renders
