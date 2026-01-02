@@ -10,8 +10,11 @@ export const ActionMenu = React.memo(function ActionMenu({
   isRoleCommitted,
   currentRole,
   roundsRemaining,
-  submitted
+  submitted,
+  roleOrder = [ROLES.FIGHTER, ROLES.TANK, ROLES.HEALER] // Default order if not provided
 }) {
+  const ROLE_NAMES = ["FIGHTER", "TANK", "HEALER"];
+  const orderedRoleNames = roleOrder.map(roleId => ROLE_NAMES[roleId]);
   return (
     <div>
       <div className="bg-gray-800 text-white rounded-t-lg px-4 py-2 text-sm font-bold">
@@ -21,27 +24,19 @@ export const ActionMenu = React.memo(function ActionMenu({
       </div>
       <div className="bg-gray-100 rounded-b-lg border-2 border-gray-800 border-t-0 p-4">
         <div className="grid grid-cols-3 gap-3 mb-3">
-          <RoleButton
-            role="FIGHTER"
-            selected={selectedRole === ROLES.FIGHTER}
-            onClick={() => onRoleSelect(ROLES.FIGHTER)}
-            disabled={submitted}
-            locked={isRoleCommitted && currentRole === ROLES.FIGHTER}
-          />
-          <RoleButton
-            role="TANK"
-            selected={selectedRole === ROLES.TANK}
-            onClick={() => onRoleSelect(ROLES.TANK)}
-            disabled={submitted}
-            locked={isRoleCommitted && currentRole === ROLES.TANK}
-          />
-          <RoleButton
-            role="HEALER"
-            selected={selectedRole === ROLES.HEALER}
-            onClick={() => onRoleSelect(ROLES.HEALER)}
-            disabled={submitted}
-            locked={isRoleCommitted && currentRole === ROLES.HEALER}
-          />
+          {orderedRoleNames.map((roleName) => {
+            const roleValue = ROLES[roleName];
+            return (
+              <RoleButton
+                key={roleName}
+                role={roleName}
+                selected={selectedRole === roleValue}
+                onClick={() => onRoleSelect(roleValue)}
+                disabled={submitted}
+                locked={isRoleCommitted && currentRole === roleValue}
+              />
+            );
+          })}
         </div>
 
         <button

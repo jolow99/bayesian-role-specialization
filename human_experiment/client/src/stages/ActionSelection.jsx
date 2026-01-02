@@ -27,6 +27,19 @@ function ActionSelection() {
 
   // Get current data from Empirica
   const treatment = game.get("treatment");
+
+  // Initialize randomized role order once per player for the entire game
+  useEffect(() => {
+    if (!player.get("roleOrder")) {
+      // Generate random permutation of [0, 1, 2]
+      const roles = [ROLES.FIGHTER, ROLES.TANK, ROLES.HEALER];
+      const shuffled = [...roles].sort(() => Math.random() - 0.5);
+      player.set("roleOrder", shuffled);
+      console.log("[ActionSelection] Initialized random role order:", shuffled);
+    }
+  }, [player]);
+
+  const roleOrder = player.get("roleOrder") || [ROLES.FIGHTER, ROLES.TANK, ROLES.HEALER];
   const submitted = player.stage.get("submit") || localSubmitted; // Use local state during delay period
   const enemyHealth = game.get("enemyHealth");
   const teamHealth = game.get("teamHealth");
@@ -246,6 +259,7 @@ function ActionSelection() {
                   currentRole={null}
                   roundsRemaining={0}
                   submitted={submitted}
+                  roleOrder={roleOrder}
                 />
               )}
             </div>
