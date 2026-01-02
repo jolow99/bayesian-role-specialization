@@ -1,5 +1,6 @@
 import React from "react";
 import { RoleButton } from "./RoleButton";
+import { StatsInfo } from "./StatsInfo";
 
 const ROLES = { FIGHTER: 0, TANK: 1, HEALER: 2 };
 
@@ -17,10 +18,13 @@ export const ActionMenu = React.memo(function ActionMenu({
   const orderedRoleNames = roleOrder.map(roleId => ROLE_NAMES[roleId]);
   return (
     <div>
-      <div className="bg-gray-800 text-white rounded-t-lg px-4 py-2 text-sm font-bold">
-        {isRoleCommitted
-          ? "Your role is locked for this round"
-          : "What role will you play?"}
+      <div className="bg-gray-800 text-white rounded-t-lg px-4 py-2 text-sm font-bold flex items-center justify-between">
+        <span>
+          {isRoleCommitted
+            ? "Your role is locked for this round"
+            : "What role will you play?"}
+        </span>
+        <StatsInfo />
       </div>
       <div className="bg-gray-100 rounded-b-lg border-2 border-gray-800 border-t-0 p-4">
         <div className="grid grid-cols-3 gap-3 mb-3">

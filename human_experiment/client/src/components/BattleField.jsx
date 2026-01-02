@@ -29,19 +29,7 @@ export const BattleField = React.memo(function BattleField({
       {/* Enemy Side (Top Right) */}
       <div className="absolute top-4 right-12 flex flex-col items-center">
         <div className="relative">
-          {/* Enemy action icon (if reveal stage) */}
-          {isRevealStage && (
-            <div className="text-4xl mb-1 animate-bounce">
-              {enemyIntent === "WILL_ATTACK" ? "⚔️" : "😴"}
-            </div>
-          )}
           <div className="text-8xl mb-2">👹</div>
-          {/* Damage animation */}
-          {isRevealStage && damageToEnemy > 0 && showDamageAnimation && (
-            <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 text-3xl font-bold text-red-600 animate-bounce">
-              -{damageToEnemy}
-            </div>
-          )}
         </div>
         {/* Enemy health bar below */}
         <div className="w-56">
@@ -92,12 +80,6 @@ export const BattleField = React.memo(function BattleField({
 
               return (
                 <div key={playerId} className={`flex flex-col items-center ${orderClass}`}>
-                  {/* Action emoji (if reveal stage) */}
-                  {isRevealStage && actions[playerId] && (
-                    <div className="text-3xl mb-1 animate-bounce">
-                      {actionIcons[actions[playerId]]}
-                    </div>
-                  )}
                   {/* Stats above player with bars */}
                   <div className="bg-white/90 rounded px-2 py-1 mb-1 border border-gray-400" style={{ width: '100px' }}>
                     <div className="space-y-1">

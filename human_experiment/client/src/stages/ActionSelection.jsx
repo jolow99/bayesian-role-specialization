@@ -199,7 +199,7 @@ function ActionSelection() {
             </div>
 
             {/* Battle Field */}
-            <div className="flex-shrink-0 overflow-hidden" style={{ height: '300px' }}>
+            <div className="flex-shrink-0" style={{ height: '280px' }}>
               <BattleField
                 enemyHealth={enemyHealth}
                 maxEnemyHealth={maxEnemyHealth}

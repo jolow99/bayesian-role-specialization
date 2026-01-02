@@ -5,22 +5,19 @@ export function RoleButton({ role, selected, onClick, disabled, locked }) {
     FIGHTER: {
       label: "Fighter",
       icon: "⚔️",
-      description: "Attacks enemies (1-ε), random action otherwise",
-      statInfo: "STR boosts attack damage",
+      description: "Attacks most of the time.",
       color: "red"
     },
     TANK: {
       label: "Tank",
       icon: "🛡️",
-      description: "Defends when enemy attacks (1-ε), otherwise attacks",
-      statInfo: "DEF reduces damage taken",
+      description: "Defends when the enemy is attacking, most of the time. Otherwise, acts like a fighter.",
       color: "blue"
     },
     HEALER: {
       label: "Healer",
       icon: "💚",
-      description: "Heals when team health ≤50% (1-ε), otherwise attacks",
-      statInfo: "SUP increases healing",
+      description: "Heals if the team's health is less than 50%, most of the time. Otherwise, acts like a fighter.",
       color: "green"
     }
   };
@@ -57,10 +54,7 @@ export function RoleButton({ role, selected, onClick, disabled, locked }) {
     >
       <div className="text-4xl mb-1">{config.icon}</div>
       <div className="text-lg font-bold text-gray-800 mb-1">{config.label}</div>
-      <div className="text-xs text-gray-600 text-center mb-1">{config.description}</div>
-      <div className="text-xs font-semibold text-gray-700 text-center bg-white bg-opacity-60 px-2 py-0.5 rounded">
-        {config.statInfo}
-      </div>
+      <div className="text-xs text-gray-600 text-center">{config.description}</div>
       {locked && (
         <div className="mt-1 text-xs font-bold text-gray-700 bg-white px-2 py-1 rounded">
           ACTIVE
