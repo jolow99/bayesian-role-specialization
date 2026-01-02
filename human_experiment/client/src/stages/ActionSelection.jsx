@@ -212,6 +212,8 @@ function ActionSelection() {
               actions={actions}
               allPlayers={allPlayers}
               currentPlayerId={player.id}
+              previousEnemyHealth={previousEnemyHealth}
+              previousTeamHealth={previousTeamHealth}
             />
           </div>
 
@@ -233,14 +235,6 @@ function ActionSelection() {
               {currentUI === 'turnResults' && (
                 <ResultsPanel
                   roundNumber={roundNumber}
-                  turnNumber={turnNumber}
-                  enemyHealth={enemyHealth}
-                  previousEnemyHealth={previousEnemyHealth}
-                  damageToEnemy={damageToEnemy}
-                  teamHealth={teamHealth}
-                  previousTeamHealth={previousTeamHealth}
-                  damageToTeam={damageToTeam}
-                  healAmount={healAmount}
                   actions={actions}
                   allPlayers={allPlayers}
                   currentPlayerId={player.id}

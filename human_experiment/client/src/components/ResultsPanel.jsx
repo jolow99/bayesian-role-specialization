@@ -8,13 +8,6 @@ const actionIcons = {
 
 export const ResultsPanel = React.memo(function ResultsPanel({
   roundNumber,
-  enemyHealth,
-  previousEnemyHealth,
-  damageToEnemy,
-  teamHealth,
-  previousTeamHealth,
-  damageToTeam,
-  healAmount,
   actions = [],
   allPlayers = [],
   currentPlayerId,
@@ -27,49 +20,8 @@ export const ResultsPanel = React.memo(function ResultsPanel({
         <h3 className="text-xl font-bold">Round {roundNumber} Results</h3>
       </div>
 
-      {/* Health Changes Summary */}
-      <div className="grid grid-cols-2 gap-4 mb-4">
-        {/* Enemy Health Change */}
-        <div className="bg-red-50 border-2 border-red-400 rounded-lg p-4">
-          <div className="text-xs font-semibold text-gray-600 mb-2 uppercase tracking-wide">Enemy Health</div>
-          <div className="flex items-center justify-center gap-2 mb-2">
-            <span className="text-2xl font-bold text-gray-700">{previousEnemyHealth}</span>
-            <span className="text-xl text-gray-400">→</span>
-            <span className="text-2xl font-bold text-red-600">{enemyHealth}</span>
-          </div>
-          {damageToEnemy > 0 && (
-            <div className="text-sm font-medium text-red-600">
-              -{damageToEnemy} damage dealt
-            </div>
-          )}
-        </div>
-
-        {/* Team Health Change */}
-        <div className="bg-green-50 border-2 border-green-400 rounded-lg p-4">
-          <div className="text-xs font-semibold text-gray-600 mb-2 uppercase tracking-wide">Team Health</div>
-          <div className="flex items-center justify-center gap-2 mb-2">
-            <span className="text-2xl font-bold text-gray-700">{previousTeamHealth}</span>
-            <span className="text-xl text-gray-400">→</span>
-            <span className={`text-2xl font-bold ${teamHealth > previousTeamHealth ? 'text-green-600' : teamHealth < previousTeamHealth ? 'text-orange-600' : 'text-gray-700'}`}>
-              {teamHealth}
-            </span>
-          </div>
-          <div className="text-sm font-medium space-y-1">
-            {damageToTeam > 0 && (
-              <div className="text-orange-600">-{damageToTeam} damage taken</div>
-            )}
-            {healAmount > 0 && (
-              <div className="text-green-600">+{healAmount} healing received</div>
-            )}
-            {damageToTeam === 0 && healAmount === 0 && (
-              <div className="text-gray-500">No change</div>
-            )}
-          </div>
-        </div>
-      </div>
-
       {/* Action Summary */}
-      <div className="bg-blue-50 border-2 border-blue-300 rounded-lg p-3 mb-4">
+      <div className="bg-blue-50 border-2 border-blue-300 rounded-lg p-4 mb-4">
         <div className="text-xs font-semibold text-gray-600 mb-2 uppercase tracking-wide">What Happened This Round</div>
 
         {/* Team Actions */}

@@ -20,7 +20,9 @@ export const BattleField = React.memo(function BattleField({
   healAmount,
   actions = [],
   allPlayers = [],
-  currentPlayerId
+  currentPlayerId,
+  previousEnemyHealth,
+  previousTeamHealth
 }) {
   return (
     <div className="bg-gradient-to-b from-green-200 to-green-300 p-8 relative overflow-hidden" style={{ minHeight: '320px' }}>
@@ -43,7 +45,16 @@ export const BattleField = React.memo(function BattleField({
         </div>
         {/* Enemy health bar below */}
         <div className="w-64">
-          <HealthBar label="" current={enemyHealth} max={maxEnemyHealth} color="red" />
+          <HealthBar
+            label=""
+            current={enemyHealth}
+            max={maxEnemyHealth}
+            color="red"
+            previousHealth={previousEnemyHealth}
+            damageAmount={damageToEnemy}
+            healAmount={0}
+            showChange={isRevealStage}
+          />
         </div>
       </div>
 
@@ -135,24 +146,18 @@ export const BattleField = React.memo(function BattleField({
               );
             })}
         </div>
-        {/* Team health bar below with damage/heal animations */}
+        {/* Team health bar below */}
         <div className="w-64 relative">
-          <HealthBar label="" current={teamHealth} max={maxHealth} color="green" />
-          {/* Damage/Heal animations */}
-          {isRevealStage && showDamageAnimation && (
-            <>
-              {damageToTeam > 0 && (
-                <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 text-2xl font-bold text-orange-600 animate-bounce">
-                  -{damageToTeam}
-                </div>
-              )}
-              {healAmount > 0 && (
-                <div className="absolute -top-10 right-0 text-2xl font-bold text-green-600 animate-bounce">
-                  +{healAmount}
-                </div>
-              )}
-            </>
-          )}
+          <HealthBar
+            label=""
+            current={teamHealth}
+            max={maxHealth}
+            color="green"
+            previousHealth={previousTeamHealth}
+            damageAmount={damageToTeam}
+            healAmount={healAmount}
+            showChange={isRevealStage}
+          />
         </div>
       </div>
     </div>
