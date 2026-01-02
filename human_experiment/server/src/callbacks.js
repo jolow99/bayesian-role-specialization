@@ -181,10 +181,13 @@ Empirica.onGameStart(({ game }) => {
 });
 
 function addGameRound(game, roundNumber) {
+  console.log(`!!! addGameRound called for round ${roundNumber}`);
   const round = game.addRound({
     name: `Round ${roundNumber}`,
     roundNumber: roundNumber,
   });
+
+  console.log(`!!! Created round with ID: ${round.id}`);
 
   // Initialize round state
   round.set("roundNumber", roundNumber);
@@ -206,22 +209,23 @@ function addGameRound(game, roundNumber) {
   turn1Stage.set("stageType", "turn");
   turn1Stage.set("turnNumber", 1);
 
-  // Stage 3: Turn 2 (actions resolve and results shown)
-  const turn2Stage = round.addStage({
-    name: "Turn 2",
-    duration: 8 // 8 seconds to view results
-  });
-  turn2Stage.set("stageType", "turn");
-  turn2Stage.set("turnNumber", 2);
-
-  console.log(`Created Round ${roundNumber} with stages: Role Selection -> Turn 1 (8s) -> Turn 2 (8s)`);
+  // Turn 2 will be added dynamically after Turn 1 ends (if game hasn't ended)
+  console.log(`Created Round ${roundNumber} with stages: Role Selection -> Turn 1 (8s)`);
 }
 
 Empirica.onRoundStart(({ round }) => {
   const game = round.currentGame;
   const roundNumber = round.get("roundNumber");
 
-  console.log(`=== Round ${roundNumber} Starting ===`);
+  console.log(`!!! onRoundStart called: Round ${roundNumber}, Round ID: ${round.id}`);
+
+  // Idempotency check: only initialize round once even if hook is called multiple times
+  const alreadyInitialized = round.get("roundInitialized");
+  if (alreadyInitialized) {
+    console.log(`Round ${roundNumber} already initialized (hook called multiple times), skipping.`);
+    return;
+  }
+  round.set("roundInitialized", true);
 
   // Set enemy intents for BOTH turns in this round
   const treatment = game.get("treatment");
@@ -242,7 +246,7 @@ Empirica.onStageStart(({ stage }) => {
   const stageName = stage.get("name");
   const stageType = stage.get("stageType");
   const roundNumber = round.get("roundNumber");
-  console.log(`>>> STAGE START: Round ${roundNumber}, Stage: ${stageName} (type: ${stageType})`);
+  console.log(`>>> STAGE START: Round ${roundNumber}, Stage: ${stageName} (type: ${stageType}), Stage ID: ${stage.id}`);
 
   if (stageType === "roleSelection") {
     // Role Selection stage - handle bot role selection
@@ -269,6 +273,15 @@ Empirica.onStageStart(({ stage }) => {
   } else if (stageType === "turn") {
     // Turn stage - resolve actions immediately so results are available to display
     const turnNumber = stage.get("turnNumber");
+
+    // Idempotency check: only resolve turn once even if hook is called multiple times
+    const alreadyResolved = stage.get("turnResolved");
+    if (alreadyResolved) {
+      console.log(`Turn ${turnNumber} already resolved (hook called multiple times), skipping.`);
+      return;
+    }
+    stage.set("turnResolved", true);
+
     console.log(`Turn ${turnNumber} stage starting - resolving actions and showing results for 8 seconds`);
 
     const treatment = game.get("treatment");
@@ -345,6 +358,36 @@ Empirica.onStageStart(({ stage }) => {
     const updatedEnemyHealth = game.get("enemyHealth");
     const updatedTeamHealth = game.get("teamHealth");
     console.log(`After Turn ${turnNumber}: Enemy HP=${updatedEnemyHealth}, Team HP=${updatedTeamHealth}`);
+
+    // Check if game should end immediately after this turn
+    const maxRounds = treatment.maxRounds;
+
+    if (updatedEnemyHealth <= 0) {
+      game.set("outcome", "WIN");
+      game.set("gameEndMessage", "Victory! You defeated the enemy!");
+      console.log("Enemy defeated after turn resolution!");
+      stage.set("gameEnded", true);
+
+      // End the turn stage immediately so we can proceed to game end
+      setTimeout(() => stage.end("Game ended - enemy defeated"), 100);
+    } else if (updatedTeamHealth <= 0) {
+      game.set("outcome", "LOSE");
+      game.set("gameEndMessage", "Defeat! Your team was defeated.");
+      console.log("Team defeated after turn resolution!");
+      stage.set("gameEnded", true);
+
+      // End the turn stage immediately so we can proceed to game end
+      setTimeout(() => stage.end("Game ended - team defeated"), 100);
+    } else if (roundNumber >= maxRounds && turnNumber === 2) {
+      // Only end on timeout if we've completed turn 2 of the final round
+      game.set("outcome", "TIMEOUT");
+      game.set("gameEndMessage", "Time's up! The battle has ended.");
+      console.log("Max rounds reached after turn 2!");
+      stage.set("gameEnded", true);
+
+      // End the turn stage immediately so we can proceed to game end
+      setTimeout(() => stage.end("Game ended - max rounds reached"), 100);
+    }
   }
 });
 
@@ -377,8 +420,48 @@ Empirica.onStageEnded(({ stage }) => {
         console.warn(`Player ${playerId} did not select a role!`);
       }
     });
+  } else if (stageType === "turn") {
+    const turnNumber = stage.get("turnNumber");
+    const gameEnded = stage.get("gameEnded");
+
+    if (gameEnded) {
+      // Game ended during this turn - add game end stage
+      const outcome = game.get("outcome");
+      const message = game.get("gameEndMessage");
+      console.log(`Game ended during turn ${turnNumber}. Adding game end stage with outcome: ${outcome}`);
+
+      const gameEndStage = round.addStage({
+        name: "Game Over",
+        duration: 600 // 10 minutes max - wait for player to click continue
+      });
+      gameEndStage.set("stageType", "gameEnd");
+      gameEndStage.set("endMessage", message);
+      console.log(`Created game end stage with message: ${message}`);
+    } else if (turnNumber === 1) {
+      // Turn 1 ended and game hasn't ended - add Turn 2
+      // Idempotency check: only add Turn 2 once even if hook is called multiple times
+      const turn2Added = round.get("turn2Added");
+      if (!turn2Added) {
+        console.log(`Turn 1 ended, game continues. Adding Turn 2 stage.`);
+        round.set("turn2Added", true);
+        const turn2Stage = round.addStage({
+          name: "Turn 2",
+          duration: 8 // 8 seconds to view results
+        });
+        turn2Stage.set("stageType", "turn");
+        turn2Stage.set("turnNumber", 2);
+      } else {
+        console.log(`Turn 1 ended, but Turn 2 already added (hook called multiple times), skipping.`);
+      }
+    }
+    // If turn 2 ended without game ending, onRoundEnded will handle creating next round
+  } else if (stageType === "gameEnd") {
+    // Game end stage finished - now actually end the game
+    const outcome = game.get("outcome");
+    const endMessage = stage.get("endMessage");
+    console.log(`Game end stage completed. Ending game with outcome: ${outcome}`);
+    game.end(endMessage);
   }
-  // Turn stages: No action needed here - actions were already resolved in onStageStart
 });
 
 function resolveTurnActions(game, round, turnNumber, actions, stats, enemyIntent) {
@@ -470,36 +553,23 @@ function resolveTurnActions(game, round, turnNumber, actions, stats, enemyIntent
 
 Empirica.onRoundEnded(({ round }) => {
   const game = round.currentGame;
-  const treatment = game.get("treatment");
-  const enemyHealth = game.get("enemyHealth");
-  const teamHealth = game.get("teamHealth");
   const roundNumber = round.get("roundNumber");
-  const maxRounds = treatment.maxRounds;
+  const outcome = game.get("outcome");
 
-  console.log(`Round ${roundNumber} ended. Enemy HP=${enemyHealth}, Team HP=${teamHealth}`);
+  console.log(`!!! onRoundEnded called: Round ${roundNumber}, Round ID: ${round.id}, Outcome: ${outcome || "ongoing"}`);
 
   // Clean up round-specific player data
   game.players.forEach((player) => {
     player.round.set("selectedRole", null);
   });
 
-  // Check if game should end
-  if (enemyHealth <= 0) {
-    game.set("outcome", "WIN");
-    console.log("Calling game.end() with WIN");
-    game.end("Victory! You defeated the enemy!");
-  } else if (teamHealth <= 0) {
-    game.set("outcome", "LOSE");
-    console.log("Calling game.end() with LOSE");
-    game.end("Defeat! Your team was defeated.");
-  } else if (roundNumber >= maxRounds) {
-    game.set("outcome", "TIMEOUT");
-    console.log("Calling game.end() with TIMEOUT");
-    game.end("Time's up! The battle has ended.");
-  } else {
-    // Continue to next round
-    console.log(`Creating round ${roundNumber + 1}`);
+  // If game has ended (outcome is set), the gameEnd stage will handle the transition
+  // Otherwise, continue to next round
+  if (!outcome) {
+    console.log(`Creating round ${roundNumber + 1} from onRoundEnded`);
     addGameRound(game, roundNumber + 1);
+  } else {
+    console.log(`Game ended with outcome: ${outcome}. Waiting for gameEnd stage to complete.`);
   }
 });
 

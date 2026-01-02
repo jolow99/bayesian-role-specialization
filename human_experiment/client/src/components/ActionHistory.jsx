@@ -28,13 +28,13 @@ export function ActionHistory({ maxRows }) {
       grouped[entry.round].push(entry);
     });
 
-    // Convert to array and sort by round number (descending for most recent first)
+    // Convert to array and sort by round number (ascending for chronological order)
     return Object.entries(grouped)
       .map(([round, turns]) => ({
         round: parseInt(round),
-        turns: turns.sort((a, b) => a.turn - b.turn) // Sort turns within round ascending
+        turns: turns.sort((a, b) => a.turn - b.turn) // Sort turns within round ascending (Turn 1, then Turn 2)
       }))
-      .sort((a, b) => b.round - a.round); // Sort rounds descending
+      .sort((a, b) => a.round - b.round); // Sort rounds ascending (Round 1, Round 2, Round 3...)
   }, [teamHistory]);
 
   // Get player's action history to find their role for each round

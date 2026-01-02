@@ -8,6 +8,7 @@ const actionIcons = {
 
 export const ResultsPanel = React.memo(function ResultsPanel({
   roundNumber,
+  turnNumber,
   actions = [],
   allPlayers = [],
   currentPlayerId,
@@ -17,7 +18,7 @@ export const ResultsPanel = React.memo(function ResultsPanel({
   return (
     <div className="animate-fadeIn">
       <div className="bg-gray-800 text-white rounded-lg px-4 py-3 text-center mb-4">
-        <h3 className="text-xl font-bold">Round {roundNumber} Results</h3>
+        <h3 className="text-xl font-bold">Round {roundNumber} - Turn {turnNumber} Results</h3>
       </div>
 
       {/* Action Summary */}

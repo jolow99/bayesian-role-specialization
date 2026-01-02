@@ -4,6 +4,7 @@ import { BattleField } from "../components/BattleField";
 import { ActionMenu } from "../components/ActionMenu";
 import { ResultsPanel } from "../components/ResultsPanel";
 import { ActionHistory } from "../components/ActionHistory";
+import { GameEndScreen } from "../components/GameEndScreen";
 
 const ROLES = { FIGHTER: 0, TANK: 1, HEALER: 2 };
 const EMPTY_ARRAY = []; // Stable reference to prevent unnecessary re-renders
@@ -84,6 +85,11 @@ function ActionSelection() {
   // Determine if this is a turn stage (showing results)
   const isTurnStage = stageType === "turn";
   const isRoleSelectionStage = stageType === "roleSelection";
+  const isGameEndStage = stageType === "gameEnd";
+
+  // Check if game has ended (either via gameEnd stage OR via outcome being set)
+  const gameOutcome = game.get("outcome");
+  const shouldShowGameEnd = isGameEndStage || gameOutcome;
 
   // Debug logging
   console.log(`[Client RENDER] Round ${roundNumber}, Stage: ${currentStage}, Type: ${stageType}, Turn: ${turnNumber}`);
@@ -173,7 +179,9 @@ function ActionSelection() {
 
   // Determine which UI to show based on state
   let currentUI;
-  if (isTurnStage) {
+  if (isGameEndStage) {
+    currentUI = 'gameEnd';
+  } else if (isTurnStage) {
     currentUI = 'turnResults';
   } else if (submitted) {
     currentUI = 'waiting';
@@ -182,24 +190,19 @@ function ActionSelection() {
   }
 
   return (
-    <div className="fixed inset-0 bg-gradient-to-b from-blue-400 to-blue-600 flex items-center justify-center p-4">
-      <div className="w-full max-w-7xl h-full flex items-center justify-center">
+    <div className="fixed inset-0 bg-gradient-to-b from-blue-400 to-blue-600 flex items-center justify-center p-2">
+      <div className="w-full h-full flex items-center justify-center" style={{ maxWidth: '1400px' }}>
         {/* Battle Screen */}
-        <div className="bg-white rounded-lg shadow-2xl border-4 border-gray-800 w-full flex" style={{ height: 'calc(100vh - 32px)' }}>
+        <div className="bg-white rounded-lg shadow-2xl border-4 border-gray-800 w-full h-full flex overflow-hidden relative">
           {/* Left Column - Game Interface and Role Selection */}
           <div className="flex-1 flex flex-col min-w-0">
             {/* Round Header */}
-            <div className="bg-gray-800 text-white text-center flex-shrink-0 rounded-tl-lg py-2">
+            <div className="bg-gray-800 text-white text-center flex-shrink-0 rounded-tl-lg flex items-center justify-center" style={{ height: '40px' }}>
               <h1 className="text-lg font-bold">Round {roundNumber}/{maxRounds}</h1>
-              {isTurnStage && (
-                <p className="text-xs text-blue-300">
-                  Turn {turnNumber} of 2
-                </p>
-              )}
             </div>
 
             {/* Battle Field */}
-            <div className="flex-shrink-0" style={{ height: '280px' }}>
+            <div className="flex-shrink-0" style={{ height: '35vh', minHeight: '250px', maxHeight: '400px' }}>
               <BattleField
                 enemyHealth={enemyHealth}
                 maxEnemyHealth={maxEnemyHealth}
@@ -238,6 +241,7 @@ function ActionSelection() {
                   <div className="w-full">
                     <ResultsPanel
                       roundNumber={roundNumber}
+                      turnNumber={turnNumber}
                       actions={actions}
                       allPlayers={allPlayers}
                       currentPlayerId={player.id}
@@ -267,9 +271,9 @@ function ActionSelection() {
           </div>
 
           {/* Right Column - Battle History (full height) */}
-          <div className="bg-gray-50 border-l-4 border-gray-700 overflow-hidden flex flex-col" style={{ width: '320px' }}>
-            <div className="bg-gray-800 text-white p-3 flex-shrink-0 rounded-tr-lg">
-              <h3 className="text-sm font-bold flex items-center gap-2">
+          <div className="bg-gray-50 border-l-4 border-gray-700 overflow-hidden flex flex-col" style={{ width: '22%', minWidth: '280px', maxWidth: '350px' }}>
+            <div className="bg-gray-800 text-white text-center flex-shrink-0 rounded-tr-lg flex items-center justify-center" style={{ height: '40px' }}>
+              <h3 className="text-sm font-bold">
                 📜 Battle History
               </h3>
             </div>
@@ -277,6 +281,20 @@ function ActionSelection() {
               <ActionHistory />
             </div>
           </div>
+
+          {/* Game End Overlay */}
+          {shouldShowGameEnd && (
+            <div className="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
+              <GameEndScreen
+                outcome={gameOutcome}
+                endMessage={game.get("gameEndMessage") || stage.get("endMessage")}
+                enemyHealth={enemyHealth}
+                teamHealth={teamHealth}
+                maxHealth={maxHealth}
+                maxEnemyHealth={maxEnemyHealth}
+              />
+            </div>
+          )}
         </div>
       </div>
     </div>
