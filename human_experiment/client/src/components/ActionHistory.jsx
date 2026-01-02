@@ -27,7 +27,7 @@ export function ActionHistory({ maxRows }) {
   }
 
   return (
-    <div className="space-y-2 max-h-60 overflow-y-auto">
+    <div className="space-y-2">
       {displayHistory.map((entry, idx) => (
         <div
           key={idx}
