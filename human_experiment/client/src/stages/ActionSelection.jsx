@@ -24,10 +24,13 @@ function ActionSelection() {
   const [selectedRole, setSelectedRole] = useState(null);
   const [showDamageAnimation, setShowDamageAnimation] = useState(false);
   const [countdown, setCountdown] = useState(null);
-  const [localSubmitted, setLocalSubmitted] = useState(false); // Local state to immediately show waiting screen
+  const [pendingSubmit, setPendingSubmit] = useState(false); // Track if submit is pending (for bot masking delay)
 
   // Get current data from Empirica
   const treatment = game.get("treatment");
+  const currentStage = stage.get("name");
+  const stageType = stage.get("stageType");
+  const turnNumber = stage.get("turnNumber");
 
   // Initialize randomized role order once per player for the entire game
   useEffect(() => {
@@ -41,20 +44,26 @@ function ActionSelection() {
   }, [player]);
 
   const roleOrder = player.get("roleOrder") || [ROLES.FIGHTER, ROLES.TANK, ROLES.HEALER];
-  const submitted = player.stage.get("submit") || localSubmitted; // Use local state during delay period
+  const roundNumber = round.get("roundNumber");
+
+  // Derive submitted state based on stage type to prevent flashing during transitions
+  // Only consider player.stage.get("submit") if we're in a role selection stage
+  const baseSubmitted = player.stage.get("submit");
+  const submitted = stageType === "roleSelection" ? (baseSubmitted || pendingSubmit) : false;
+
   const enemyHealth = game.get("enemyHealth");
   const teamHealth = game.get("teamHealth");
-  const roundNumber = round.get("roundNumber");
   const maxRounds = treatment?.maxRounds;
   const maxHealth = treatment?.maxTeamHealth;
   const maxEnemyHealth = treatment?.maxEnemyHealth;
-  const currentStage = stage.get("name");
-  const stageType = stage.get("stageType");
-  const turnNumber = stage.get("turnNumber");
 
-  // Check if we have valid data
+  // Check if we have valid data - show loading state instead of null to prevent flashing
   if (roundNumber === undefined || roundNumber === null) {
-    return null;
+    return (
+      <div className="fixed inset-0 bg-gradient-to-b from-blue-400 to-blue-600 flex items-center justify-center">
+        <div className="text-white text-xl">Loading...</div>
+      </div>
+    );
   }
 
   // Determine which turn's data to show based on stage
@@ -96,9 +105,12 @@ function ActionSelection() {
   console.log(`[Client RENDER] Enemy HP: ${enemyHealth}, Team HP: ${teamHealth}`);
   console.log(`[Client RENDER] submitted: ${submitted}, isRoleSelectionStage: ${isRoleSelectionStage}, isTurnStage: ${isTurnStage}`);
 
-  // Reset local submitted state when moving to a new round or stage type changes
+  // Reset state when moving to a new role selection stage
   useEffect(() => {
-    setLocalSubmitted(false);
+    if (stageType === "roleSelection") {
+      setSelectedRole(null);
+      setPendingSubmit(false);
+    }
   }, [roundNumber, stageType]);
 
   // Trigger damage animation during turn stages
@@ -149,10 +161,10 @@ function ActionSelection() {
       // Store the selected role immediately so UI updates
       player.round.set("selectedRole", selectedRole);
 
-      // Set local state to immediately show waiting screen
-      setLocalSubmitted(true);
+      // Set pending submit to immediately show waiting screen
+      setPendingSubmit(true);
 
-      // Delay the submit to mask bot response times
+      // Delay the actual submit to mask bot response times
       setTimeout(() => {
         player.stage.set("submit", true);
       }, randomDelay);
