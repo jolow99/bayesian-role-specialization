@@ -21,10 +21,37 @@ function ActionSelection() {
   const round = useRound();
   const stage = useStage();
 
+  const containerRef = React.useRef(null);
+
   const [selectedRole, setSelectedRole] = useState(null);
   const [showDamageAnimation, setShowDamageAnimation] = useState(false);
   const [countdown, setCountdown] = useState(null);
   const [localSubmitted, setLocalSubmitted] = useState(false); // Local state to immediately show waiting screen
+
+  // Cache the current stage state HTML continuously (after every render)
+  // This ensures the cache is ALWAYS up-to-date before any unmount happens
+  useEffect(() => {
+    if (containerRef.current) {
+      try {
+        const html = containerRef.current.outerHTML; // Use outerHTML to include the container itself
+        sessionStorage.setItem('stageStateCache', JSON.stringify({ html }));
+        // Don't log on every render to avoid spam
+      } catch (e) {
+        console.error('[ActionSelection] Failed to cache state:', e);
+      }
+    }
+  }); // No dependency array - runs after every render
+
+  // Clear stage cache on mount (new stage state has loaded)
+  useEffect(() => {
+    console.log('[ActionSelection] Mounted - will use cached state during transition');
+    // Clear cache after a delay to allow transition to complete
+    const timer = setTimeout(() => {
+      sessionStorage.removeItem('stageStateCache');
+      console.log('[ActionSelection] Cleared stage cache after transition complete');
+    }, 200);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Get current data from Empirica
   const treatment = game.get("treatment");
@@ -190,7 +217,7 @@ function ActionSelection() {
   }
 
   return (
-    <div className="fixed inset-0 bg-gradient-to-b from-blue-400 to-blue-600 flex items-center justify-center p-2">
+    <div ref={containerRef} className="fixed inset-0 bg-gradient-to-b from-blue-400 to-blue-600 flex items-center justify-center p-2">
       <div className="w-full h-full flex items-center justify-center" style={{ maxWidth: '1400px' }}>
         {/* Battle Screen */}
         <div className="bg-white rounded-lg shadow-2xl border-4 border-gray-800 w-full h-full flex overflow-hidden relative">
