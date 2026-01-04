@@ -25,9 +25,9 @@ export const BattleField = React.memo(function BattleField({
   previousTeamHealth
 }) {
   return (
-    <div className="bg-gradient-to-b from-green-200 to-green-300 p-6 relative h-full overflow-hidden">
+    <div className="bg-gradient-to-b from-green-200 to-green-300 p-6 relative h-full overflow-hidden" data-tutorial-id="battlefield">
       {/* Enemy Side (Top Right) */}
-      <div className="absolute top-4 right-12 flex flex-col items-center">
+      <div className="absolute top-4 right-12 flex flex-col items-center" data-tutorial-id="enemy-section">
         <div className="relative">
           <div className="text-8xl mb-2">👹</div>
         </div>
@@ -47,7 +47,7 @@ export const BattleField = React.memo(function BattleField({
       </div>
 
       {/* Team Side (Bottom Left) */}
-      <div className="absolute bottom-4 left-12 flex flex-col items-center">
+      <div className="absolute bottom-4 left-12 flex flex-col items-center" data-tutorial-id="team-section">
         <div className="flex items-end justify-center gap-4 mb-3">
           {/* Sort players: left teammate, YOU (center), right teammate */}
           {allPlayers
@@ -63,7 +63,10 @@ export const BattleField = React.memo(function BattleField({
             })
             .map(({ entry, playerId }, sortedIdx) => {
               const isCurrentPlayer = entry.type === "real" && entry.player?.id === currentPlayerId;
-              const stats = entry.type === "real" ? entry.player.get("stats") : entry.bot.stats;
+              // Handle both tutorial mode (direct stats) and game mode (stats via .get())
+              const stats = entry.type === "real"
+                ? (entry.player.get ? entry.player.get("stats") : entry.player.stats)
+                : entry.bot.stats;
               const size = isCurrentPlayer ? "text-6xl" : "text-4xl";
 
               // Determine order: left, center (YOU), right
@@ -81,7 +84,7 @@ export const BattleField = React.memo(function BattleField({
               return (
                 <div key={playerId} className={`flex flex-col items-center ${orderClass}`}>
                   {/* Stats above player with bars */}
-                  <div className="bg-white/90 rounded px-2 py-1 mb-1 border border-gray-400" style={{ width: '100px' }}>
+                  <div className="bg-white/90 rounded px-2 py-1 mb-1 border border-gray-400" style={{ width: '100px' }} data-tutorial-id="player-stats">
                     <div className="space-y-1">
                       {/* STR */}
                       <div className="flex items-center gap-1">

@@ -9,6 +9,7 @@ export function StatsInfo() {
         className="text-white bg-gray-700 hover:bg-gray-600 font-semibold text-xs px-3 py-1 rounded-full flex items-center gap-1 transition-colors"
         onMouseEnter={() => setShowTooltip(true)}
         onMouseLeave={() => setShowTooltip(false)}
+        data-tutorial-id="stats-info"
       >
         ℹ️ How do stats work?
       </button>

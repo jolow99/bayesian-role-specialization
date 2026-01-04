@@ -1,13 +1,18 @@
 import React, { useMemo } from "react";
 import { useGame, usePlayer, usePlayers } from "@empirica/core/player/classic/react";
+import { useTutorialContext } from "./tutorial/TutorialContext";
 
 export function ActionHistory({ maxRows }) {
-  const game = useGame();
-  const player = usePlayer();
-  const players = usePlayers();
+  // Check if in tutorial mode
+  const { isTutorialMode, mockData } = useTutorialContext();
+
+  // Use mock data if in tutorial mode, otherwise use Empirica hooks
+  const game = isTutorialMode ? mockData.game : useGame();
+  const player = isTutorialMode ? mockData.player : usePlayer();
+  const players = isTutorialMode ? mockData.players : usePlayers();
 
   // Get team action history from game
-  const teamHistory = game.get("teamActionHistory") || [];
+  const teamHistory = isTutorialMode ? (mockData.teamHistory || []) : (game.get("teamActionHistory") || []);
 
   const actionIcons = {
     ATTACK: "⚔️",

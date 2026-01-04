@@ -17,7 +17,7 @@ export const ActionMenu = React.memo(function ActionMenu({
   const ROLE_NAMES = ["FIGHTER", "TANK", "HEALER"];
   const orderedRoleNames = roleOrder.map(roleId => ROLE_NAMES[roleId]);
   return (
-    <div>
+    <div data-tutorial-id="action-menu">
       <div className="bg-gray-800 text-white rounded-t-lg px-4 py-2 text-sm font-bold flex items-center justify-between">
         <span>
           {isRoleCommitted
