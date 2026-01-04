@@ -105,10 +105,6 @@ export function TutorialWrapper({ steps = [], onComplete, onSkip, children }) {
     }
   };
 
-  const handleSkip = () => {
-    if (onSkip) onSkip();
-  };
-
   // Don't show tutorial if no steps
   if (steps.length === 0) {
     return <div ref={wrapperRef}>{children}</div>;
@@ -141,11 +137,11 @@ export function TutorialWrapper({ steps = [], onComplete, onSkip, children }) {
           position={currentStepConfig.tooltipPosition || "right"}
           targetRect={targetRect}
           onNext={handleNext}
-          onSkip={handleSkip}
+          onSkip={onSkip}
           stepNumber={currentStep + 1}
           totalSteps={steps.length}
           showNext={true}
-          showSkip={currentStep === 0} // Only show skip on first step
+          showSkip={currentStep === 0 && !!onSkip} // Only show skip on first step if onSkip handler provided
         />
       )}
     </div>

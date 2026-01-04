@@ -6,7 +6,7 @@ import { ActionHistory } from "../components/ActionHistory";
 
 const ROLES = { FIGHTER: 0, TANK: 1, HEALER: 2 };
 
-export function Introduction({ next, game }) {
+export function Introduction({ next }) {
   // Create mock data for the tutorial
   const mockData = createDefaultMockData();
 
@@ -119,10 +119,6 @@ export function Introduction({ next, game }) {
     if (next) next();
   };
 
-  const handleSkip = () => {
-    if (next) next();
-  };
-
   // Build allPlayers array for BattleField component
   const allPlayers = mockData.players.map((p, idx) => ({
     type: idx === 0 ? "real" : "virtual",
@@ -133,7 +129,7 @@ export function Introduction({ next, game }) {
 
   return (
     <MockDataProvider mockData={mockData}>
-      <TutorialWrapper steps={tutorialSteps} onComplete={handleComplete} onSkip={handleSkip}>
+      <TutorialWrapper steps={tutorialSteps} onComplete={handleComplete}>
         <div className="fixed inset-0 bg-gradient-to-b from-blue-400 to-blue-600 flex items-center justify-center p-2">
           <div className="w-full h-full flex items-center justify-center" style={{ maxWidth: '1400px' }}>
             {/* Battle Screen */}

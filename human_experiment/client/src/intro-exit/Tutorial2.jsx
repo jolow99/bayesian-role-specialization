@@ -1,21 +1,33 @@
-import React, { useState } from "react";
-import { Button } from "../components/Button";
+import React, { useState, useEffect } from "react";
 import { MockDataProvider } from "../components/tutorial";
 import { BattleField } from "../components/BattleField";
+import { ActionMenu } from "../components/ActionMenu";
 import { ResultsPanel } from "../components/ResultsPanel";
+import { ActionHistory } from "../components/ActionHistory";
 
 const ROLES = { FIGHTER: 0, TANK: 1, HEALER: 2 };
 const ROLE_NAMES = ["Fighter", "Tank", "Healer"];
 
 export function Tutorial2({ next }) {
   const [selectedRole, setSelectedRole] = useState(null);
-  const [currentScreen, setCurrentScreen] = useState("intro"); // intro, round1, selection, round2, round3, final
+  const [currentRound, setCurrentRound] = useState(1); // 1 = observing round 1, 2 = role selection, 3-4 = rounds 2-3
   const [roundResults, setRoundResults] = useState([]);
   const [mockData, setMockData] = useState(null);
+  const [showOutcome, setShowOutcome] = useState(false);
   const [outcome, setOutcome] = useState(null);
+  const [showDamageAnimation, setShowDamageAnimation] = useState(false);
 
   // Bot players: One Fighter (always attacks), One Tank (defends when enemy attacks)
   const actualBotRoles = [ROLES.FIGHTER, ROLES.TANK];
+
+  useEffect(() => {
+    // Initialize with round 1 observation - enemy attacks, so Tank will defend
+    const round1Result = simulateRound(1, null, 10, 10, true); // true = enemy attacks, null = player hasn't chosen
+    setRoundResults([round1Result]);
+
+    const round1MockData = createMockDataForRound(round1Result, 1, false);
+    setMockData(round1MockData);
+  }, []);
 
   const getBotAction = (role, enemyAttacks) => {
     if (role === ROLES.FIGHTER) return "ATTACK";
@@ -34,22 +46,25 @@ export function Tutorial2({ next }) {
     const bot1Action = getBotAction(actualBotRoles[0], enemyAttacks);
     const bot2Action = getBotAction(actualBotRoles[1], enemyAttacks);
 
-    let playerAction;
+    let playerAction, actions, roles;
     if (playerRole === null) {
-      playerAction = null; // Round 1, player hasn't chosen yet
-    } else if (playerRole === ROLES.FIGHTER) {
-      playerAction = "ATTACK";
-    } else if (playerRole === ROLES.TANK) {
-      playerAction = enemyAttacks ? "DEFEND" : "ATTACK";
-    } else if (playerRole === ROLES.HEALER) {
-      playerAction = currentTeamHP <= 5 ? "HEAL" : "ATTACK";
+      // Round 1, player hasn't chosen yet
+      playerAction = null;
+      actions = [bot1Action, bot2Action];
+      roles = actualBotRoles;
     } else {
-      playerAction = "ATTACK";
+      if (playerRole === ROLES.FIGHTER) {
+        playerAction = "ATTACK";
+      } else if (playerRole === ROLES.TANK) {
+        playerAction = enemyAttacks ? "DEFEND" : "ATTACK";
+      } else if (playerRole === ROLES.HEALER) {
+        playerAction = currentTeamHP <= 5 ? "HEAL" : "ATTACK";
+      } else {
+        playerAction = "ATTACK";
+      }
+      actions = [bot1Action, bot2Action, playerAction];
+      roles = [...actualBotRoles, playerRole];
     }
-
-    const actions = playerRole === null
-      ? [bot1Action, bot2Action]
-      : [bot1Action, bot2Action, playerAction];
 
     let attackCount = actions.filter(a => a === "ATTACK").length;
     let damageToEnemy = attackCount * STR * 1.5;
@@ -80,6 +95,7 @@ export function Tutorial2({ next }) {
       playerAction,
       playerRole,
       actions,
+      roles,
       damageToEnemy: Math.round(damageToEnemy * 10) / 10,
       damageToTeam: Math.round(damageToTeam * 10) / 10,
       healAmount: Math.round(healAmount * 10) / 10,
@@ -90,22 +106,20 @@ export function Tutorial2({ next }) {
     };
   };
 
-  const handleStartTutorial = () => {
-    // Simulate round 1 with enemy attacking (so Tank will defend)
-    const round1Result = simulateRound(1, null, 10, 10, true); // true = enemy attacks, null = player hasn't chosen
-    setRoundResults([round1Result]);
-
-    // Create mock data for round 1
-    const round1MockData = createMockDataForRound(round1Result, 1, false);
-    setMockData(round1MockData);
-    setCurrentScreen("round1");
-  };
-
   const handleRoleSelect = (role) => {
     setSelectedRole(role);
   };
 
-  const handleConfirm = () => {
+  const handleObservationContinue = () => {
+    // Move to role selection
+    setCurrentRound(2);
+    const roleSelectionMockData = createMockDataForRoleSelection();
+    setMockData(roleSelectionMockData);
+  };
+
+  const handleSubmit = () => {
+    if (selectedRole === null) return;
+
     // Simulate rounds 2 and 3 with selected role
     const results = [...roundResults];
     let currentEnemyHP = roundResults[0].enemyHealth;
@@ -125,30 +139,102 @@ export function Tutorial2({ next }) {
     setRoundResults(results);
 
     // Determine outcome
-    let outcomeMessage;
-    let success = false;
+    let outcomeMessage, success;
     if (currentEnemyHP <= 0) {
       outcomeMessage = "Victory! Great job coordinating with your team!";
       success = true;
     } else if (currentTeamHP <= 0) {
       outcomeMessage = "Defeat! Your team was overwhelmed.";
+      success = false;
     } else {
       if (selectedRole === ROLES.HEALER) {
         outcomeMessage = "Excellent! Your healing kept the team healthy while they attacked and defended.";
         success = true;
       } else if (selectedRole === ROLES.TANK) {
         outcomeMessage = "The team survived, but having two defenders is redundant. A healer would have been more helpful!";
+        success = false;
       } else {
         outcomeMessage = "The team survived with heavy damage. Without healing, it was harder to stay healthy!";
+        success = false;
       }
     }
 
-    setOutcome({ message: outcomeMessage, success, enemyHealth: currentEnemyHP, teamHealth: currentTeamHP });
+    setOutcome({
+      type: success ? "WIN" : "LOSE",
+      message: outcomeMessage,
+      success,
+      enemyHealth: currentEnemyHP,
+      teamHealth: currentTeamHP
+    });
 
-    // Create mock data for round 2
-    const round2MockData = createMockDataForRound(results[1], 2, true);
+    // Show round 2
+    const round2Result = results[1];
+    const round2MockData = createMockDataForRound(round2Result, 2, true);
     setMockData(round2MockData);
-    setCurrentScreen("round2");
+    setCurrentRound(3);
+  };
+
+  // Trigger damage animation when advancing rounds
+  useEffect(() => {
+    if (currentRound === 1 || currentRound >= 3) {
+      setShowDamageAnimation(true);
+      const timer = setTimeout(() => setShowDamageAnimation(false), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [currentRound]);
+
+  const handleNextRound = () => {
+    const nextRoundIndex = currentRound - 1; // currentRound 3 = roundResults[1] (round 2)
+    if (nextRoundIndex < roundResults.length) {
+      const nextRoundResult = roundResults[nextRoundIndex];
+      const nextRoundMockData = createMockDataForRound(nextRoundResult, nextRoundIndex + 1, true);
+      setMockData(nextRoundMockData);
+      setCurrentRound(currentRound + 1);
+    } else {
+      // Show outcome overlay
+      setShowOutcome(true);
+    }
+  };
+
+  const createMockDataForRoleSelection = () => {
+    const round1Result = roundResults[0];
+    const players = [
+      { id: "bot-1", playerId: 0, stats: { STR: 2, DEF: 2, SUP: 2 } },
+      { id: "bot-2", playerId: 1, stats: { STR: 2, DEF: 2, SUP: 2 } },
+      { id: "tutorial-player", playerId: 2, stats: { STR: 2, DEF: 2, SUP: 2 } }
+    ];
+
+    return {
+      game: {
+        enemyHealth: round1Result.enemyHealth,
+        maxEnemyHealth: 10,
+        teamHealth: round1Result.teamHealth,
+        maxTeamHealth: 10,
+        treatment: {
+          totalPlayers: 3,
+          maxRounds: 3,
+          maxEnemyHealth: 10,
+          maxTeamHealth: 10
+        }
+      },
+      player: {
+        id: "tutorial-player",
+        playerId: 2,
+        stats: { STR: 2, DEF: 2, SUP: 2 },
+        roleOrder: [ROLES.FIGHTER, ROLES.TANK, ROLES.HEALER],
+        stage: {},
+        round: {}
+      },
+      players: players,
+      round: {
+        roundNumber: 2
+      },
+      stage: {
+        name: "roleSelection",
+        stageType: "roleSelection"
+      },
+      teamHistory: []
+    };
   };
 
   const createMockDataForRound = (roundResult, roundNum, includePlayer) => {
@@ -180,6 +266,7 @@ export function Tutorial2({ next }) {
         id: "tutorial-player",
         playerId: 2,
         stats: { STR: 2, DEF: 2, SUP: 2 },
+        roleOrder: [ROLES.FIGHTER, ROLES.TANK, ROLES.HEALER],
         stage: {},
         round: {}
       },
@@ -188,6 +275,7 @@ export function Tutorial2({ next }) {
         roundNumber: roundNum,
         [`turn1Intent`]: roundResult.enemyIntent,
         [`turn1Actions`]: roundResult.actions,
+        [`turn1Roles`]: roundResult.roles,
         [`turn1DamageToEnemy`]: roundResult.damageToEnemy,
         [`turn1DamageToTeam`]: roundResult.damageToTeam,
         [`turn1HealAmount`]: roundResult.healAmount,
@@ -203,22 +291,6 @@ export function Tutorial2({ next }) {
     };
   };
 
-  const handleNextRound = () => {
-    const currentRoundNum = parseInt(currentScreen.replace("round", ""));
-    if (currentRoundNum < roundResults.length) {
-      const nextRound = roundResults[currentRoundNum];
-      const newMockData = createMockDataForRound(nextRound, currentRoundNum + 1, true);
-      setMockData(newMockData);
-      setCurrentScreen(`round${currentRoundNum + 1}`);
-    } else {
-      setCurrentScreen("final");
-    }
-  };
-
-  const handleNext = () => {
-    next();
-  };
-
   const buildAllPlayers = (includePlayer) => {
     if (!mockData) return [];
     return mockData.players.map((p, idx) => ({
@@ -229,302 +301,264 @@ export function Tutorial2({ next }) {
     }));
   };
 
-  // Intro screen
-  if (currentScreen === "intro") {
-    return (
-      <div className="p-8 max-w-4xl mx-auto">
-        <h3 className="text-2xl font-bold text-gray-900 mb-4 text-center">
-          Tutorial Round 2
-        </h3>
+  const handlePlayAgain = () => {
+    setSelectedRole(null);
+    setCurrentRound(1);
+    setShowOutcome(false);
+    setOutcome(null);
 
-        <div className="bg-yellow-50 border border-yellow-300 rounded-lg p-4 mb-6">
-          <p className="text-sm text-yellow-900 mb-2">
-            This time, you won't see what roles your teammates chose at the start.
-          </p>
-          <p className="text-sm text-yellow-900 font-semibold">
-            You'll observe the first round, then choose your role based on what actions you saw.
-            Your role will then be locked for the next 2 rounds.
-          </p>
-        </div>
+    // Re-initialize with round 1 observation
+    const round1Result = simulateRound(1, null, 10, 10, true);
+    setRoundResults([round1Result]);
 
-        <div className="flex justify-center">
-          <Button handleClick={handleStartTutorial} autoFocus>
-            <p>Begin Tutorial Round 2</p>
-          </Button>
-        </div>
-      </div>
-    );
-  }
+    const round1MockData = createMockDataForRound(round1Result, 1, false);
+    setMockData(round1MockData);
+  };
 
-  // Round 1 observation
-  if (currentScreen === "round1") {
-    const result = roundResults[0];
-    const allPlayers = buildAllPlayers(false);
+  const handleStartMainGame = () => {
+    next();
+  };
 
-    return (
-      <MockDataProvider mockData={mockData}>
-        <div className="fixed inset-0 bg-gradient-to-b from-blue-400 to-blue-600 flex items-center justify-center p-2">
-          <div className="w-full h-full flex items-center justify-center" style={{ maxWidth: '1400px' }}>
-            <div className="bg-white rounded-lg shadow-2xl border-4 border-gray-800 w-full h-full flex flex-col overflow-hidden">
-              <div className="bg-gray-800 text-white text-center py-3">
-                <h1 className="text-xl font-bold">Tutorial Round 2 - Observing Round 1</h1>
-              </div>
+  if (!mockData) return null;
 
-              <div className="flex-1 flex flex-col p-6 overflow-auto">
-                <div className="bg-yellow-50 border border-yellow-300 rounded-lg p-4 mb-4">
-                  <p className="text-sm text-yellow-900 mb-2">
-                    Here's what happened in the first round. Pay attention to what actions your teammates took!
-                  </p>
-                  <p className="text-sm text-yellow-900 font-semibold">
-                    Based on their actions, what roles do you think they're playing? What role would complement the team best?
-                  </p>
-                </div>
+  const isObservingRound1 = currentRound === 1;
+  const isRoleSelection = currentRound === 2;
+  const isTurnStage = currentRound >= 3;
+  const currentRoundResult = isObservingRound1 ? roundResults[0] : (isTurnStage ? roundResults[currentRound - 2] : null);
+  const allPlayers = buildAllPlayers(!isObservingRound1);
 
-                <div className="mb-6" style={{ height: '300px' }}>
-                  <BattleField
-                    enemyHealth={mockData.game.enemyHealth}
-                    maxEnemyHealth={mockData.game.maxEnemyHealth}
-                    teamHealth={mockData.game.teamHealth}
-                    maxHealth={mockData.game.maxTeamHealth}
-                    enemyIntent={result.enemyIntent}
-                    isRevealStage={true}
-                    showDamageAnimation={true}
-                    damageToEnemy={result.damageToEnemy}
-                    damageToTeam={result.damageToTeam}
-                    healAmount={result.healAmount}
-                    actions={result.actions}
-                    allPlayers={allPlayers}
-                    currentPlayerId="tutorial-player"
-                    previousEnemyHealth={result.previousEnemyHealth}
-                    previousTeamHealth={result.previousTeamHealth}
-                  />
-                </div>
-
-                <div className="flex-1">
-                  <ResultsPanel
-                    roundNumber={result.roundNum}
-                    turnNumber={1}
-                    actions={result.actions}
-                    allPlayers={allPlayers}
-                    currentPlayerId="tutorial-player"
-                    enemyIntent={result.enemyIntent}
-                    countdown={null}
-                  />
-                </div>
-              </div>
-
-              <div className="bg-gray-100 border-t-4 border-gray-700 p-4 flex justify-center">
-                <Button handleClick={() => setCurrentScreen("selection")} autoFocus>
-                  <p>Choose Your Role</p>
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </MockDataProvider>
-    );
-  }
-
-  // Role selection screen
-  if (currentScreen === "selection") {
-    const round1Result = roundResults[0];
-
-    return (
-      <div className="p-8 max-w-4xl mx-auto">
-        <h3 className="text-2xl font-bold text-gray-900 mb-4 text-center">
-          Tutorial Round 2 - Choose Your Role
-        </h3>
-
-        <div className="bg-yellow-50 border border-yellow-300 rounded-lg p-4 mb-6">
-          <p className="text-sm text-yellow-900 mb-2">
-            Remember what you saw in Round 1:
-          </p>
-          <div className="flex gap-4 justify-center my-3">
-            <div className="bg-white rounded border border-yellow-400 p-2 text-center text-xs">
-              <div className="text-xl mb-1">⚔️</div>
-              <div>P1: <strong>Attack</strong></div>
-            </div>
-            <div className="bg-white rounded border border-yellow-400 p-2 text-center text-xs">
-              <div className="text-xl mb-1">🛡️</div>
-              <div>P2: <strong>Defend</strong></div>
-            </div>
-          </div>
-          <p className="text-sm text-yellow-900 font-semibold">
-            Based on their actions, what role do you think would complement the team best?
-          </p>
-          <p className="text-sm text-yellow-900 mt-2 text-xs">
-            (Your role will be locked for rounds 2 and 3)
-          </p>
-        </div>
-
-        <div className="bg-white border-2 border-gray-200 rounded-lg p-6 mb-6">
-          <h4 className="font-semibold mb-4 text-center">Choose Your Role:</h4>
-          <div className="flex gap-4 justify-center">
-            {[ROLES.FIGHTER, ROLES.TANK, ROLES.HEALER].map((role) => (
-              <button
-                key={role}
-                onClick={() => handleRoleSelect(role)}
-                className={`flex flex-col items-center p-4 rounded-lg border-2 transition-all
-                  ${selectedRole === role
-                    ? 'border-blue-500 bg-blue-50 shadow-lg'
-                    : 'border-gray-300 bg-white hover:border-blue-300'}`}
-              >
-                <div className="text-4xl mb-2">{["⚔️", "🛡️", "💚"][role]}</div>
-                <div className="text-lg font-semibold">{ROLE_NAMES[role]}</div>
-                <div className="text-xs text-gray-500 mt-1">
-                  {role === ROLES.FIGHTER && "Attack enemies"}
-                  {role === ROLES.TANK && "Defend team"}
-                  {role === ROLES.HEALER && "Heal team"}
-                </div>
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className="flex justify-center">
-          <Button
-            handleClick={handleConfirm}
-            disabled={selectedRole === null}
-          >
-            <p>Confirm Role & Continue</p>
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
-  // Rounds 2 and 3 playback
-  if (currentScreen.startsWith("round") && currentScreen !== "round1") {
-    const roundNum = parseInt(currentScreen.replace("round", ""));
-    const result = roundResults[roundNum - 1];
-    const allPlayers = buildAllPlayers(true);
-
-    return (
-      <MockDataProvider mockData={mockData}>
-        <div className="fixed inset-0 bg-gradient-to-b from-blue-400 to-blue-600 flex items-center justify-center p-2">
-          <div className="w-full h-full flex items-center justify-center" style={{ maxWidth: '1400px' }}>
-            <div className="bg-white rounded-lg shadow-2xl border-4 border-gray-800 w-full h-full flex flex-col overflow-hidden">
-              <div className="bg-gray-800 text-white text-center py-3">
-                <h1 className="text-xl font-bold">Tutorial - Round {result.roundNum} of 3</h1>
-              </div>
-
-              <div className="flex-1 flex flex-col p-6 overflow-auto">
-                <div className="mb-6" style={{ height: '300px' }}>
-                  <BattleField
-                    enemyHealth={mockData.game.enemyHealth}
-                    maxEnemyHealth={mockData.game.maxEnemyHealth}
-                    teamHealth={mockData.game.teamHealth}
-                    maxHealth={mockData.game.maxTeamHealth}
-                    enemyIntent={result.enemyIntent}
-                    isRevealStage={true}
-                    showDamageAnimation={true}
-                    damageToEnemy={result.damageToEnemy}
-                    damageToTeam={result.damageToTeam}
-                    healAmount={result.healAmount}
-                    actions={result.actions}
-                    allPlayers={allPlayers}
-                    currentPlayerId="tutorial-player"
-                    previousEnemyHealth={result.previousEnemyHealth}
-                    previousTeamHealth={result.previousTeamHealth}
-                  />
-                </div>
-
-                <div className="flex-1">
-                  <ResultsPanel
-                    roundNumber={result.roundNum}
-                    turnNumber={1}
-                    actions={result.actions}
-                    allPlayers={allPlayers}
-                    currentPlayerId="tutorial-player"
-                    enemyIntent={result.enemyIntent}
-                    countdown={null}
-                  />
-                </div>
-              </div>
-
-              <div className="bg-gray-100 border-t-4 border-gray-700 p-4 flex justify-center">
-                <Button handleClick={handleNextRound} autoFocus>
-                  <p>{roundNum < 3 ? `Continue to Round ${roundNum + 1}` : "See Final Results"}</p>
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </MockDataProvider>
-    );
-  }
-
-  // Final summary
   return (
-    <div className="p-8 max-w-4xl mx-auto">
-      <h3 className="text-2xl font-bold text-gray-900 mb-4 text-center">
-        Tutorial Round 2 - Final Results
-      </h3>
+    <MockDataProvider mockData={mockData}>
+      <div className="fixed inset-0 bg-gradient-to-b from-blue-400 to-blue-600 flex items-center justify-center p-2">
+        <div className="w-full h-full flex items-center justify-center" style={{ maxWidth: '1400px' }}>
+          {/* Battle Screen */}
+          <div className="bg-white rounded-lg shadow-2xl border-4 border-gray-800 w-full h-full flex overflow-hidden relative">
+            {/* Left Column - Game Interface */}
+            <div className="flex-1 flex flex-col min-w-0">
+              {/* Round Header */}
+              <div className="bg-gray-800 text-white text-center flex-shrink-0 rounded-tl-lg flex items-center justify-center" style={{ height: '40px' }}>
+                <h1 className="text-lg font-bold">
+                  Tutorial 2 - Round {isRoleSelection ? 1 : (isObservingRound1 ? 1 : currentRound - 1)}/3
+                </h1>
+              </div>
 
-      <div className={`border-2 rounded-lg p-6 mb-6 ${outcome.success ? 'bg-green-50 border-green-300' : 'bg-orange-50 border-orange-300'}`}>
-        <p className="text-lg font-semibold mb-2 text-center">
-          {outcome.message}
-        </p>
-      </div>
+              {/* Info Banners */}
+              {isObservingRound1 && (
+                <div className="bg-yellow-50 border-b-4 border-yellow-400 px-4 py-3 flex-shrink-0">
+                  <p className="text-sm text-yellow-900 font-semibold text-center">
+                    You'll observe what actions your teammates take. Based on their actions, what roles do you think they're playing?
+                  </p>
+                </div>
+              )}
 
-      <div className="bg-gray-50 rounded-lg p-6 mb-6">
-        <h4 className="font-semibold mb-3">Final State:</h4>
-        <div className="grid grid-cols-2 gap-4 mb-4">
-          <div className="text-center">
-            <div className="text-sm text-gray-600">Enemy Health</div>
-            <div className="text-3xl font-bold text-red-600">{outcome.enemyHealth}</div>
-          </div>
-          <div className="text-center">
-            <div className="text-sm text-gray-600">Team Health</div>
-            <div className="text-3xl font-bold text-green-600">{outcome.teamHealth}</div>
+              {isRoleSelection && (
+                <div className="bg-yellow-50 border-b-4 border-yellow-400 px-4 py-3 flex-shrink-0">
+                  <p className="text-sm text-yellow-900 font-semibold text-center">
+                    What role would complement the team best?
+                  </p>
+                </div>
+              )}
+
+              {/* Battle Field */}
+              <div className="flex-shrink-0" style={{ height: '35vh', minHeight: '250px', maxHeight: '400px' }}>
+                <BattleField
+                  enemyHealth={mockData.game.enemyHealth}
+                  maxEnemyHealth={mockData.game.maxEnemyHealth}
+                  teamHealth={mockData.game.teamHealth}
+                  maxHealth={mockData.game.maxTeamHealth}
+                  enemyIntent={currentRoundResult?.enemyIntent || null}
+                  isRevealStage={!isRoleSelection}
+                  showDamageAnimation={showDamageAnimation}
+                  damageToEnemy={currentRoundResult?.damageToEnemy || 0}
+                  damageToTeam={currentRoundResult?.damageToTeam || 0}
+                  healAmount={currentRoundResult?.healAmount || 0}
+                  actions={currentRoundResult?.actions || []}
+                  allPlayers={allPlayers}
+                  currentPlayerId="tutorial-player"
+                  previousEnemyHealth={currentRoundResult?.previousEnemyHealth || mockData.game.enemyHealth}
+                  previousTeamHealth={currentRoundResult?.previousTeamHealth || mockData.game.teamHealth}
+                />
+              </div>
+
+              {/* Role Selection or Turn Results */}
+              <div className="bg-white border-t-4 border-gray-700 flex-1 min-h-0 flex flex-col">
+                <div className="flex-1 p-4 flex items-center justify-center overflow-auto">
+                  {/* Observation - Round 1 Results */}
+                  {isObservingRound1 && (
+                    <div className="w-full">
+                      <ResultsPanel
+                        roundNumber={1}
+                        turnNumber={1}
+                        actions={roundResults[0].actions}
+                        allPlayers={allPlayers}
+                        currentPlayerId="tutorial-player"
+                        enemyIntent={roundResults[0].enemyIntent}
+                        countdown={null}
+                      />
+
+                      <div className="mt-4 text-center">
+                        <button
+                          onClick={handleObservationContinue}
+                          className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg text-lg shadow-lg transition-colors"
+                        >
+                          Choose Your Role
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Role Selection */}
+                  {isRoleSelection && (
+                    <div className="w-full max-w-4xl">
+                      {/* Reminder of what was observed */}
+                      <div className="mb-6 bg-gray-50 rounded-lg p-4 border-2 border-gray-200">
+                        <h4 className="font-semibold mb-3 text-center text-gray-700">What You Observed in Round 1:</h4>
+                        <div className="flex gap-4 justify-center">
+                          <div className="text-center bg-white border-2 border-gray-300 rounded p-3">
+                            <div className="text-3xl mb-1">⚔️</div>
+                            <div className="text-xs font-semibold text-gray-600">Player 1</div>
+                            <div className="text-sm font-bold text-gray-700">Attacked</div>
+                          </div>
+                          <div className="text-center bg-white border-2 border-gray-300 rounded p-3">
+                            <div className="text-3xl mb-1">🛡️</div>
+                            <div className="text-xs font-semibold text-gray-600">Player 2</div>
+                            <div className="text-sm font-bold text-gray-700">Defended</div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <ActionMenu
+                        selectedRole={selectedRole}
+                        onRoleSelect={handleRoleSelect}
+                        onSubmit={handleSubmit}
+                        isRoleCommitted={false}
+                        currentRole={null}
+                        roundsRemaining={0}
+                        submitted={false}
+                        roleOrder={[ROLES.FIGHTER, ROLES.TANK, ROLES.HEALER]}
+                      />
+                    </div>
+                  )}
+
+                  {/* Turn Results - Rounds 2 and 3 */}
+                  {isTurnStage && (
+                    <div className="w-full">
+                      <ResultsPanel
+                        roundNumber={currentRoundResult.roundNum}
+                        turnNumber={1}
+                        actions={currentRoundResult.actions}
+                        allPlayers={allPlayers}
+                        currentPlayerId="tutorial-player"
+                        enemyIntent={currentRoundResult.enemyIntent}
+                        countdown={null}
+                      />
+
+                      <div className="mt-4 text-center">
+                        <button
+                          onClick={handleNextRound}
+                          className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg text-lg shadow-lg transition-colors"
+                        >
+                          {currentRound < roundResults.length + 1 ? `Continue to Round ${currentRound - 1}` : "See Results"}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Right Column - Battle History */}
+            <div className="bg-gray-50 border-l-4 border-gray-700 overflow-hidden flex flex-col" style={{ width: '22%', minWidth: '280px', maxWidth: '350px' }}>
+              <div className="bg-gray-800 text-white text-center flex-shrink-0 rounded-tr-lg flex items-center justify-center" style={{ height: '40px' }}>
+                <h3 className="text-sm font-bold">📜 Battle History</h3>
+              </div>
+              <div className="flex-1 overflow-auto p-3 bg-white">
+                <ActionHistory />
+              </div>
+            </div>
+
+            {/* Outcome Overlay */}
+            {showOutcome && outcome && (
+              <div className="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
+                <div className={`${outcome.success ? 'bg-green-50 border-green-400' : 'bg-orange-50 border-orange-400'} border-4 rounded-xl p-8 max-w-2xl w-full shadow-2xl mx-4`}>
+                  {/* Icon and Title */}
+                  <div className="text-center mb-6">
+                    <div className="text-8xl mb-4">{outcome.success ? '🎉' : '⚠️'}</div>
+                    <h1 className={`text-5xl font-bold ${outcome.success ? 'text-green-700' : 'text-orange-700'} mb-2`}>
+                      {outcome.success ? 'Success!' : 'Complete'}
+                    </h1>
+                    <p className="text-xl text-gray-700">{outcome.message}</p>
+                  </div>
+
+                  {/* Final Stats */}
+                  <div className="bg-white rounded-lg p-6 mb-6 border-2 border-gray-300">
+                    <h3 className="text-lg font-bold text-gray-800 mb-4 text-center">Final Battle Statistics</h3>
+                    <div className="grid grid-cols-2 gap-4 mb-4">
+                      <div className="text-center">
+                        <div className="text-sm text-gray-600 mb-2">Enemy Health</div>
+                        <div className="flex items-center justify-center gap-2">
+                          <div className="text-3xl">👹</div>
+                          <div className={`text-2xl font-bold ${outcome.enemyHealth === 0 ? 'text-gray-400 line-through' : 'text-red-600'}`}>
+                            {outcome.enemyHealth} / 10
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-sm text-gray-600 mb-2">Team Health</div>
+                        <div className="flex items-center justify-center gap-2">
+                          <div className="text-3xl">❤️</div>
+                          <div className={`text-2xl font-bold ${outcome.teamHealth === 0 ? 'text-gray-400 line-through' : 'text-green-600'}`}>
+                            {outcome.teamHealth} / 10
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Reveal actual roles */}
+                    <div className="pt-4 border-t border-gray-300">
+                      <p className="text-sm text-gray-700 mb-3 text-center font-semibold">
+                        In the real game, you'll need to infer roles from actions. Did you guess correctly?
+                      </p>
+                      <div className="flex gap-3 justify-center">
+                        <div className="text-center bg-gray-100 rounded p-2">
+                          <div className="text-2xl mb-1">⚔️</div>
+                          <div className="text-xs text-gray-600">P1: Fighter</div>
+                          <div className="text-xs text-gray-500">(Attacks)</div>
+                        </div>
+                        <div className="text-center bg-gray-100 rounded p-2">
+                          <div className="text-2xl mb-1">🛡️</div>
+                          <div className="text-xs text-gray-600">P2: Tank</div>
+                          <div className="text-xs text-gray-500">(Defends)</div>
+                        </div>
+                        <div className="text-center bg-blue-100 border-2 border-blue-400 rounded p-2">
+                          <div className="text-2xl mb-1">{["⚔️", "🛡️", "💚"][selectedRole]}</div>
+                          <div className="text-xs text-gray-600">You: {ROLE_NAMES[selectedRole]}</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex justify-center gap-4">
+                    <button
+                      onClick={handlePlayAgain}
+                      className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg text-lg shadow-lg transition-colors"
+                    >
+                      Play Again
+                    </button>
+                    <button
+                      onClick={handleStartMainGame}
+                      className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-8 rounded-lg text-lg shadow-lg transition-colors"
+                    >
+                      Start Main Game →
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
-
-        <div className="pt-4 border-t border-gray-300">
-          <p className="text-sm text-gray-700 mb-2 text-center"><strong>The team roles were:</strong></p>
-          <div className="flex gap-4 justify-center">
-            <div className="text-center bg-gray-100 rounded p-3">
-              <div className="text-3xl mb-1">⚔️</div>
-              <div className="text-xs text-gray-600">P1: Fighter</div>
-              <div className="text-xs text-gray-500">(Always attacks)</div>
-            </div>
-            <div className="text-center bg-gray-100 rounded p-3">
-              <div className="text-3xl mb-1">🛡️</div>
-              <div className="text-xs text-gray-600">P2: Tank</div>
-              <div className="text-xs text-gray-500">(Defends when enemy attacks)</div>
-            </div>
-            <div className="text-center bg-blue-100 border-2 border-blue-400 rounded p-3">
-              <div className="text-3xl mb-1">{["⚔️", "🛡️", "💚"][selectedRole]}</div>
-              <div className="text-xs text-gray-600">You: {ROLE_NAMES[selectedRole]}</div>
-            </div>
-          </div>
-        </div>
       </div>
-
-      <div className="bg-blue-50 border border-blue-200 rounded p-4 mb-6">
-        <p className="text-sm text-blue-800 mb-2">
-          <strong>Key Learning:</strong> In the real game, you won't see what roles your teammates chose.
-          You'll need to infer their roles from the actions they take each round.
-        </p>
-        <p className="text-sm text-blue-800">
-          For example, if you see someone consistently attacking, they're likely a Fighter.
-          If someone defends when the enemy attacks, they're probably a Tank.
-          Pay attention to patterns and coordinate your role accordingly!
-        </p>
-      </div>
-
-      <div className="bg-green-50 border border-green-300 rounded p-4 mb-6">
-        <p className="text-sm text-green-800 font-semibold">
-          You're now ready for the main game! Remember to pay attention to what actions
-          your teammates are taking and coordinate your role accordingly.
-        </p>
-      </div>
-
-      <div className="flex justify-center">
-        <Button handleClick={handleNext} autoFocus>
-          <p>Start Main Game</p>
-        </Button>
-      </div>
-    </div>
+    </MockDataProvider>
   );
 }
