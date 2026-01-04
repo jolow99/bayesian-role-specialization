@@ -10,48 +10,60 @@ const ROLE_NAMES = ["Fighter", "Tank", "Healer"];
 
 export function Tutorial2({ next }) {
   const [selectedRole, setSelectedRole] = useState(null);
-  const [currentRound, setCurrentRound] = useState(1); // 1 = observing round 1, 2 = role selection, 3-4 = rounds 2-3
+  const [currentRound, setCurrentRound] = useState(2); // Start directly at role selection (2)
   const [roundResults, setRoundResults] = useState([]);
   const [mockData, setMockData] = useState(null);
   const [showOutcome, setShowOutcome] = useState(false);
   const [outcome, setOutcome] = useState(null);
   const [showDamageAnimation, setShowDamageAnimation] = useState(false);
 
-  // Bot players: One Fighter (always attacks), One Tank (defends when enemy attacks)
-  const actualBotRoles = [ROLES.FIGHTER, ROLES.TANK];
+  // Bot players: One Tank (defends when enemy attacks), One Healer (heals when health < 50%)
+  const actualBotRoles = [ROLES.TANK, ROLES.HEALER];
 
   useEffect(() => {
-    // Initialize with round 1 observation - enemy attacks, so Tank will defend
-    const round1Result = simulateRound(1, null, 10, 10, true); // true = enemy attacks, null = player hasn't chosen
+    // Initialize directly at role selection with Round 1 already completed
+    const round1Result = simulateRound(1, null, 10, 10); // null = player hasn't chosen yet
     setRoundResults([round1Result]);
 
-    const round1MockData = createMockDataForRound(round1Result, 1, false);
-    setMockData(round1MockData);
+    const roleSelectionMockData = createMockDataForRoleSelection(round1Result);
+    setMockData(roleSelectionMockData);
   }, []);
 
-  const getBotAction = (role, enemyAttacks) => {
+  const getBotAction = (role, enemyAttacks, teamHealth) => {
     if (role === ROLES.FIGHTER) return "ATTACK";
     if (role === ROLES.TANK) return enemyAttacks ? "DEFEND" : "ATTACK";
-    if (role === ROLES.HEALER) return "HEAL";
+    if (role === ROLES.HEALER) {
+      // Healer heals when team health < 50%, otherwise attacks
+      return teamHealth < 5 ? "HEAL" : "ATTACK";
+    }
     return "ATTACK";
   };
 
-  // Simulate a single round of combat
-  const simulateRound = (roundNum, playerRole, currentEnemyHP, currentTeamHP, fixedEnemyAttacks = null) => {
-    const enemyAttacks = fixedEnemyAttacks !== null ? fixedEnemyAttacks : Math.random() > 0.5;
+  // Simulate a single turn of combat using real game stats
+  const simulateTurn = (turnNum, playerRole, currentEnemyHP, currentTeamHP, enemyAttacks, forcedActions = null) => {
     const enemyIntent = enemyAttacks ? "WILL_ATTACK" : "WILL_REST";
+    const STR = 2, DEF = 2, SUP = 2; // Real game stats
+    const bossDamage = 2; // From treatments.yaml
+    const maxTeamHealth = 10;
 
-    const STR = 0.33, DEF = 0.33, SUP = 0.33;
+    let bot1Action, bot2Action;
 
-    const bot1Action = getBotAction(actualBotRoles[0], enemyAttacks);
-    const bot2Action = getBotAction(actualBotRoles[1], enemyAttacks);
+    // Use forced actions if provided, otherwise calculate
+    if (forcedActions) {
+      bot1Action = forcedActions[0];
+      bot2Action = forcedActions[1];
+    } else {
+      bot1Action = getBotAction(actualBotRoles[0], enemyAttacks, currentTeamHP);
+      bot2Action = getBotAction(actualBotRoles[1], enemyAttacks, currentTeamHP);
+    }
 
-    let playerAction, actions, roles;
+    let playerAction, actions, roles, stats;
     if (playerRole === null) {
-      // Round 1, player hasn't chosen yet
+      // Player hasn't chosen yet
       playerAction = null;
       actions = [bot1Action, bot2Action];
       roles = actualBotRoles;
+      stats = [{ STR, DEF, SUP }, { STR, DEF, SUP }];
     } else {
       if (playerRole === ROLES.FIGHTER) {
         playerAction = "ATTACK";
@@ -64,30 +76,46 @@ export function Tutorial2({ next }) {
       }
       actions = [bot1Action, bot2Action, playerAction];
       roles = [...actualBotRoles, playerRole];
+      stats = [{ STR, DEF, SUP }, { STR, DEF, SUP }, { STR, DEF, SUP }];
     }
 
-    let attackCount = actions.filter(a => a === "ATTACK").length;
-    let damageToEnemy = attackCount * STR * 1.5;
+    // Calculate damage using real game logic (additive STR)
+    let totalAttack = 0;
+    actions.forEach((action, idx) => {
+      if (action === "ATTACK") {
+        totalAttack += stats[idx].STR;
+      }
+    });
+    const damageToEnemy = totalAttack;
 
-    let hasDefender = actions.includes("DEFEND");
+    // Calculate defense using real game logic (max DEF, not additive)
+    let maxDefense = 0;
+    actions.forEach((action, idx) => {
+      if (action === "DEFEND") {
+        maxDefense = Math.max(maxDefense, stats[idx].DEF);
+      }
+    });
+
     let damageToTeam = 0;
     if (enemyAttacks) {
-      const bossDamage = 2;
-      if (hasDefender) {
-        damageToTeam = Math.max(0, bossDamage - DEF * 3);
-      } else {
-        damageToTeam = bossDamage;
-      }
+      const mitigatedDamage = bossDamage - maxDefense;
+      damageToTeam = Math.max(0, mitigatedDamage);
     }
 
-    let healCount = actions.filter(a => a === "HEAL").length;
-    let healAmount = healCount * SUP * 2;
+    // Calculate healing using real game logic (additive SUP)
+    let totalHeal = 0;
+    actions.forEach((action, idx) => {
+      if (action === "HEAL") {
+        totalHeal += stats[idx].SUP;
+      }
+    });
+    const healAmount = totalHeal;
 
     const newEnemyHP = Math.max(0, currentEnemyHP - damageToEnemy);
-    const newTeamHP = Math.max(0, Math.min(10, currentTeamHP - damageToTeam + healAmount));
+    const newTeamHP = Math.max(0, Math.min(maxTeamHealth, currentTeamHP - damageToTeam + healAmount));
 
     return {
-      roundNum,
+      turnNum,
       enemyAttacks,
       enemyIntent,
       bot1Action,
@@ -96,25 +124,43 @@ export function Tutorial2({ next }) {
       playerRole,
       actions,
       roles,
-      damageToEnemy: Math.round(damageToEnemy * 10) / 10,
-      damageToTeam: Math.round(damageToTeam * 10) / 10,
-      healAmount: Math.round(healAmount * 10) / 10,
-      enemyHealth: Math.round(newEnemyHP * 10) / 10,
-      teamHealth: Math.round(newTeamHP * 10) / 10,
-      previousEnemyHealth: Math.round(currentEnemyHP * 10) / 10,
-      previousTeamHealth: Math.round(currentTeamHP * 10) / 10
+      damageToEnemy: Math.round(damageToEnemy),
+      damageToTeam: Math.round(damageToTeam),
+      healAmount: Math.round(healAmount),
+      enemyHealth: Math.round(newEnemyHP),
+      teamHealth: Math.round(newTeamHP),
+      previousEnemyHealth: Math.round(currentEnemyHP),
+      previousTeamHealth: Math.round(currentTeamHP)
+    };
+  };
+
+  // Simulate a complete round with 2 turns
+  const simulateRound = (roundNum, playerRole, startEnemyHP, startTeamHP) => {
+    // Turn 1: Tank defends, Healer heals, Enemy attacks
+    const turn1 = simulateTurn(1, playerRole, startEnemyHP, startTeamHP, true, ["DEFEND", "HEAL"]);
+
+    // Turn 2: Both bots attack, Enemy rests
+    const turn2 = simulateTurn(2, playerRole, turn1.enemyHealth, turn1.teamHealth, false, ["ATTACK", "ATTACK"]);
+
+    return {
+      roundNum,
+      turns: [turn1, turn2],
+      enemyHealth: turn2.enemyHealth,
+      teamHealth: turn2.teamHealth,
+      // For backward compatibility, expose the last turn's data at the top level
+      enemyIntent: turn2.enemyIntent,
+      actions: turn2.actions,
+      roles: turn2.roles,
+      damageToEnemy: turn2.damageToEnemy,
+      damageToTeam: turn2.damageToTeam,
+      healAmount: turn2.healAmount,
+      previousEnemyHealth: turn2.previousEnemyHealth,
+      previousTeamHealth: turn2.previousTeamHealth
     };
   };
 
   const handleRoleSelect = (role) => {
     setSelectedRole(role);
-  };
-
-  const handleObservationContinue = () => {
-    // Move to role selection
-    setCurrentRound(2);
-    const roleSelectionMockData = createMockDataForRoleSelection();
-    setMockData(roleSelectionMockData);
   };
 
   const handleSubmit = () => {
@@ -138,31 +184,18 @@ export function Tutorial2({ next }) {
 
     setRoundResults(results);
 
-    // Determine outcome
-    let outcomeMessage, success;
+    // Determine outcome - non-normative, let users make their own judgment
+    let outcomeMessage;
     if (currentEnemyHP <= 0) {
-      outcomeMessage = "Victory! Great job coordinating with your team!";
-      success = true;
+      outcomeMessage = "The enemy was defeated!";
     } else if (currentTeamHP <= 0) {
-      outcomeMessage = "Defeat! Your team was overwhelmed.";
-      success = false;
+      outcomeMessage = "The team was defeated.";
     } else {
-      if (selectedRole === ROLES.HEALER) {
-        outcomeMessage = "Excellent! Your healing kept the team healthy while they attacked and defended.";
-        success = true;
-      } else if (selectedRole === ROLES.TANK) {
-        outcomeMessage = "The team survived, but having two defenders is redundant. A healer would have been more helpful!";
-        success = false;
-      } else {
-        outcomeMessage = "The team survived with heavy damage. Without healing, it was harder to stay healthy!";
-        success = false;
-      }
+      outcomeMessage = "The battle concluded after 3 rounds.";
     }
 
     setOutcome({
-      type: success ? "WIN" : "LOSE",
       message: outcomeMessage,
-      success,
       enemyHealth: currentEnemyHP,
       teamHealth: currentTeamHP
     });
@@ -196,13 +229,25 @@ export function Tutorial2({ next }) {
     }
   };
 
-  const createMockDataForRoleSelection = () => {
-    const round1Result = roundResults[0];
+  const createMockDataForRoleSelection = (round1Result) => {
     const players = [
       { id: "bot-1", playerId: 0, stats: { STR: 2, DEF: 2, SUP: 2 } },
       { id: "bot-2", playerId: 1, stats: { STR: 2, DEF: 2, SUP: 2 } },
       { id: "tutorial-player", playerId: 2, stats: { STR: 2, DEF: 2, SUP: 2 } }
     ];
+
+    // Build team history from round 1 turns
+    const teamHistory = round1Result.turns ? round1Result.turns.map(turn => ({
+      round: 1,
+      turn: turn.turnNum,
+      enemyHealth: turn.enemyHealth,
+      teamHealth: turn.teamHealth,
+      enemyIntent: turn.enemyIntent,
+      actions: turn.actions.map((action, idx) => ({
+        playerId: idx,
+        action: action
+      }))
+    })) : [];
 
     return {
       game: {
@@ -233,7 +278,7 @@ export function Tutorial2({ next }) {
         name: "roleSelection",
         stageType: "roleSelection"
       },
-      teamHistory: []
+      teamHistory: teamHistory
     };
   };
 
@@ -248,6 +293,19 @@ export function Tutorial2({ next }) {
           { id: "bot-1", playerId: 0, stats: { STR: 2, DEF: 2, SUP: 2 } },
           { id: "bot-2", playerId: 1, stats: { STR: 2, DEF: 2, SUP: 2 } }
         ];
+
+    // Build team history from the turns in this round
+    const teamHistory = roundResult.turns ? roundResult.turns.map(turn => ({
+      round: roundNum,
+      turn: turn.turnNum,
+      enemyHealth: turn.enemyHealth,
+      teamHealth: turn.teamHealth,
+      enemyIntent: turn.enemyIntent,
+      actions: turn.actions.map((action, idx) => ({
+        playerId: idx,
+        action: action
+      }))
+    })) : [];
 
     return {
       game: {
@@ -287,7 +345,7 @@ export function Tutorial2({ next }) {
         stageType: "turn",
         turnNumber: 1
       },
-      teamHistory: []
+      teamHistory: teamHistory
     };
   };
 
@@ -303,16 +361,16 @@ export function Tutorial2({ next }) {
 
   const handlePlayAgain = () => {
     setSelectedRole(null);
-    setCurrentRound(1);
+    setCurrentRound(2);
     setShowOutcome(false);
     setOutcome(null);
 
-    // Re-initialize with round 1 observation
-    const round1Result = simulateRound(1, null, 10, 10, true);
+    // Re-initialize at role selection
+    const round1Result = simulateRound(1, null, 10, 10);
     setRoundResults([round1Result]);
 
-    const round1MockData = createMockDataForRound(round1Result, 1, false);
-    setMockData(round1MockData);
+    const roleSelectionMockData = createMockDataForRoleSelection(round1Result);
+    setMockData(roleSelectionMockData);
   };
 
   const handleStartMainGame = () => {
@@ -321,11 +379,10 @@ export function Tutorial2({ next }) {
 
   if (!mockData) return null;
 
-  const isObservingRound1 = currentRound === 1;
   const isRoleSelection = currentRound === 2;
   const isTurnStage = currentRound >= 3;
-  const currentRoundResult = isObservingRound1 ? roundResults[0] : (isTurnStage ? roundResults[currentRound - 2] : null);
-  const allPlayers = buildAllPlayers(!isObservingRound1);
+  const currentRoundResult = isTurnStage ? roundResults[currentRound - 2] : null;
+  const allPlayers = buildAllPlayers(!isRoleSelection);
 
   return (
     <MockDataProvider mockData={mockData}>
@@ -338,23 +395,15 @@ export function Tutorial2({ next }) {
               {/* Round Header */}
               <div className="bg-gray-800 text-white text-center flex-shrink-0 rounded-tl-lg flex items-center justify-center" style={{ height: '40px' }}>
                 <h1 className="text-lg font-bold">
-                  Tutorial 2 - Round {isRoleSelection ? 1 : (isObservingRound1 ? 1 : currentRound - 1)}/3
+                  Tutorial 2 - Round {isRoleSelection ? 1 : currentRound - 1}/3
                 </h1>
               </div>
 
               {/* Info Banners */}
-              {isObservingRound1 && (
-                <div className="bg-yellow-50 border-b-4 border-yellow-400 px-4 py-3 flex-shrink-0">
-                  <p className="text-sm text-yellow-900 font-semibold text-center">
-                    You'll observe what actions your teammates take. Based on their actions, what roles do you think they're playing?
-                  </p>
-                </div>
-              )}
-
               {isRoleSelection && (
                 <div className="bg-yellow-50 border-b-4 border-yellow-400 px-4 py-3 flex-shrink-0">
                   <p className="text-sm text-yellow-900 font-semibold text-center">
-                    What role would complement the team best?
+                    Based on the action patterns in the Battle History, what role would complement the team?
                   </p>
                 </div>
               )}
@@ -383,50 +432,9 @@ export function Tutorial2({ next }) {
               {/* Role Selection or Turn Results */}
               <div className="bg-white border-t-4 border-gray-700 flex-1 min-h-0 flex flex-col">
                 <div className="flex-1 p-4 flex items-center justify-center overflow-auto">
-                  {/* Observation - Round 1 Results */}
-                  {isObservingRound1 && (
-                    <div className="w-full">
-                      <ResultsPanel
-                        roundNumber={1}
-                        turnNumber={1}
-                        actions={roundResults[0].actions}
-                        allPlayers={allPlayers}
-                        currentPlayerId="tutorial-player"
-                        enemyIntent={roundResults[0].enemyIntent}
-                        countdown={null}
-                      />
-
-                      <div className="mt-4 text-center">
-                        <button
-                          onClick={handleObservationContinue}
-                          className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg text-lg shadow-lg transition-colors"
-                        >
-                          Choose Your Role
-                        </button>
-                      </div>
-                    </div>
-                  )}
-
                   {/* Role Selection */}
                   {isRoleSelection && (
                     <div className="w-full max-w-4xl">
-                      {/* Reminder of what was observed */}
-                      <div className="mb-6 bg-gray-50 rounded-lg p-4 border-2 border-gray-200">
-                        <h4 className="font-semibold mb-3 text-center text-gray-700">What You Observed in Round 1:</h4>
-                        <div className="flex gap-4 justify-center">
-                          <div className="text-center bg-white border-2 border-gray-300 rounded p-3">
-                            <div className="text-3xl mb-1">⚔️</div>
-                            <div className="text-xs font-semibold text-gray-600">Player 1</div>
-                            <div className="text-sm font-bold text-gray-700">Attacked</div>
-                          </div>
-                          <div className="text-center bg-white border-2 border-gray-300 rounded p-3">
-                            <div className="text-3xl mb-1">🛡️</div>
-                            <div className="text-xs font-semibold text-gray-600">Player 2</div>
-                            <div className="text-sm font-bold text-gray-700">Defended</div>
-                          </div>
-                        </div>
-                      </div>
-
                       <ActionMenu
                         selectedRole={selectedRole}
                         onRoleSelect={handleRoleSelect}
@@ -480,12 +488,12 @@ export function Tutorial2({ next }) {
             {/* Outcome Overlay */}
             {showOutcome && outcome && (
               <div className="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
-                <div className={`${outcome.success ? 'bg-green-50 border-green-400' : 'bg-orange-50 border-orange-400'} border-4 rounded-xl p-8 max-w-2xl w-full shadow-2xl mx-4`}>
-                  {/* Icon and Title */}
+                <div className="bg-blue-50 border-blue-400 border-4 rounded-xl p-8 max-w-2xl w-full shadow-2xl mx-4">
+                  {/* Title */}
                   <div className="text-center mb-6">
-                    <div className="text-8xl mb-4">{outcome.success ? '🎉' : '⚠️'}</div>
-                    <h1 className={`text-5xl font-bold ${outcome.success ? 'text-green-700' : 'text-orange-700'} mb-2`}>
-                      {outcome.success ? 'Success!' : 'Complete'}
+                    <div className="text-8xl mb-4">🎮</div>
+                    <h1 className="text-5xl font-bold text-blue-700 mb-2">
+                      Tutorial Complete
                     </h1>
                     <p className="text-xl text-gray-700">{outcome.message}</p>
                   </div>
@@ -517,18 +525,18 @@ export function Tutorial2({ next }) {
                     {/* Reveal actual roles */}
                     <div className="pt-4 border-t border-gray-300">
                       <p className="text-sm text-gray-700 mb-3 text-center font-semibold">
-                        In the real game, you'll need to infer roles from actions. Did you guess correctly?
+                        Actual Roles (in the real game, you'll need to infer these from action patterns):
                       </p>
                       <div className="flex gap-3 justify-center">
                         <div className="text-center bg-gray-100 rounded p-2">
-                          <div className="text-2xl mb-1">⚔️</div>
-                          <div className="text-xs text-gray-600">P1: Fighter</div>
-                          <div className="text-xs text-gray-500">(Attacks)</div>
+                          <div className="text-2xl mb-1">🛡️</div>
+                          <div className="text-xs text-gray-600">P1: Tank</div>
+                          <div className="text-xs text-gray-500">(Defends when attacked)</div>
                         </div>
                         <div className="text-center bg-gray-100 rounded p-2">
-                          <div className="text-2xl mb-1">🛡️</div>
-                          <div className="text-xs text-gray-600">P2: Tank</div>
-                          <div className="text-xs text-gray-500">(Defends)</div>
+                          <div className="text-2xl mb-1">💚</div>
+                          <div className="text-xs text-gray-600">P2: Healer</div>
+                          <div className="text-xs text-gray-500">(Heals when damaged)</div>
                         </div>
                         <div className="text-center bg-blue-100 border-2 border-blue-400 rounded p-2">
                           <div className="text-2xl mb-1">{["⚔️", "🛡️", "💚"][selectedRole]}</div>

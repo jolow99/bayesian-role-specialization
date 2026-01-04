@@ -82,6 +82,11 @@ export function ActionHistory({ maxRows }) {
                   <div className="flex items-center justify-between mb-2">
                     <div className="text-xs text-gray-600 font-semibold">
                       Turn {turn.turn}
+                      {turn.enemyIntent && (
+                        <span className={`ml-2 ${turn.enemyIntent === 'WILL_ATTACK' ? 'text-red-600' : 'text-gray-500'}`}>
+                          ({turn.enemyIntent === 'WILL_ATTACK' ? 'Enemy Attacked' : 'Enemy Rested'})
+                        </span>
+                      )}
                     </div>
                     <div className="flex gap-3 text-xs">
                       <span className="text-red-600 font-semibold">

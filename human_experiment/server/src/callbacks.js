@@ -546,7 +546,8 @@ function resolveTurnActions(game, round, turnNumber, actions, stats, enemyIntent
       action: ACTION_NAMES[action]
     })),
     enemyHealth: Math.round(newEnemyHealth),
-    teamHealth: Math.round(newTeamHealth)
+    teamHealth: Math.round(newTeamHealth),
+    enemyIntent: enemyIntent
   });
   game.set("teamActionHistory", gameHistory);
 }
