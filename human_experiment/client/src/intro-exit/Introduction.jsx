@@ -13,8 +13,9 @@ export function Introduction({ next }) {
   // Define the 6 tutorial steps
   const tutorialSteps = [
     {
-      targetId: null, // Highlight entire interface
+      targetId: "full-screen", // Show darkened background
       tooltipPosition: "center",
+      showBorder: false, // Don't show blue pulsing border
       content: (
         <div>
           <h3 className="text-lg font-bold text-gray-900 mb-3">Welcome to Cooperative Battle Game!</h3>
@@ -130,7 +131,7 @@ export function Introduction({ next }) {
   return (
     <MockDataProvider mockData={mockData}>
       <TutorialWrapper steps={tutorialSteps} onComplete={handleComplete}>
-        <div className="fixed inset-0 bg-gradient-to-b from-blue-400 to-blue-600 flex items-center justify-center p-2">
+        <div className="fixed inset-0 bg-gradient-to-b from-blue-400 to-blue-600 flex items-center justify-center p-2" data-tutorial-id="full-screen">
           <div className="w-full h-full flex items-center justify-center" style={{ maxWidth: '1400px' }}>
             {/* Battle Screen */}
             <div className="bg-white rounded-lg shadow-2xl border-4 border-gray-800 w-full h-full flex overflow-hidden relative">

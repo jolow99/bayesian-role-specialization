@@ -19,6 +19,7 @@ import { TutorialTooltip } from "./TutorialTooltip";
 export function TutorialWrapper({ steps = [], onComplete, onSkip, children }) {
   const [currentStep, setCurrentStep] = useState(0);
   const [targetRect, setTargetRect] = useState(null);
+  const [targetRects, setTargetRects] = useState([]);
   const wrapperRef = useRef(null);
 
   // Find and measure the target element whenever step changes
@@ -39,24 +40,37 @@ export function TutorialWrapper({ steps = [], onComplete, onSkip, children }) {
     // Wait for next tick to ensure DOM is ready
     const timer = setTimeout(() => {
       if (!step.targetId) {
-        // Highlight entire wrapper
-        if (wrapperRef.current) {
-          const rect = wrapperRef.current.getBoundingClientRect();
-          setTargetRect(rect);
+        // No highlight, just show tooltip centered
+        setTargetRect(null);
+        setTargetRects([]);
+      } else if (Array.isArray(step.targetId)) {
+        // Multiple targets - collect all rects synchronously
+        const rects = [];
+        for (const id of step.targetId) {
+          const element = document.querySelector(`[data-tutorial-id="${id}"]`);
+          if (element) {
+            rects.push(element.getBoundingClientRect());
+          }
+        }
+        if (rects.length > 0) {
+          setTargetRects(rects);
+          // Use first rect for tooltip positioning
+          setTargetRect(rects[0]);
+        } else {
+          setTargetRect(null);
+          setTargetRects([]);
         }
       } else {
-        // Find element by data-tutorial-id
+        // Single target - find element by data-tutorial-id
         const element = document.querySelector(`[data-tutorial-id="${step.targetId}"]`);
         if (element) {
           const rect = element.getBoundingClientRect();
           setTargetRect(rect);
+          setTargetRects([rect]);
         } else {
           console.warn(`[Tutorial] Could not find element with data-tutorial-id="${step.targetId}"`);
-          // Fallback to wrapper
-          if (wrapperRef.current) {
-            const rect = wrapperRef.current.getBoundingClientRect();
-            setTargetRect(rect);
-          }
+          setTargetRect(null);
+          setTargetRects([]);
         }
       }
     }, 100);
@@ -70,14 +84,27 @@ export function TutorialWrapper({ steps = [], onComplete, onSkip, children }) {
       if (currentStep >= steps.length) return;
 
       const step = steps[currentStep];
-      if (!step.targetId && wrapperRef.current) {
-        const rect = wrapperRef.current.getBoundingClientRect();
-        setTargetRect(rect);
+      if (!step.targetId) {
+        setTargetRect(null);
+        setTargetRects([]);
+      } else if (Array.isArray(step.targetId)) {
+        const rects = [];
+        for (const id of step.targetId) {
+          const element = document.querySelector(`[data-tutorial-id="${id}"]`);
+          if (element) {
+            rects.push(element.getBoundingClientRect());
+          }
+        }
+        if (rects.length > 0) {
+          setTargetRects(rects);
+          setTargetRect(rects[0]);
+        }
       } else if (step.targetId) {
         const element = document.querySelector(`[data-tutorial-id="${step.targetId}"]`);
         if (element) {
           const rect = element.getBoundingClientRect();
           setTargetRect(rect);
+          setTargetRects([rect]);
         }
       }
     };
@@ -105,6 +132,16 @@ export function TutorialWrapper({ steps = [], onComplete, onSkip, children }) {
     }
   };
 
+  const handleBack = () => {
+    if (currentStep > 0) {
+      setCurrentStep(currentStep - 1);
+    }
+  };
+
+  const handleReplay = () => {
+    setCurrentStep(0);
+  };
+
   // Don't show tutorial if no steps
   if (steps.length === 0) {
     return <div ref={wrapperRef}>{children}</div>;
@@ -121,29 +158,29 @@ export function TutorialWrapper({ steps = [], onComplete, onSkip, children }) {
     <div ref={wrapperRef} className="relative">
       {children}
 
-      {/* Spotlight overlay */}
-      {targetRect && (
+      {/* Spotlight overlay - show if we have target rects */}
+      {targetRects.length > 0 && (
         <TutorialSpotlight
-          targetRect={targetRect}
+          targetRects={targetRects}
           padding={16}
-          showBorder={true}
+          showBorder={currentStepConfig.showBorder !== false}
         />
       )}
 
-      {/* Tooltip */}
-      {targetRect && (
-        <TutorialTooltip
-          content={currentStepConfig.content}
-          position={currentStepConfig.tooltipPosition || "right"}
-          targetRect={targetRect}
-          onNext={handleNext}
-          onSkip={onSkip}
-          stepNumber={currentStep + 1}
-          totalSteps={steps.length}
-          showNext={true}
-          showSkip={currentStep === 0 && !!onSkip} // Only show skip on first step if onSkip handler provided
-        />
-      )}
+      {/* Tooltip - show always (can be centered when no target) */}
+      <TutorialTooltip
+        content={currentStepConfig.content}
+        position={currentStepConfig.tooltipPosition || "center"}
+        targetRect={targetRect}
+        onNext={handleNext}
+        onBack={currentStep > 0 ? handleBack : null}
+        onSkip={onSkip}
+        onReplay={currentStep === steps.length - 1 ? handleReplay : null}
+        stepNumber={currentStep + 1}
+        totalSteps={steps.length}
+        showNext={true}
+        showSkip={currentStep === 0 && !!onSkip}
+      />
     </div>
   );
 }

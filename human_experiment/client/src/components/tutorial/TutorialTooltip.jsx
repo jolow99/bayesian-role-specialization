@@ -10,7 +10,9 @@ export function TutorialTooltip({
   position = "right", // preferred position: top, right, bottom, left, center
   targetRect,
   onNext,
+  onBack,
   onSkip,
+  onReplay,
   stepNumber,
   totalSteps,
   showNext = true,
@@ -34,19 +36,6 @@ export function TutorialTooltip({
     setIsVisible(true);
   }, [targetRect, position]);
 
-  // Handle keyboard navigation
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.key === "Enter" && showNext && onNext) {
-        onNext();
-      } else if (e.key === "Escape" && showSkip && onSkip) {
-        onSkip();
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [onNext, onSkip, showNext, showSkip]);
 
   return (
     <div
@@ -83,20 +72,37 @@ export function TutorialTooltip({
       </div>
 
       {/* Navigation buttons */}
-      <div className="flex gap-3 justify-end">
-        {showSkip && onSkip && (
-          <button
-            onClick={onSkip}
-            className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 transition-colors"
-          >
-            Skip Tutorial
-          </button>
-        )}
-        {showNext && onNext && (
-          <Button handleClick={onNext} autoFocus>
-            <p>{stepNumber === totalSteps ? "Finish" : "Next"}</p>
-          </Button>
-        )}
+      <div className="flex gap-3 justify-between items-center">
+        {/* Left side - Skip and Back buttons */}
+        <div className="flex gap-3">
+          {showSkip && onSkip && (
+            <button
+              onClick={onSkip}
+              className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 transition-colors"
+            >
+              Skip Tutorial
+            </button>
+          )}
+          {onBack && (
+            <Button handleClick={onBack}>
+              <p>Back</p>
+            </Button>
+          )}
+        </div>
+
+        {/* Right side - Next/Finish and Replay buttons */}
+        <div className="flex gap-3">
+          {onReplay && (
+            <Button handleClick={onReplay}>
+              <p>Replay</p>
+            </Button>
+          )}
+          {showNext && onNext && (
+            <Button handleClick={onNext} autoFocus>
+              <p>{stepNumber === totalSteps ? "Finish" : "Next"}</p>
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Arrow pointer */}
