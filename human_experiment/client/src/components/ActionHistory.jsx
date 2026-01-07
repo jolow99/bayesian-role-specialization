@@ -78,7 +78,11 @@ export function ActionHistory({ maxRows }) {
             {/* Turns within the round */}
             <div className="space-y-2">
               {roundEntry.turns.map((turn, turnIdx) => (
-                <div key={turnIdx} className="bg-white rounded border border-gray-200 p-2">
+                <div
+                  key={turnIdx}
+                  className="bg-white rounded border border-gray-200 p-2"
+                  data-tutorial-id={`battle-history-r${roundEntry.round}t${turn.turn}`}
+                >
                   <div className="flex items-center justify-between mb-2">
                     <div className="text-xs text-gray-600 font-semibold">
                       Turn {turn.turn}
