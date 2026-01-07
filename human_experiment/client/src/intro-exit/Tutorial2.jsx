@@ -529,7 +529,7 @@ export function Tutorial2({ next }) {
       )
     },
     {
-      targetId: "action-menu",
+      targetId: "proceed-button",
       tooltipPosition: "top",
       content: (
         <div>
@@ -538,7 +538,7 @@ export function Tutorial2({ next }) {
             Based on these action patterns, what roles might the players have?
           </p>
           <p className="text-sm text-gray-700 font-semibold">
-            Choose a role that you think best complements the team for Round 2.
+            Click the button to proceed to role selection for Round 2.
           </p>
         </div>
       )
@@ -610,6 +610,7 @@ export function Tutorial2({ next }) {
                           </p>
                         </div>
                         <button
+                          data-tutorial-id="proceed-button"
                           onClick={handleProceedToRoleSelection}
                           className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-8 rounded-lg text-xl shadow-lg transition-colors"
                         >
@@ -782,7 +783,7 @@ export function Tutorial2({ next }) {
     </MockDataProvider>
   );
 
-  // Show tutorial during role selection if not yet completed
+  // Show tutorial during Round 1 Complete state
   if (isRoleSelection && !tutorialComplete) {
     return (
       <TutorialWrapper steps={tutorialSteps} onComplete={handleTutorialComplete}>
