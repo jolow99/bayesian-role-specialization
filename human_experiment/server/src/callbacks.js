@@ -526,13 +526,32 @@ function resolveTurnActions(game, round, turnNumber, actions, stats, enemyIntent
   game.players.forEach((player) => {
     const playerId = player.get("playerId");
     const history = player.get("actionHistory") || [];
-    history.push({
-      round: round.get("roundNumber"),
-      turn: turnNumber,
-      action: ACTION_NAMES[actions[playerId]],
-      enemyHealth: Math.round(newEnemyHealth),
-      teamHealth: Math.round(newTeamHealth)
-    });
+    const roundNumber = round.get("roundNumber");
+
+    // Get the player's role for this round
+    const currentRole = player.round.get("selectedRole");
+
+    // Check if we already have an entry for this round (to avoid duplicates across turns)
+    const existingEntry = history.find(h => h.round === roundNumber);
+
+    if (!existingEntry) {
+      // First turn of this round - create new entry with role
+      history.push({
+        round: roundNumber,
+        turn: turnNumber,
+        action: ACTION_NAMES[actions[playerId]],
+        role: currentRole,
+        enemyHealth: Math.round(newEnemyHealth),
+        teamHealth: Math.round(newTeamHealth)
+      });
+    } else {
+      // Update existing entry for subsequent turns
+      existingEntry.turn = turnNumber;
+      existingEntry.action = ACTION_NAMES[actions[playerId]];
+      existingEntry.enemyHealth = Math.round(newEnemyHealth);
+      existingEntry.teamHealth = Math.round(newTeamHealth);
+    }
+
     player.set("actionHistory", history);
   });
 

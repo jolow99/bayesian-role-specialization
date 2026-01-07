@@ -185,7 +185,7 @@ export function Tutorial1({ next }) {
 
     // Show first round
     const firstRound = results[0];
-    const firstRoundMockData = createMockDataForRound(firstRound, 1);
+    const firstRoundMockData = createMockDataForRound(firstRound, 1, [firstRound]);
     setMockData(firstRoundMockData);
     setCurrentRound(1);
   };
@@ -202,7 +202,12 @@ export function Tutorial1({ next }) {
   const handleNextRound = () => {
     if (currentRound < roundResults.length) {
       const nextRoundResult = roundResults[currentRound];
-      const nextRoundMockData = createMockDataForRound(nextRoundResult, currentRound + 1);
+      // Pass all results up to and including the next round for history
+      const nextRoundMockData = createMockDataForRound(
+        nextRoundResult,
+        currentRound + 1,
+        roundResults.slice(0, currentRound + 1)
+      );
       setMockData(nextRoundMockData);
       setCurrentRound(currentRound + 1);
     } else {
@@ -237,7 +242,11 @@ export function Tutorial1({ next }) {
         stats: { STR: 2, DEF: 2, SUP: 2 },
         roleOrder: [ROLES.FIGHTER, ROLES.TANK, ROLES.HEALER],
         stage: {},
-        round: {}
+        round: {},
+        get: (key) => {
+          if (key === "actionHistory") return [];
+          return undefined;
+        }
       },
       players: players,
       round: {
@@ -251,12 +260,39 @@ export function Tutorial1({ next }) {
     };
   };
 
-  const createMockDataForRound = (roundResult, roundNum) => {
+  const createMockDataForRound = (roundResult, roundNum, previousResults) => {
     const players = [
       { id: "bot-1", playerId: 0, stats: { STR: 2, DEF: 2, SUP: 2 } },
       { id: "bot-2", playerId: 1, stats: { STR: 2, DEF: 2, SUP: 2 } },
       { id: "tutorial-player", playerId: 2, stats: { STR: 2, DEF: 2, SUP: 2 } }
     ];
+
+    // Build team history from all previous rounds
+    const teamHistory = [];
+    const playerActionHistory = [];
+
+    previousResults.forEach((result, idx) => {
+      const roundNumber = idx + 1;
+
+      // Add player's role to action history
+      playerActionHistory.push({
+        round: roundNumber,
+        role: result.playerRole
+      });
+
+      // Add team history entry for this round's turn
+      teamHistory.push({
+        round: roundNumber,
+        turn: 1,
+        enemyIntent: result.enemyIntent,
+        actions: result.actions.map((action, playerIdx) => ({
+          action: action,
+          playerId: playerIdx
+        })),
+        enemyHealth: result.enemyHealth,
+        teamHealth: result.teamHealth
+      });
+    });
 
     return {
       game: {
@@ -277,7 +313,11 @@ export function Tutorial1({ next }) {
         stats: { STR: 2, DEF: 2, SUP: 2 },
         roleOrder: [ROLES.FIGHTER, ROLES.TANK, ROLES.HEALER],
         stage: {},
-        round: {}
+        round: {},
+        get: (key) => {
+          if (key === "actionHistory") return playerActionHistory;
+          return undefined;
+        }
       },
       players: players,
       round: {
@@ -296,7 +336,7 @@ export function Tutorial1({ next }) {
         stageType: "turn",
         turnNumber: 1
       },
-      teamHistory: []
+      teamHistory: teamHistory
     };
   };
 
