@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { MockDataProvider } from "../components/tutorial";
+import { MockDataProvider, TutorialWrapper } from "../components/tutorial";
 import { BattleField } from "../components/BattleField";
 import { ActionMenu } from "../components/ActionMenu";
 import { ResultsPanel } from "../components/ResultsPanel";
@@ -15,12 +15,48 @@ export function Tutorial1({ next }) {
   const [showOutcome, setShowOutcome] = useState(false);
   const [outcome, setOutcome] = useState(null);
   const [showDamageAnimation, setShowDamageAnimation] = useState(false);
+  const [tutorialComplete, setTutorialComplete] = useState(false);
 
   // Initialize with role selection state
   useEffect(() => {
     const initialMockData = createMockDataForRoleSelection();
     setMockData(initialMockData);
   }, []);
+
+  // Define tutorial steps
+  const tutorialSteps = [
+    {
+      targetId: "teammate-roles",
+      tooltipPosition: "right",
+      content: (
+        <div>
+          <h4 className="text-lg font-bold text-gray-900 mb-2">Seeing Teammate Roles</h4>
+          <p className="text-sm text-gray-700 mb-2">
+            In this game, you get to see what roles the other players chose before you choose your own role.
+          </p>
+          <p className="text-sm text-gray-700 font-semibold">
+            Note: In the main game, you will only get to see the actions and not the roles that your teammates chose.
+          </p>
+        </div>
+      )
+    },
+    {
+      targetId: "action-menu",
+      tooltipPosition: "top",
+      content: (
+        <div>
+          <h4 className="text-lg font-bold text-gray-900 mb-2">Choose Your Role</h4>
+          <p className="text-sm text-gray-700">
+            Depending on what you think best helps the team, choose your role.
+          </p>
+        </div>
+      )
+    }
+  ];
+
+  const handleTutorialComplete = () => {
+    setTutorialComplete(true);
+  };
 
   // Bot players both chose Fighter (indices 0 and 1)
   const botRoles = [ROLES.FIGHTER, ROLES.FIGHTER];
@@ -283,7 +319,7 @@ export function Tutorial1({ next }) {
   const isTurnStage = currentRound > 0;
   const currentRoundResult = currentRound > 0 ? roundResults[currentRound - 1] : null;
 
-  return (
+  const content = (
     <MockDataProvider mockData={mockData}>
       <div className="fixed inset-0 bg-gradient-to-b from-blue-400 to-blue-600 flex items-center justify-center p-2">
         <div className="w-full h-full flex items-center justify-center" style={{ maxWidth: '1400px' }}>
@@ -296,14 +332,6 @@ export function Tutorial1({ next }) {
                 <h1 className="text-lg font-bold">Tutorial 1 - Round {currentRound > 0 ? currentRound : 1}/2</h1>
               </div>
 
-              {/* Info Banner */}
-              {isRoleSelection && (
-                <div className="bg-yellow-50 border-b-4 border-yellow-400 px-4 py-3 flex-shrink-0">
-                  <p className="text-sm text-yellow-900 font-semibold text-center">
-                    The other two players have chosen the Fighter role. What role will you choose?
-                  </p>
-                </div>
-              )}
 
               {/* Battle Field */}
               <div className="flex-shrink-0" style={{ height: '35vh', minHeight: '250px', maxHeight: '400px' }}>
@@ -333,7 +361,7 @@ export function Tutorial1({ next }) {
                   {isRoleSelection && (
                     <div className="w-full max-w-4xl">
                       {/* Show teammate roles */}
-                      <div className="mb-6 bg-gray-50 rounded-lg p-4 border-2 border-gray-200">
+                      <div className="mb-6 bg-gray-50 rounded-lg p-4 border-2 border-gray-200" data-tutorial-id="teammate-roles">
                         <h4 className="font-semibold mb-3 text-center text-gray-700">Your Teammates' Roles:</h4>
                         <div className="flex gap-4 justify-center">
                           <div className="text-center bg-red-50 border-2 border-red-300 rounded p-3">
@@ -349,16 +377,18 @@ export function Tutorial1({ next }) {
                         </div>
                       </div>
 
-                      <ActionMenu
-                        selectedRole={selectedRole}
-                        onRoleSelect={handleRoleSelect}
-                        onSubmit={handleSubmit}
-                        isRoleCommitted={false}
-                        currentRole={null}
-                        roundsRemaining={0}
-                        submitted={false}
-                        roleOrder={[ROLES.FIGHTER, ROLES.TANK, ROLES.HEALER]}
-                      />
+                      <div data-tutorial-id="action-menu">
+                        <ActionMenu
+                          selectedRole={selectedRole}
+                          onRoleSelect={handleRoleSelect}
+                          onSubmit={handleSubmit}
+                          isRoleCommitted={false}
+                          currentRole={null}
+                          roundsRemaining={0}
+                          submitted={false}
+                          roleOrder={[ROLES.FIGHTER, ROLES.TANK, ROLES.HEALER]}
+                        />
+                      </div>
                     </div>
                   )}
 
@@ -461,4 +491,15 @@ export function Tutorial1({ next }) {
       </div>
     </MockDataProvider>
   );
+
+  // Only show tutorial on first load during role selection
+  if (isRoleSelection && !tutorialComplete) {
+    return (
+      <TutorialWrapper steps={tutorialSteps} onComplete={handleTutorialComplete}>
+        {content}
+      </TutorialWrapper>
+    );
+  }
+
+  return content;
 }
