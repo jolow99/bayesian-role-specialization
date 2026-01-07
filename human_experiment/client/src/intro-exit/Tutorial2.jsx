@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { MockDataProvider, TutorialWrapper } from "../components/tutorial";
+import { MockDataProvider } from "../components/tutorial";
 import { BattleField } from "../components/BattleField";
 import { ActionMenu } from "../components/ActionMenu";
 import { ResultsPanel } from "../components/ResultsPanel";
@@ -18,8 +18,7 @@ export function Tutorial2({ next }) {
   const [round1Turn2Result, setRound1Turn2Result] = useState(null);
   const [round2Turn1Result, setRound2Turn1Result] = useState(null);
   const [round2Turn2Result, setRound2Turn2Result] = useState(null);
-  const [currentGameState, setCurrentGameState] = useState("initial"); // initial, round1-turn1, round1-turn2, round1-complete, role-selection, round2-turn1, round2-turn2, outcome
-  const [tutorialComplete, setTutorialComplete] = useState(false);
+  const [currentGameState, setCurrentGameState] = useState("initial"); // initial, round1-turn1, round1-turn2, role-selection, round2-turn1, round2-turn2, outcome
   const [round1PlaybackStep, setRound1PlaybackStep] = useState(0); // 0: initial, 1: turn1 shown, 2: turn2 shown
 
   // Bot players: One Tank (defends when enemy attacks), One Healer (heals when health < 50%)
@@ -253,7 +252,10 @@ export function Tutorial2({ next }) {
   };
 
   const completeRound1 = () => {
-    setCurrentGameState("round1-complete");
+    // Go directly to role selection
+    const newMockData = createMockDataForRoleSelection();
+    setMockData(newMockData);
+    setCurrentGameState("role-selection");
   };
 
   const createMockDataForRound1Complete = (turn1Result, turn2Result) => {
@@ -587,7 +589,6 @@ export function Tutorial2({ next }) {
     setRound1Turn2Result(null);
     setRound2Turn1Result(null);
     setRound2Turn2Result(null);
-    setTutorialComplete(false);
     initializeRound1();
   };
 
@@ -595,88 +596,12 @@ export function Tutorial2({ next }) {
     next();
   };
 
-  const handleProceedToRoleSelection = () => {
-    const newMockData = createMockDataForRoleSelection();
-    setMockData(newMockData);
-    setCurrentGameState("role-selection");
-    setTutorialComplete(true);
-  };
-
-  const handleTutorialComplete = () => {
-    setTutorialComplete(true);
-  };
-
-  // Define tutorial steps
-  const tutorialSteps = [
-    {
-      targetId: null,
-      tooltipPosition: "center",
-      content: (
-        <div>
-          <h4 className="text-lg font-bold text-gray-900 mb-2">Strategic Role Selection</h4>
-          <p className="text-sm text-gray-700 mb-2">
-            In this tutorial, you'll learn how to analyze battle patterns and choose the best role to complement your team.
-          </p>
-          <p className="text-sm text-gray-700">
-            Round 1 has already been played out. Let's examine what happened to determine the best role for Round 2.
-          </p>
-        </div>
-      )
-    },
-    {
-      targetId: "battle-history-r1t1",
-      tooltipPosition: "left",
-      content: (
-        <div>
-          <h4 className="text-lg font-bold text-gray-900 mb-2">Round 1, Turn 1</h4>
-          <p className="text-sm text-gray-700 mb-2">
-            The enemy attacked, dealing 6 damage. Player 1 chose DEFEND (reducing damage by 2) and Player 2 chose ATTACK (dealing 2 damage).
-          </p>
-          <p className="text-sm text-gray-700 font-semibold">
-            Result: Enemy 10→{round1Turn1Result?.enemyHealth}, Team 10→{round1Turn1Result?.teamHealth}
-          </p>
-        </div>
-      )
-    },
-    {
-      targetId: "battle-history-r1t2",
-      tooltipPosition: "left",
-      content: (
-        <div>
-          <h4 className="text-lg font-bold text-gray-900 mb-2">Round 1, Turn 2</h4>
-          <p className="text-sm text-gray-700 mb-2">
-            The enemy rested (no attack). Player 1 chose ATTACK and Player 2 chose HEAL (restoring 2 health).
-          </p>
-          <p className="text-sm text-gray-700 font-semibold">
-            Result: Enemy {round1Turn1Result?.enemyHealth}→{round1Turn2Result?.enemyHealth}, Team {round1Turn1Result?.teamHealth}→{round1Turn2Result?.teamHealth}
-          </p>
-        </div>
-      )
-    },
-    {
-      targetId: "proceed-button",
-      tooltipPosition: "top",
-      content: (
-        <div>
-          <h4 className="text-lg font-bold text-gray-900 mb-2">Choose Your Role</h4>
-          <p className="text-sm text-gray-700 mb-2">
-            Based on these action patterns, what roles might the players have?
-          </p>
-          <p className="text-sm text-gray-700 font-semibold">
-            Click the button to proceed to role selection for Round 2.
-          </p>
-        </div>
-      )
-    }
-  ];
-
   if (!mockData) return <div className="flex items-center justify-center h-screen">Loading...</div>;
 
   const allPlayers = buildAllPlayers();
   const isInitial = currentGameState === "initial";
   const isRound1Turn1 = currentGameState === "round1-turn1";
   const isRound1Turn2 = currentGameState === "round1-turn2";
-  const isRound1Complete = currentGameState === "round1-complete";
   const isRoleSelection = currentGameState === "role-selection";
   const isRound2Turn1 = currentGameState === "round2-turn1";
   const isRound2Turn2 = currentGameState === "round2-turn2";
@@ -788,31 +713,14 @@ export function Tutorial2({ next }) {
                             onClick={completeRound1}
                             className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg text-lg shadow-lg transition-colors"
                           >
-                            Analyze Battle History →
+                            Proceed to Role Selection →
                           </button>
                         </div>
                       </div>
                     )}
 
-                    {/* Round 1 Complete - Show battle analysis */}
-                    {isRound1Complete && !tutorialComplete && (
-                      <div className="w-full text-center">
-                        <h2 className="text-2xl font-bold text-gray-800 mb-4">Round 1 Complete!</h2>
-                        <p className="text-lg text-gray-600 mb-6">
-                          Review the battle history on the right to understand what roles the players might have.
-                        </p>
-                        <button
-                          data-tutorial-id="proceed-button"
-                          onClick={handleProceedToRoleSelection}
-                          className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-8 rounded-lg text-lg shadow-lg transition-colors"
-                        >
-                          Proceed to Role Selection →
-                        </button>
-                      </div>
-                    )}
-
                     {/* Role Selection */}
-                    {(isRoleSelection || (isRound1Complete && tutorialComplete)) && (
+                    {isRoleSelection && (
                       <div className="w-full max-w-4xl">
                         <div data-tutorial-id="action-menu">
                           <ActionMenu
@@ -974,15 +882,6 @@ export function Tutorial2({ next }) {
       </div>
     </MockDataProvider>
   );
-
-  // Show tutorial during Round 1 Complete state (before user has proceeded to role selection)
-  if (isRound1Complete && !tutorialComplete) {
-    return (
-      <TutorialWrapper steps={tutorialSteps} onComplete={handleTutorialComplete}>
-        {content}
-      </TutorialWrapper>
-    );
-  }
 
   return content;
 }
