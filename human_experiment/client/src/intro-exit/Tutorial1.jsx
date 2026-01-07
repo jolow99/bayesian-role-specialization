@@ -73,45 +73,56 @@ export function Tutorial1({ next }) {
     // Calculate team actions based on roles
     const roles = [...botRoles, playerRole];
 
-    // Count attacks - 2 Fighters deal 5 damage each, 3 Fighters deal 3.5 damage each
-    let attackCount = roles.filter(r => r === ROLES.FIGHTER).length;
-    let damageToEnemy;
-    if (attackCount === 2) {
-      damageToEnemy = 5; // 2 fighters = 5 damage per round
-    } else if (attackCount === 3) {
-      damageToEnemy = 3.5; // 3 fighters = 3.5 damage
-    } else {
-      damageToEnemy = 0;
+    // Calculate damage to enemy: sum of all attackers' STR (each player has STR=2)
+    let attackers = [];
+    let defenders = [];
+    let healers = [];
+
+    roles.forEach((role, idx) => {
+      if (role === ROLES.FIGHTER) {
+        attackers.push(idx);
+      } else if (role === ROLES.TANK) {
+        defenders.push(idx);
+      } else if (role === ROLES.HEALER) {
+        healers.push(idx);
+      }
+    });
+
+    // Everyone attacks (fighters, and healers attack too when not healing)
+    // Healers only heal if team health <= 50%
+    const willHeal = healers.length > 0 && currentTeamHP <= 3; // 3 is 50% of 6
+
+    // Damage to enemy: attackers + healers who don't heal this turn
+    let damageToEnemy = attackers.length * 2;
+    if (!willHeal && healers.length > 0) {
+      damageToEnemy += healers.length * 2; // Healers attack if not healing
     }
 
-    // Check for defense
-    let hasDefender = roles.includes(ROLES.TANK);
-    let damageToTeam = 0;
-    const bossDamage = 6; // Boss deals 6 damage per attack
-    if (hasDefender) {
-      damageToTeam = 1; // Tank reduces it to 1 damage
-    } else {
-      damageToTeam = bossDamage;
+    // Boss always does 3 damage
+    const bossDamage = 3;
+
+    // Damage to team calculation
+    let damageToTeam = bossDamage;
+
+    // If there's a defender, reduce damage by highest DEF (each has DEF=2)
+    if (defenders.length > 0) {
+      damageToTeam = Math.max(0, bossDamage - 2); // Highest DEF is 2, so 3 - 2 = 1
     }
 
-    // Check for healing
-    let hasHealer = roles.includes(ROLES.HEALER);
-    let healAmount = 0;
-    if (hasHealer && currentTeamHP < 10) {
-      healAmount = 3; // Healer restores 3 HP
-    }
+    // Healing - sum of all healers' SUP (each has SUP=2), only if they're healing
+    let healAmount = willHeal ? healers.length * 2 : 0;
 
     // Determine actions for display
     const actions = roles.map(role => {
       if (role === ROLES.FIGHTER) return "ATTACK";
       if (role === ROLES.TANK) return "DEFEND";
-      if (role === ROLES.HEALER) return healAmount > 0 ? "HEAL" : "ATTACK";
+      if (role === ROLES.HEALER) return willHeal ? "HEAL" : "ATTACK";
       return "ATTACK";
     });
 
     // Update health
     const newEnemyHP = Math.max(0, currentEnemyHP - damageToEnemy);
-    const newTeamHP = Math.max(0, Math.min(10, currentTeamHP - damageToTeam + healAmount));
+    const newTeamHP = Math.max(0, currentTeamHP - damageToTeam + healAmount);
 
     return {
       roundNum,
@@ -119,13 +130,13 @@ export function Tutorial1({ next }) {
       playerRole,
       actions,
       roles,
-      damageToEnemy: Math.round(damageToEnemy * 10) / 10,
-      damageToTeam: Math.round(damageToTeam * 10) / 10,
-      healAmount: Math.round(healAmount * 10) / 10,
-      enemyHealth: Math.round(newEnemyHP * 10) / 10,
-      teamHealth: Math.round(newTeamHP * 10) / 10,
-      previousEnemyHealth: Math.round(currentEnemyHP * 10) / 10,
-      previousTeamHealth: Math.round(currentTeamHP * 10) / 10
+      damageToEnemy,
+      damageToTeam,
+      healAmount,
+      enemyHealth: newEnemyHP,
+      teamHealth: newTeamHP,
+      previousEnemyHealth: currentEnemyHP,
+      previousTeamHealth: currentTeamHP
     };
   };
 
@@ -134,8 +145,8 @@ export function Tutorial1({ next }) {
 
     // Simulate 2 rounds
     const results = [];
-    let currentEnemyHP = 10;
-    let currentTeamHP = 10;
+    let currentEnemyHP = 8;
+    let currentTeamHP = 6;
 
     for (let i = 1; i <= 2; i++) {
       const result = simulateRound(i, selectedRole, currentEnemyHP, currentTeamHP);
@@ -152,12 +163,13 @@ export function Tutorial1({ next }) {
 
     // Determine outcome
     let outcomeMessage, success;
-    if (currentEnemyHP <= 0) {
-      outcomeMessage = "Victory! Your team defeated the enemy!";
-      success = true;
-    } else if (currentTeamHP <= 0) {
+    // If both reach 0, team loses
+    if (currentTeamHP <= 0) {
       outcomeMessage = "Defeat! The enemy overwhelmed your team.";
       success = false;
+    } else if (currentEnemyHP <= 0) {
+      outcomeMessage = "Victory! Your team defeated the enemy!";
+      success = true;
     } else {
       outcomeMessage = "The battle continues...";
       success = false;
@@ -208,15 +220,15 @@ export function Tutorial1({ next }) {
 
     return {
       game: {
-        enemyHealth: 10,
-        maxEnemyHealth: 10,
-        teamHealth: 10,
-        maxTeamHealth: 10,
+        enemyHealth: 8,
+        maxEnemyHealth: 8,
+        teamHealth: 6,
+        maxTeamHealth: 6,
         treatment: {
           totalPlayers: 3,
           maxRounds: 2,
-          maxEnemyHealth: 10,
-          maxTeamHealth: 10
+          maxEnemyHealth: 8,
+          maxTeamHealth: 6
         }
       },
       player: {
@@ -249,14 +261,14 @@ export function Tutorial1({ next }) {
     return {
       game: {
         enemyHealth: roundResult.enemyHealth,
-        maxEnemyHealth: 10,
+        maxEnemyHealth: 8,
         teamHealth: roundResult.teamHealth,
-        maxTeamHealth: 10,
+        maxTeamHealth: 6,
         treatment: {
           totalPlayers: 3,
           maxRounds: 2,
-          maxEnemyHealth: 10,
-          maxTeamHealth: 10
+          maxEnemyHealth: 8,
+          maxTeamHealth: 6
         }
       },
       player: {
@@ -452,7 +464,7 @@ export function Tutorial1({ next }) {
                         <div className="flex items-center justify-center gap-2">
                           <div className="text-3xl">👹</div>
                           <div className={`text-2xl font-bold ${outcome.enemyHealth === 0 ? 'text-gray-400 line-through' : 'text-red-600'}`}>
-                            {outcome.enemyHealth} / 10
+                            {outcome.enemyHealth} / 8
                           </div>
                         </div>
                       </div>
@@ -461,7 +473,7 @@ export function Tutorial1({ next }) {
                         <div className="flex items-center justify-center gap-2">
                           <div className="text-3xl">❤️</div>
                           <div className={`text-2xl font-bold ${outcome.teamHealth === 0 ? 'text-gray-400 line-through' : 'text-green-600'}`}>
-                            {outcome.teamHealth} / 10
+                            {outcome.teamHealth} / 6
                           </div>
                         </div>
                       </div>
