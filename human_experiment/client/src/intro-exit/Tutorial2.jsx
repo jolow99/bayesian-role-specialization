@@ -43,7 +43,7 @@ export function Tutorial2({ next }) {
   const simulateTurn = (turnNum, playerRole, currentEnemyHP, currentTeamHP, enemyAttacks) => {
     const enemyIntent = enemyAttacks ? "WILL_ATTACK" : "WILL_REST";
     const STR = 2, DEF = 2, SUP = 2; // Real game stats
-    const bossDamage = 7; // Tutorial 2 boss damage
+    const bossDamage = 6; // Tutorial 2 boss damage
     const maxTeamHealth = 10;
 
     // Calculate bot actions
@@ -251,7 +251,11 @@ export function Tutorial2({ next }) {
         stats: { STR: 2, DEF: 2, SUP: 2 },
         roleOrder: [ROLES.FIGHTER, ROLES.TANK, ROLES.HEALER],
         stage: {},
-        round: {}
+        round: {},
+        get: (key) => {
+          if (key === "actionHistory") return [];
+          return undefined;
+        }
       },
       players: players,
       round: {
@@ -322,6 +326,14 @@ export function Tutorial2({ next }) {
       });
     }
 
+    // Build player action history showing role for round 2
+    const playerActionHistory = [
+      {
+        round: 2,
+        role: selectedRole
+      }
+    ];
+
     return {
       game: {
         enemyHealth: currentTurn.enemyHealth,
@@ -341,7 +353,11 @@ export function Tutorial2({ next }) {
         stats: { STR: 2, DEF: 2, SUP: 2 },
         roleOrder: [ROLES.FIGHTER, ROLES.TANK, ROLES.HEALER],
         stage: {},
-        round: {}
+        round: {},
+        get: (key) => {
+          if (key === "actionHistory") return playerActionHistory;
+          return undefined;
+        }
       },
       players: players,
       round: {
@@ -381,24 +397,35 @@ export function Tutorial2({ next }) {
     const r2t1 = simulateTurn(1, selectedRole, currentEnemyHP, currentTeamHP, true);
     setRound2Turn1Result(r2t1);
 
-    // Round 2 Turn 2: Enemy rests
-    const r2t2 = simulateTurn(2, selectedRole, r2t1.enemyHealth, r2t1.teamHealth, false);
-    setRound2Turn2Result(r2t2);
+    // Round 2 Turn 2: Enemy attacks (only if both are alive after turn 1)
+    let r2t2 = null;
+    if (r2t1.enemyHealth > 0 && r2t1.teamHealth > 0) {
+      r2t2 = simulateTurn(2, selectedRole, r2t1.enemyHealth, r2t1.teamHealth, true);
+      setRound2Turn2Result(r2t2);
+    }
 
-    // Determine outcome
-    let outcomeMessage;
-    if (r2t2.enemyHealth <= 0) {
-      outcomeMessage = "The enemy was defeated!";
-    } else if (r2t2.teamHealth <= 0) {
-      outcomeMessage = "The team was defeated.";
+    // Determine outcome based on final state
+    const finalResult = r2t2 || r2t1;
+    let outcomeMessage, success;
+
+    // If both reach 0, team loses
+    if (finalResult.teamHealth <= 0) {
+      outcomeMessage = "Defeat! The enemy overwhelmed your team.";
+      success = false;
+    } else if (finalResult.enemyHealth <= 0) {
+      outcomeMessage = "Victory! Your team defeated the enemy!";
+      success = true;
     } else {
       outcomeMessage = "The battle concluded after 2 rounds.";
+      success = false;
     }
 
     setOutcome({
+      type: success ? "WIN" : "LOSE",
       message: outcomeMessage,
-      enemyHealth: r2t2.enemyHealth,
-      teamHealth: r2t2.teamHealth
+      success,
+      enemyHealth: finalResult.enemyHealth,
+      teamHealth: finalResult.teamHealth
     });
 
     // Show round 2 turn 1
@@ -410,6 +437,12 @@ export function Tutorial2({ next }) {
   };
 
   const handleNextToRound2Turn2 = () => {
+    // If there's no turn 2 result (battle ended in turn 1), show outcome directly
+    if (!round2Turn2Result) {
+      setShowOutcome(true);
+      return;
+    }
+
     const newMockData = createMockDataForRound2(round2Turn1Result, round2Turn2Result, round2Turn2Result);
     setMockData(newMockData);
     setCurrentGameState("round2-turn2");
@@ -620,7 +653,7 @@ export function Tutorial2({ next }) {
                             onClick={handleNextToRound2Turn2}
                             className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg text-lg shadow-lg transition-colors"
                           >
-                            Continue to Turn 2 →
+                            {round2Turn2Result ? "Continue to Turn 2 →" : "See Results →"}
                           </button>
                         </div>
                       </div>
@@ -665,12 +698,12 @@ export function Tutorial2({ next }) {
               {/* Outcome Overlay */}
               {showOutcome && outcome && (
                 <div className="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
-                  <div className="bg-blue-50 border-blue-400 border-4 rounded-xl p-8 max-w-2xl w-full shadow-2xl mx-4">
-                    {/* Title */}
+                  <div className={`${outcome.success ? 'bg-green-50 border-green-400' : 'bg-red-50 border-red-400'} border-4 rounded-xl p-8 max-w-2xl w-full shadow-2xl mx-4`}>
+                    {/* Icon and Title */}
                     <div className="text-center mb-6">
-                      <div className="text-8xl mb-4">🎮</div>
-                      <h1 className="text-5xl font-bold text-blue-700 mb-2">
-                        Tutorial Complete
+                      <div className="text-8xl mb-4">{outcome.success ? '🎉' : '💀'}</div>
+                      <h1 className={`text-5xl font-bold ${outcome.success ? 'text-green-700' : 'text-red-700'} mb-2`}>
+                        {outcome.success ? 'Victory!' : 'Defeat'}
                       </h1>
                       <p className="text-xl text-gray-700">{outcome.message}</p>
                     </div>
@@ -735,7 +768,7 @@ export function Tutorial2({ next }) {
                       </button>
                       <button
                         onClick={handleStartMainGame}
-                        className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-8 rounded-lg text-lg shadow-lg transition-colors"
+                        className={`${outcome.success ? 'bg-green-600 hover:bg-green-700' : 'bg-gray-600 hover:bg-gray-700'} text-white font-bold py-3 px-6 rounded-lg text-lg shadow-lg transition-colors`}
                       >
                         Start Main Game →
                       </button>
