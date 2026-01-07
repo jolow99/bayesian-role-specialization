@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { MockDataProvider } from "../components/tutorial";
+import { MockDataProvider, TutorialWrapper } from "../components/tutorial";
 import { BattleField } from "../components/BattleField";
 import { ActionMenu } from "../components/ActionMenu";
 import { ResultsPanel } from "../components/ResultsPanel";
@@ -20,14 +20,99 @@ export function Tutorial2({ next }) {
   const [round2Turn2Result, setRound2Turn2Result] = useState(null);
   const [currentGameState, setCurrentGameState] = useState("initial"); // initial, round1-turn1, round1-turn2, role-selection, round2-turn1, round2-turn2, outcome
   const [round1PlaybackStep, setRound1PlaybackStep] = useState(0); // 0: initial, 1: turn1 shown, 2: turn2 shown
+  const [tutorialComplete, setTutorialComplete] = useState(false);
 
   // Bot players: One Tank (defends when enemy attacks), One Healer (heals when health < 50%)
   const actualBotRoles = [ROLES.TANK, ROLES.HEALER];
+
+  // Define tutorial steps
+  const tutorialSteps = [
+    {
+      targetId: null,
+      tooltipPosition: "center",
+      content: (
+        <div>
+          <h4 className="text-lg font-bold text-gray-900 mb-2">Strategic Role Selection</h4>
+          <p className="text-sm text-gray-700 mb-2">
+            In this tutorial, you'll learn how to analyze battle patterns and choose the best role to complement your team.
+          </p>
+          <p className="text-sm text-gray-700">
+            Round 1 has already been played out. Let's examine what happened to determine the best role for Round 2.
+          </p>
+        </div>
+      )
+    },
+    {
+      targetId: "battle-history-r1t1",
+      tooltipPosition: "left",
+      content: (
+        <div>
+          <h4 className="text-lg font-bold text-gray-900 mb-2">Round 1, Turn 1</h4>
+          <p className="text-sm text-gray-700 mb-2">
+            The enemy attacked, dealing 6 damage. Player 1 chose DEFEND (reducing damage by 2) and Player 2 chose ATTACK (dealing 2 damage).
+          </p>
+          <p className="text-sm text-gray-700 font-semibold">
+            Result: Enemy 10→{round1Turn1Result?.enemyHealth}, Team 10→{round1Turn1Result?.teamHealth}
+          </p>
+        </div>
+      )
+    },
+    {
+      targetId: "battle-history-r1t2",
+      tooltipPosition: "left",
+      content: (
+        <div>
+          <h4 className="text-lg font-bold text-gray-900 mb-2">Round 1, Turn 2</h4>
+          <p className="text-sm text-gray-700 mb-2">
+            The enemy rested (no attack). Player 1 chose ATTACK and Player 2 chose HEAL (restoring 2 health).
+          </p>
+          <p className="text-sm text-gray-700 font-semibold">
+            Result: Enemy {round1Turn1Result?.enemyHealth}→{round1Turn2Result?.enemyHealth}, Team {round1Turn1Result?.teamHealth}→{round1Turn2Result?.teamHealth}
+          </p>
+        </div>
+      )
+    },
+    {
+      targetId: "action-menu",
+      tooltipPosition: "top",
+      content: (
+        <div>
+          <h4 className="text-lg font-bold text-gray-900 mb-2">Choose Your Role</h4>
+          <p className="text-sm text-gray-700 mb-2">
+            Based on these action patterns, what roles might the players have?
+          </p>
+          <p className="text-sm text-gray-700 font-semibold">
+            Select a role to complement your team for Round 2.
+          </p>
+        </div>
+      )
+    }
+  ];
+
+  const handleTutorialComplete = () => {
+    setTutorialComplete(true);
+  };
 
   useEffect(() => {
     // Initialize Round 1 on mount
     initializeRound1();
   }, []);
+
+  // Track when entering role selection to ensure tutorial shows
+  useEffect(() => {
+    if (currentGameState === "role-selection") {
+      console.log("Entered role selection, tutorialComplete:", tutorialComplete);
+      console.log("Round 1 Turn 1 Result:", round1Turn1Result);
+      console.log("Round 1 Turn 2 Result:", round1Turn2Result);
+      // Check if battle history elements exist
+      setTimeout(() => {
+        const r1t1 = document.querySelector('[data-tutorial-id="battle-history-r1t1"]');
+        const r1t2 = document.querySelector('[data-tutorial-id="battle-history-r1t2"]');
+        console.log("Battle history r1t1 element:", r1t1);
+        console.log("Battle history r1t2 element:", r1t2);
+      }, 200);
+    }
+  }, [currentGameState, tutorialComplete, round1Turn1Result, round1Turn2Result]);
 
   const getBotAction = (role, enemyAttacks, teamHealth) => {
     if (role === ROLES.FIGHTER) return "ATTACK";
@@ -256,6 +341,8 @@ export function Tutorial2({ next }) {
     const newMockData = createMockDataForRoleSelection();
     setMockData(newMockData);
     setCurrentGameState("role-selection");
+    // Reset tutorial to show when entering role selection
+    setTutorialComplete(false);
   };
 
   const createMockDataForRound1Complete = (turn1Result, turn2Result) => {
@@ -589,6 +676,7 @@ export function Tutorial2({ next }) {
     setRound1Turn2Result(null);
     setRound2Turn1Result(null);
     setRound2Turn2Result(null);
+    setTutorialComplete(false);
     initializeRound1();
   };
 
@@ -882,6 +970,18 @@ export function Tutorial2({ next }) {
       </div>
     </MockDataProvider>
   );
+
+  // Show tutorial on role selection if not yet completed
+  console.log("Render - isRoleSelection:", isRoleSelection, "tutorialComplete:", tutorialComplete, "currentGameState:", currentGameState);
+
+  if (isRoleSelection && !tutorialComplete) {
+    console.log("Showing tutorial wrapper!");
+    return (
+      <TutorialWrapper steps={tutorialSteps} onComplete={handleTutorialComplete}>
+        {content}
+      </TutorialWrapper>
+    );
+  }
 
   return content;
 }

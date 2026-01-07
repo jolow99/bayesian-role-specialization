@@ -23,11 +23,22 @@ export function TutorialTooltip({
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
-    if (!tooltipRef.current || !targetRect) return;
+    if (!tooltipRef.current) return;
 
     const tooltip = tooltipRef.current;
     const tooltipRect = tooltip.getBoundingClientRect();
     const padding = 20; // Space between tooltip and target
+
+    // Handle center position (no target)
+    if (!targetRect || position === "center") {
+      setCalculatedPosition({
+        top: (window.innerHeight - tooltipRect.height) / 2,
+        left: (window.innerWidth - tooltipRect.width) / 2,
+        position: "center"
+      });
+      setIsVisible(true);
+      return;
+    }
 
     const positions = calculatePositions(targetRect, tooltipRect, padding);
     const bestPosition = findBestPosition(positions, tooltipRect, position);
