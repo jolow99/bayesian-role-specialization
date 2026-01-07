@@ -18,15 +18,16 @@ export function Tutorial2({ next }) {
   const [round1Turn2Result, setRound1Turn2Result] = useState(null);
   const [round2Turn1Result, setRound2Turn1Result] = useState(null);
   const [round2Turn2Result, setRound2Turn2Result] = useState(null);
-  const [currentGameState, setCurrentGameState] = useState("initial"); // initial, round1-complete, role-selection, round2-turn1, round2-turn2, outcome
+  const [currentGameState, setCurrentGameState] = useState("initial"); // initial, round1-turn1, round1-turn2, round1-complete, role-selection, round2-turn1, round2-turn2, outcome
   const [tutorialComplete, setTutorialComplete] = useState(false);
+  const [round1PlaybackStep, setRound1PlaybackStep] = useState(0); // 0: initial, 1: turn1 shown, 2: turn2 shown
 
   // Bot players: One Tank (defends when enemy attacks), One Healer (heals when health < 50%)
   const actualBotRoles = [ROLES.TANK, ROLES.HEALER];
 
   useEffect(() => {
-    // Auto-play Round 1 on mount
-    playRound1();
+    // Initialize Round 1 on mount
+    initializeRound1();
   }, []);
 
   const getBotAction = (role, enemyAttacks, teamHealth) => {
@@ -120,18 +121,138 @@ export function Tutorial2({ next }) {
     };
   };
 
-  const playRound1 = () => {
-    // Round 1 Turn 1: Enemy attacks, starting from 10:10
+  const initializeRound1 = () => {
+    // Calculate both turns but don't show them yet
     const r1t1 = simulateTurn(1, null, 10, 10, true);
-    setRound1Turn1Result(r1t1);
-
-    // Round 1 Turn 2: Enemy rests
     const r1t2 = simulateTurn(2, null, r1t1.enemyHealth, r1t1.teamHealth, false);
+
+    setRound1Turn1Result(r1t1);
     setRound1Turn2Result(r1t2);
 
-    // Update mock data to show Round 1 complete state
-    const newMockData = createMockDataForRound1Complete(r1t1, r1t2);
+    // Create initial mock data showing starting state (before any turns)
+    const initialMockData = createMockDataForRound1Initial();
+    setMockData(initialMockData);
+    setCurrentGameState("initial");
+    setRound1PlaybackStep(0);
+  };
+
+  const createMockDataForRound1Initial = () => {
+    const players = [
+      { id: "bot-1", playerId: 0, stats: { STR: 2, DEF: 2, SUP: 2 } },
+      { id: "bot-2", playerId: 1, stats: { STR: 2, DEF: 2, SUP: 2 } }
+    ];
+
+    return {
+      game: {
+        enemyHealth: 10,
+        maxEnemyHealth: 10,
+        teamHealth: 10,
+        maxTeamHealth: 10,
+        treatment: {
+          totalPlayers: 2,
+          maxRounds: 2,
+          maxEnemyHealth: 10,
+          maxTeamHealth: 10
+        }
+      },
+      player: {
+        id: "tutorial-player",
+        playerId: 2,
+        stats: { STR: 2, DEF: 2, SUP: 2 },
+        roleOrder: [ROLES.FIGHTER, ROLES.TANK, ROLES.HEALER],
+        stage: {},
+        round: {}
+      },
+      players: players,
+      round: {
+        roundNumber: 1
+      },
+      stage: {
+        name: "initial",
+        stageType: "initial",
+        turnNumber: 0
+      },
+      teamHistory: []
+    };
+  };
+
+  const showRound1Turn1 = () => {
+    if (!round1Turn1Result) return;
+
+    const newMockData = createMockDataForRound1Turn1(round1Turn1Result);
     setMockData(newMockData);
+    setCurrentGameState("round1-turn1");
+    setRound1PlaybackStep(1);
+    setShowDamageAnimation(true);
+    setTimeout(() => setShowDamageAnimation(false), 2000);
+  };
+
+  const createMockDataForRound1Turn1 = (turn1Result) => {
+    const players = [
+      { id: "bot-1", playerId: 0, stats: { STR: 2, DEF: 2, SUP: 2 } },
+      { id: "bot-2", playerId: 1, stats: { STR: 2, DEF: 2, SUP: 2 } }
+    ];
+
+    const teamHistory = [
+      {
+        round: 1,
+        turn: 1,
+        enemyHealth: turn1Result.enemyHealth,
+        teamHealth: turn1Result.teamHealth,
+        enemyIntent: turn1Result.enemyIntent,
+        actions: turn1Result.actions.map((action, idx) => ({
+          playerId: idx,
+          action: action
+        }))
+      }
+    ];
+
+    return {
+      game: {
+        enemyHealth: turn1Result.enemyHealth,
+        maxEnemyHealth: 10,
+        teamHealth: turn1Result.teamHealth,
+        maxTeamHealth: 10,
+        treatment: {
+          totalPlayers: 2,
+          maxRounds: 2,
+          maxEnemyHealth: 10,
+          maxTeamHealth: 10
+        }
+      },
+      player: {
+        id: "tutorial-player",
+        playerId: 2,
+        stats: { STR: 2, DEF: 2, SUP: 2 },
+        roleOrder: [ROLES.FIGHTER, ROLES.TANK, ROLES.HEALER],
+        stage: {},
+        round: {}
+      },
+      players: players,
+      round: {
+        roundNumber: 1
+      },
+      stage: {
+        name: "turn1",
+        stageType: "turn",
+        turnNumber: 1
+      },
+      teamHistory: teamHistory
+    };
+  };
+
+  const showRound1Turn2 = () => {
+    if (!round1Turn1Result || !round1Turn2Result) return;
+
+    const newMockData = createMockDataForRound1Complete(round1Turn1Result, round1Turn2Result);
+    setMockData(newMockData);
+    setCurrentGameState("round1-turn2");
+    setRound1PlaybackStep(2);
+    setShowDamageAnimation(true);
+    setTimeout(() => setShowDamageAnimation(false), 2000);
+  };
+
+  const completeRound1 = () => {
     setCurrentGameState("round1-complete");
   };
 
@@ -374,12 +495,16 @@ export function Tutorial2({ next }) {
 
   const buildAllPlayers = () => {
     if (!mockData) return [];
-    return mockData.players.map((p, idx) => ({
-      type: (currentGameState === "role-selection" || currentGameState.startsWith("round2")) && idx === 2 ? "real" : "virtual",
-      player: p,
-      playerId: p.playerId,
-      bot: ((currentGameState === "role-selection" || currentGameState.startsWith("round2")) && idx === 2) ? null : { stats: p.stats, playerId: p.playerId }
-    }));
+    return mockData.players.map((p, idx) => {
+      // In Round 2 and role selection, player (index 2) is real, otherwise all are bots
+      const isPlayerReal = (currentGameState === "role-selection" || currentGameState.startsWith("round2")) && idx === 2;
+      return {
+        type: isPlayerReal ? "real" : "virtual",
+        player: p,
+        playerId: p.playerId,
+        bot: isPlayerReal ? null : { stats: p.stats, playerId: p.playerId }
+      };
+    });
   };
 
   const handleRoleSelect = (role) => {
@@ -456,7 +581,6 @@ export function Tutorial2({ next }) {
 
   const handlePlayAgain = () => {
     setSelectedRole(null);
-    setCurrentGameState("initial");
     setShowOutcome(false);
     setOutcome(null);
     setRound1Turn1Result(null);
@@ -464,7 +588,7 @@ export function Tutorial2({ next }) {
     setRound2Turn1Result(null);
     setRound2Turn2Result(null);
     setTutorialComplete(false);
-    playRound1();
+    initializeRound1();
   };
 
   const handleStartMainGame = () => {
@@ -475,6 +599,7 @@ export function Tutorial2({ next }) {
     const newMockData = createMockDataForRoleSelection();
     setMockData(newMockData);
     setCurrentGameState("role-selection");
+    setTutorialComplete(true);
   };
 
   const handleTutorialComplete = () => {
@@ -545,17 +670,24 @@ export function Tutorial2({ next }) {
     }
   ];
 
-  if (!mockData) return null;
+  if (!mockData) return <div className="flex items-center justify-center h-screen">Loading...</div>;
 
   const allPlayers = buildAllPlayers();
-  const isRoleSelection = currentGameState === "role-selection";
+  const isInitial = currentGameState === "initial";
+  const isRound1Turn1 = currentGameState === "round1-turn1";
+  const isRound1Turn2 = currentGameState === "round1-turn2";
   const isRound1Complete = currentGameState === "round1-complete";
+  const isRoleSelection = currentGameState === "role-selection";
   const isRound2Turn1 = currentGameState === "round2-turn1";
   const isRound2Turn2 = currentGameState === "round2-turn2";
 
   // Get current turn result for display
   let currentTurnResult = null;
-  if (isRound2Turn1 && round2Turn1Result) {
+  if (isRound1Turn1 && round1Turn1Result) {
+    currentTurnResult = round1Turn1Result;
+  } else if (isRound1Turn2 && round1Turn2Result) {
+    currentTurnResult = round1Turn2Result;
+  } else if (isRound2Turn1 && round2Turn1Result) {
     currentTurnResult = round2Turn1Result;
   } else if (isRound2Turn2 && round2Turn2Result) {
     currentTurnResult = round2Turn2Result;
@@ -584,7 +716,7 @@ export function Tutorial2({ next }) {
                     teamHealth={mockData.game.teamHealth}
                     maxHealth={mockData.game.maxTeamHealth}
                     enemyIntent={currentTurnResult?.enemyIntent || null}
-                    isRevealStage={!isRoleSelection && currentTurnResult !== null}
+                    isRevealStage={currentTurnResult !== null}
                     showDamageAnimation={showDamageAnimation}
                     damageToEnemy={currentTurnResult?.damageToEnemy || 0}
                     damageToTeam={currentTurnResult?.damageToTeam || 0}
@@ -600,27 +732,87 @@ export function Tutorial2({ next }) {
                 {/* Role Selection or Turn Results */}
                 <div className="bg-white border-t-4 border-gray-700 flex-1 min-h-0 flex flex-col">
                   <div className="flex-1 p-4 flex items-center justify-center overflow-auto">
-                    {/* Round 1 Complete - Show button to proceed */}
-                    {isRound1Complete && (
-                      <div className="w-full max-w-3xl text-center">
-                        <div className="mb-6">
-                          <h2 className="text-3xl font-bold text-gray-900 mb-4">Round 1 Complete</h2>
-                          <p className="text-lg text-gray-700 mb-4">
-                            Round 1 has concluded. Review the Battle History to understand the action patterns.
-                          </p>
+                    {/* Initial state - Start Round 1 */}
+                    {isInitial && (
+                      <div className="w-full text-center">
+                        <h2 className="text-2xl font-bold text-gray-800 mb-4">Round 1 - Two Players Battle</h2>
+                        <p className="text-lg text-gray-600 mb-6">
+                          Watch how the first two players handle the enemy. This will help you decide which role to choose in Round 2.
+                        </p>
+                        <button
+                          onClick={showRound1Turn1}
+                          className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg text-lg shadow-lg transition-colors"
+                        >
+                          Start Round 1 →
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Round 1 Turn 1 Results */}
+                    {isRound1Turn1 && round1Turn1Result && (
+                      <div className="w-full">
+                        <ResultsPanel
+                          roundNumber={1}
+                          turnNumber={1}
+                          actions={round1Turn1Result.actions}
+                          allPlayers={allPlayers}
+                          currentPlayerId="tutorial-player"
+                          enemyIntent={round1Turn1Result.enemyIntent}
+                          countdown={null}
+                        />
+                        <div className="mt-4 text-center">
+                          <button
+                            onClick={showRound1Turn2}
+                            className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg text-lg shadow-lg transition-colors"
+                          >
+                            Continue to Turn 2 →
+                          </button>
                         </div>
+                      </div>
+                    )}
+
+                    {/* Round 1 Turn 2 Results */}
+                    {isRound1Turn2 && round1Turn2Result && (
+                      <div className="w-full">
+                        <ResultsPanel
+                          roundNumber={1}
+                          turnNumber={2}
+                          actions={round1Turn2Result.actions}
+                          allPlayers={allPlayers}
+                          currentPlayerId="tutorial-player"
+                          enemyIntent={round1Turn2Result.enemyIntent}
+                          countdown={null}
+                        />
+                        <div className="mt-4 text-center">
+                          <button
+                            onClick={completeRound1}
+                            className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg text-lg shadow-lg transition-colors"
+                          >
+                            Analyze Battle History →
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Round 1 Complete - Show battle analysis */}
+                    {isRound1Complete && !tutorialComplete && (
+                      <div className="w-full text-center">
+                        <h2 className="text-2xl font-bold text-gray-800 mb-4">Round 1 Complete!</h2>
+                        <p className="text-lg text-gray-600 mb-6">
+                          Review the battle history on the right to understand what roles the players might have.
+                        </p>
                         <button
                           data-tutorial-id="proceed-button"
                           onClick={handleProceedToRoleSelection}
-                          className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-8 rounded-lg text-xl shadow-lg transition-colors"
+                          className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-8 rounded-lg text-lg shadow-lg transition-colors"
                         >
-                          Choose Your Role for Round 2 →
+                          Proceed to Role Selection →
                         </button>
                       </div>
                     )}
 
                     {/* Role Selection */}
-                    {isRoleSelection && (
+                    {(isRoleSelection || (isRound1Complete && tutorialComplete)) && (
                       <div className="w-full max-w-4xl">
                         <div data-tutorial-id="action-menu">
                           <ActionMenu
@@ -783,8 +975,8 @@ export function Tutorial2({ next }) {
     </MockDataProvider>
   );
 
-  // Show tutorial during Round 1 Complete state
-  if (isRoleSelection && !tutorialComplete) {
+  // Show tutorial during Round 1 Complete state (before user has proceeded to role selection)
+  if (isRound1Complete && !tutorialComplete) {
     return (
       <TutorialWrapper steps={tutorialSteps} onComplete={handleTutorialComplete}>
         {content}
