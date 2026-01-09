@@ -159,13 +159,24 @@ function ActionSelection() {
     setAllowRoundEnd(false);
   }, [roundNumber]);
 
-  // If we're entering a round end stage directly (no turns to show), allow round end immediately
+  // If we're entering a round end stage, allow round end screen
   useEffect(() => {
-    if (isRoundEndStage && !hasTurns && !allowRoundEnd) {
-      console.log(`[Round End] Entered round end stage directly, allowing round end screen`);
-      setAllowRoundEnd(true);
+    if (isRoundEndStage && !allowRoundEnd) {
+      if (!hasTurns) {
+        // No turns to show, allow round end immediately
+        console.log(`[Round End] Entered round end stage directly (no turns), allowing round end screen`);
+        setAllowRoundEnd(true);
+      } else if (currentTurnView === turns.length && turns.length > 0) {
+        // We've already viewed all turns, allow round end immediately
+        console.log(`[Round End] Entered round end stage after viewing all turns, allowing round end screen`);
+        setAllowRoundEnd(true);
+      } else if (currentTurnView === 0 && turns.length > 0) {
+        // We haven't started viewing turns yet, start viewing them
+        console.log(`[Round End] Entered round end stage with unviewed turns, starting turn display`);
+        setCurrentTurnView(1);
+      }
     }
-  }, [isRoundEndStage, hasTurns, allowRoundEnd]);
+  }, [isRoundEndStage, hasTurns, allowRoundEnd, currentTurnView, turns.length]);
 
   // Auto-start showing turn 1 when turns data arrives
   useEffect(() => {
@@ -293,11 +304,14 @@ function ActionSelection() {
   });
 
   // Determine which UI to show based on state
+  // Note: roundEnd and gameEnd are now overlays, so we show the underlying UI beneath them
   let currentUI;
   if (isGameEndStage) {
-    currentUI = 'gameEnd';
+    // Show last turn results beneath the game end overlay (if available)
+    currentUI = currentTurnView > 0 ? 'turnResults' : 'waiting';
   } else if (isRoundEndStage) {
-    currentUI = 'roundEnd';
+    // Show last turn results beneath the round end overlay (if available)
+    currentUI = currentTurnView > 0 ? 'turnResults' : 'waiting';
   } else if (isTurnStage) {
     currentUI = 'turnResults';
   } else if (submitted) {
@@ -388,44 +402,6 @@ function ActionSelection() {
                     />
                   </div>
                 )}
-
-                {/* Round End Screen */}
-                {currentUI === 'roundEnd' && (
-                  <div className="text-center">
-                    <div className="text-5xl mb-4">
-                      {roundOutcome === "WIN" && "🎉"}
-                      {roundOutcome === "LOSE" && "💔"}
-                      {roundOutcome === "TIMEOUT" && "⏰"}
-                    </div>
-                    <div className="text-2xl font-bold mb-3">
-                      {round.get("roundEndMessage")}
-                    </div>
-                    <div className="text-lg text-gray-600 mb-4">
-                      Round {roundNumber} complete!
-                    </div>
-                    {roundOutcome === "WIN" && (
-                      <div className="text-xl text-green-600 font-bold mb-4">
-                        +{Math.ceil(teamHealth)} Points Earned!
-                      </div>
-                    )}
-                    <div className="text-md text-gray-500 mb-6">
-                      Total Points: {totalPoints}
-                    </div>
-                    {submitted ? (
-                      <div className="text-sm text-gray-400 mt-4">
-                        <div className="text-3xl mb-2">⏳</div>
-                        Waiting for next round...
-                      </div>
-                    ) : (
-                      <button
-                        onClick={() => player.stage.set("submit", true)}
-                        className="bg-blue-500 hover:bg-blue-600 text-white px-8 py-4 rounded-lg text-xl font-bold transition-colors shadow-lg"
-                      >
-                        Continue →
-                      </button>
-                    )}
-                  </div>
-                )}
               </div>
             </div>
           </div>
@@ -441,6 +417,18 @@ function ActionSelection() {
               <ActionHistory currentStageView={stageToView} currentTurnView={currentTurnView} />
             </div>
           </div>
+
+          {/* Round End Overlay */}
+          {shouldShowRoundEnd && (
+            <div className="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
+              <GameEndScreen
+                outcome={roundOutcome}
+                endMessage={round.get("roundEndMessage")}
+                totalPoints={totalPoints}
+                roundOutcomes={game.get("roundOutcomes") || []}
+              />
+            </div>
+          )}
 
           {/* Game End Overlay */}
           {shouldShowGameEnd && (
