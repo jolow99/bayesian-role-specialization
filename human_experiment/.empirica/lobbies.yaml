@@ -1,5 +1,5 @@
 lobbies:
     - name: Standard Lobby
       kind: shared
-      duration: 30s
+      duration: 300s
       strategy: fail

@@ -189,11 +189,11 @@ function ActionSelection() {
   // Auto-advance from turn 1 to turn 2 after delay
   useEffect(() => {
     if (currentTurnView === 1 && turns.length >= 2) {
-      console.log(`[Turn Auto-Advance] Scheduling advance to turn 2 in 8 seconds`);
+      console.log(`[Turn Auto-Advance] Scheduling advance to turn 2 in 3 seconds`);
       const timer = setTimeout(() => {
         console.log(`[Turn Auto-Advance] Advancing to turn 2`);
         setCurrentTurnView(2);
-      }, 8000); // 8 seconds to view turn 1 results
+      }, 3000); // 3 seconds to view turn 1 results
       return () => clearTimeout(timer);
     }
   }, [currentTurnView, turns.length]);
@@ -209,7 +209,7 @@ function ActionSelection() {
         const timer = setTimeout(() => {
           console.log(`[Turn Auto-Advance] Enabling round end screen`);
           setAllowRoundEnd(true);
-        }, 8000); // 8 seconds to view final turn before showing victory/defeat
+        }, 3000); // 3 seconds to view final turn before showing victory/defeat
         return () => clearTimeout(timer);
       } else {
         // Round continues, transition to next stage's role selection
@@ -219,7 +219,7 @@ function ActionSelection() {
           setLastViewedStage(stageToView);
           setCurrentTurnView(0);
           setLocalSubmitted(false);
-        }, 8000); // 8 seconds to view final turn
+        }, 3000); // 3 seconds to view final turn
         return () => clearTimeout(timer);
       }
     }

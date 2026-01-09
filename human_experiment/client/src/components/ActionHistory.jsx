@@ -75,6 +75,9 @@ export function ActionHistory({ currentStageView = null, currentTurnView = 0 }) 
   // Get player's action history to find their role for each stage
   const playerActionHistory = player.get("actionHistory") || [];
 
+  // Get current player's playerId (their slot position: 0, 1, or 2)
+  const currentPlayerPlayerId = player.round?.get ? player.round.get("playerId") : player.playerId;
+
   // Map role names (stored as "FIGHTER", "TANK", "HEALER") to display names
   const roleNameMap = {
     "FIGHTER": "Fighter",
@@ -140,15 +143,20 @@ export function ActionHistory({ currentStageView = null, currentTurnView = 0 }) 
                     </div>
                   </div>
                   <div className="flex gap-2 justify-center">
-                    {turn.actions && turn.actions.map((playerAction, pidx) => (
-                      <div
-                        key={pidx}
-                        className="flex flex-col items-center bg-gray-50 rounded border border-gray-300 px-2 py-1"
-                      >
-                        <span className="text-2xl">{actionIcons[playerAction.action]}</span>
-                        <span className="text-xs text-gray-600">P{pidx + 1}</span>
-                      </div>
-                    ))}
+                    {turn.actions && turn.actions.map((playerAction, pidx) => {
+                      const isCurrentPlayer = pidx === currentPlayerPlayerId;
+                      return (
+                        <div
+                          key={pidx}
+                          className="flex flex-col items-center bg-gray-50 rounded border border-gray-300 px-2 py-1"
+                        >
+                          <span className="text-2xl">{actionIcons[playerAction.action]}</span>
+                          <span className={`text-xs ${isCurrentPlayer ? 'text-blue-600 font-bold' : 'text-gray-600'}`}>
+                            {isCurrentPlayer ? "YOU" : `P${pidx + 1}`}
+                          </span>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               ))}

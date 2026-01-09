@@ -32,11 +32,30 @@ treatments:
         maxStagesPerRound: 5
         playerCount: 1
         totalPlayers: 3
-        showTutorial: false
+        showTutorial: true
         roundConfigs: [
           {roundNumber: 1, maxEnemyHealth: 31, maxTeamHealth: 10, bossDamage: 2, statProfile: "balanced", playerDeviateProbability: 0.00, enemyAttackProbability: 1.0, botPlayers: [{playerId: 1, strategy: {type: "fixed", role: 0}},{playerId: 2, strategy: {type: "fixed", role: 0}}]},
           {roundNumber: 2, maxEnemyHealth: 8, maxTeamHealth: 10, bossDamage: 4, statProfile: "balanced", playerDeviateProbability: 0.00, enemyAttackProbability: 1.0, botPlayers: [{playerId: 1, strategy: {type: "fixed", role: 1}},{playerId: 2, strategy: {type: "fixed", role: 1}}]},
           {roundNumber: 3, maxEnemyHealth: 20, maxTeamHealth: 10, bossDamage: 4, statProfile: "balanced", playerDeviateProbability: 0.05, enemyAttackProbability: 0.8, botPlayers: []},
+          {roundNumber: 4, maxEnemyHealth: 20, maxTeamHealth: 10, bossDamage: 2, statProfile: "balanced", playerDeviateProbability: 0.05, enemyAttackProbability: 0.8, botPlayers: []},
+          {roundNumber: 5, maxEnemyHealth: 20, maxTeamHealth: 10, bossDamage: 4, statProfile: "imbalanced-allunique", playerDeviateProbability: 0.05, enemyAttackProbability: 0.8, botPlayers: []},
+          {roundNumber: 6, maxEnemyHealth: 20, maxTeamHealth: 10, bossDamage: 2, statProfile: "imbalanced-allunique", playerDeviateProbability: 0.05, enemyAttackProbability: 0.8, botPlayers: []},
+          {roundNumber: 7, maxEnemyHealth: 20, maxTeamHealth: 10, bossDamage: 4, statProfile: "imbalanced-oneunique", playerDeviateProbability: 0.05, enemyAttackProbability: 0.8, botPlayers: []},
+          {roundNumber: 8, maxEnemyHealth: 20, maxTeamHealth: 10, bossDamage: 2, statProfile: "imbalanced-oneunique", playerDeviateProbability: 0.05, enemyAttackProbability: 0.8, botPlayers: []}
+        ]
+
+    - name: Production-Prolific
+      desc: Production treatment for 3 Prolific participants - Round 1 humans, Rounds 2-3 with bots, Rounds 4-8 humans
+      factors:
+        maxRounds: 8
+        maxStagesPerRound: 5
+        playerCount: 3
+        totalPlayers: 3
+        showTutorial: true
+        roundConfigs: [
+          {roundNumber: 1, maxEnemyHealth: 20, maxTeamHealth: 10, bossDamage: 4, statProfile: "balanced", playerDeviateProbability: 0.05, enemyAttackProbability: 0.8, botPlayers: []},
+          {roundNumber: 2, maxEnemyHealth: 31, maxTeamHealth: 10, bossDamage: 2, statProfile: "balanced", playerDeviateProbability: 0.00, enemyAttackProbability: 1.0, botPlayers: [{playerId: 1, strategy: {type: "fixed", role: 0}},{playerId: 2, strategy: {type: "fixed", role: 0}}]},
+          {roundNumber: 3, maxEnemyHealth: 8, maxTeamHealth: 10, bossDamage: 4, statProfile: "balanced", playerDeviateProbability: 0.00, enemyAttackProbability: 1.0, botPlayers: [{playerId: 1, strategy: {type: "fixed", role: 1}},{playerId: 2, strategy: {type: "fixed", role: 1}}]},
           {roundNumber: 4, maxEnemyHealth: 20, maxTeamHealth: 10, bossDamage: 2, statProfile: "balanced", playerDeviateProbability: 0.05, enemyAttackProbability: 0.8, botPlayers: []},
           {roundNumber: 5, maxEnemyHealth: 20, maxTeamHealth: 10, bossDamage: 4, statProfile: "imbalanced-allunique", playerDeviateProbability: 0.05, enemyAttackProbability: 0.8, botPlayers: []},
           {roundNumber: 6, maxEnemyHealth: 20, maxTeamHealth: 10, bossDamage: 2, statProfile: "imbalanced-allunique", playerDeviateProbability: 0.05, enemyAttackProbability: 0.8, botPlayers: []},

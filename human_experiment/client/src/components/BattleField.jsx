@@ -56,9 +56,10 @@ export const BattleField = React.memo(function BattleField({
             .sort((a, b) => {
               const aIsYou = a.entry.type === "real" && a.entry.player?.id === currentPlayerId;
               const bIsYou = b.entry.type === "real" && b.entry.player?.id === currentPlayerId;
-              if (aIsYou) return 0; // YOU in middle
-              if (bIsYou) return 0;
-              // Others: maintain relative order
+              // Put YOU in the middle by sorting to index 1
+              if (aIsYou && !bIsYou) return -1; // a (YOU) comes before b
+              if (!aIsYou && bIsYou) return 1;  // b (YOU) comes before a
+              // For non-YOU players, maintain their relative order
               return a.playerId - b.playerId;
             })
             .map(({ entry, playerId }, sortedIdx) => {
