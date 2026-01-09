@@ -1,43 +1,16 @@
 factors:
-    - name: statProfile
-      desc: How player stats are distributed
-      values:
-        - value: balanced
-        - value: imbalanced-allunique
-        - value: imbalanced-oneunique
-    - name: bossDamage
-      desc: Boss damage type (highDamage needs healing, lowDamage can be defended)
-      values:
-        - value: 4
-        - value: 2
-    - name: playerDeviateProbability
-      desc: Probability of random action instead of role-primary action
-      values:
-        - value: 0.05
-        - value: 0.1
-    - name: enemyAttackProbability
-      desc: Probability that enemy will attack each round
-      values:
-        - value: 0.8
-        - value: 1.0
     - name: maxRounds
-      desc: Maximum number of rounds before timeout
+      desc: Maximum number of rounds (games) to play
       values:
-        - value: 20
-    - name: maxEnemyHealth
-      desc: Maximum health of the enemy
+        - value: 8
+    - name: maxStagesPerRound
+      desc: Maximum number of stages per round (each stage is a role commitment for 2 turns)
       values:
-        - value: 20
-    - name: maxTeamHealth
-      desc: Maximum health of the team
-      values:
-        - value: 10
+        - value: 5
     - name: playerCount
       desc: Number of human players needed to start the game
       values:
         - value: 1
-        - value: 2
-        - value: 3
     - name: totalPlayers
       desc: Total number of players in the game (including bots)
       values:
@@ -47,153 +20,26 @@ factors:
       values:
         - value: true
         - value: false
-    - name: botPlayers
-      desc: Array of bot player configurations (empty array for no bots)
+    - name: roundConfigs
+      desc: Configuration for each round (array of 8 configs with per-round settings)
       values:
         - value: []
-        - value: [{playerId: 0, strategy: {type: "fixed", role: 0}}]
-        - value: [{playerId: 1, strategy: {type: "fixed", role: 0}}]
-        - value: [{playerId: 0, strategy: {type: "scripted", roles: [0, 1, 2]}}]
-        - value: [{playerId: 0, strategy: {type: "random"}}]
-        - value: [{playerId: 0, strategy: {type: "fixed", role: 0}}, {playerId: 2, strategy: {type: "fixed", role: 1}}]
 treatments:
-    - name: SinglePlayer-TwoStubbornFighters-Balanced
-      desc: Testing with two stubborn fighter bots
+    - name: Development-Mixed
+      desc: Development treatment - 2 rounds with bots, 6 rounds with humans
       factors:
-        bossDamage: 2
-        playerDeviateProbability: 0.00
-        enemyAttackProbability: 1.0
-        maxRounds: 20
-        maxEnemyHealth: 31
-        maxTeamHealth: 10
+        maxRounds: 8
+        maxStagesPerRound: 5
         playerCount: 1
         totalPlayers: 3
-        statProfile: balanced
         showTutorial: false
-        botPlayers: [{playerId: 1, strategy: {type: "fixed", role: 0}},{playerId: 2, strategy: {type: "fixed", role: 0}}]
-    - name: SinglePlayer-TwoStubbornTanks-Balanced
-      desc: Testing with two stubborn tank bots
-      factors:
-        bossDamage: 4
-        playerDeviateProbability: 0.00
-        enemyAttackProbability: 1.0
-        maxRounds: 20
-        maxEnemyHealth: 8
-        maxTeamHealth: 10
-        playerCount: 1
-        totalPlayers: 3
-        statProfile: balanced
-        showTutorial: false
-        botPlayers: [{playerId: 1, strategy: {type: "fixed", role: 1}},{playerId: 2, strategy: {type: "fixed", role: 1}}]
-    - name: Balanced-HighDamage
-      desc: Balanced players with high-damage boss
-      factors:
-        bossDamage: 4
-        playerDeviateProbability: 0.05
-        enemyAttackProbability: 0.8
-        maxRounds: 20
-        maxEnemyHealth: 20
-        maxTeamHealth: 10
-        playerCount: 3
-        totalPlayers: 3
-        statProfile: balanced
-        showTutorial: true
-        botPlayers: []
-    - name: Balanced-LowDamage
-      desc: Balanced players with low-damage boss
-      factors:
-        bossDamage: 2
-        playerDeviateProbability: 0.05
-        enemyAttackProbability: 0.8
-        maxRounds: 20
-        maxEnemyHealth: 20
-        maxTeamHealth: 10
-        playerCount: 3
-        totalPlayers: 3
-        statProfile: balanced
-        showTutorial: true
-        botPlayers: []
-    - name: AllUnique-HighDamage
-      desc: All players unique specialists with high-damage boss
-      factors:
-        bossDamage: 4
-        playerDeviateProbability: 0.05
-        enemyAttackProbability: 0.8
-        maxRounds: 20
-        maxEnemyHealth: 20
-        maxTeamHealth: 10
-        playerCount: 3
-        totalPlayers: 3
-        statProfile: imbalanced-allunique
-        showTutorial: true
-        botPlayers: []
-    - name: AllUnique-LowDamage
-      desc: All players unique specialists with low-damage boss
-      factors:
-        bossDamage: 2
-        playerDeviateProbability: 0.05
-        enemyAttackProbability: 0.8
-        maxRounds: 20
-        maxEnemyHealth: 20
-        maxTeamHealth: 10
-        playerCount: 3
-        totalPlayers: 3
-        statProfile: imbalanced-allunique
-        showTutorial: true
-        botPlayers: []
-    - name: OneUnique-HighDamage
-      desc: Two similar, one unique with high-damage boss
-      factors:
-        bossDamage: 4
-        playerDeviateProbability: 0.05
-        enemyAttackProbability: 0.8
-        maxRounds: 20
-        maxEnemyHealth: 20
-        maxTeamHealth: 10
-        playerCount: 3
-        totalPlayers: 3
-        statProfile: imbalanced-oneunique
-        showTutorial: true
-        botPlayers: []
-    - name: OneUnique-LowDamage
-      desc: Two similar, one unique with low-damage boss
-      factors:
-        bossDamage: 2
-        playerDeviateProbability: 0.05
-        enemyAttackProbability: 0.8
-        maxRounds: 20
-        maxEnemyHealth: 20
-        maxTeamHealth: 10
-        playerCount: 3
-        totalPlayers: 3
-        statProfile: imbalanced-oneunique
-        showTutorial: true
-        botPlayers: []
-    - name: Balanced-HighDeviation
-      desc: Balanced with high player deviation for testing randomness
-      factors:
-        bossDamage: 4
-        playerDeviateProbability: 0.1
-        enemyAttackProbability: 0.8
-        maxRounds: 20
-        maxEnemyHealth: 20
-        maxTeamHealth: 10
-        playerCount: 3
-        totalPlayers: 3
-        statProfile: balanced
-        showTutorial: true
-        botPlayers: []
-    - name: AllUnique-HighDeviation
-      desc: All unique with high player deviation
-      factors:
-        bossDamage: 2
-        playerDeviateProbability: 0.1
-        enemyAttackProbability: 0.8
-        maxRounds: 20
-        maxEnemyHealth: 20
-        maxTeamHealth: 10
-        playerCount: 3
-        totalPlayers: 3
-        statProfile: imbalanced-allunique
-        showTutorial: true
-        botPlayers: []
+        roundConfigs: [
+          {roundNumber: 1, maxEnemyHealth: 31, maxTeamHealth: 10, bossDamage: 2, statProfile: "balanced", playerDeviateProbability: 0.00, enemyAttackProbability: 1.0, botPlayers: [{playerId: 1, strategy: {type: "fixed", role: 0}},{playerId: 2, strategy: {type: "fixed", role: 0}}]},
+          {roundNumber: 2, maxEnemyHealth: 8, maxTeamHealth: 10, bossDamage: 4, statProfile: "balanced", playerDeviateProbability: 0.00, enemyAttackProbability: 1.0, botPlayers: [{playerId: 1, strategy: {type: "fixed", role: 1}},{playerId: 2, strategy: {type: "fixed", role: 1}}]},
+          {roundNumber: 3, maxEnemyHealth: 20, maxTeamHealth: 10, bossDamage: 4, statProfile: "balanced", playerDeviateProbability: 0.05, enemyAttackProbability: 0.8, botPlayers: []},
+          {roundNumber: 4, maxEnemyHealth: 20, maxTeamHealth: 10, bossDamage: 2, statProfile: "balanced", playerDeviateProbability: 0.05, enemyAttackProbability: 0.8, botPlayers: []},
+          {roundNumber: 5, maxEnemyHealth: 20, maxTeamHealth: 10, bossDamage: 4, statProfile: "imbalanced-allunique", playerDeviateProbability: 0.05, enemyAttackProbability: 0.8, botPlayers: []},
+          {roundNumber: 6, maxEnemyHealth: 20, maxTeamHealth: 10, bossDamage: 2, statProfile: "imbalanced-allunique", playerDeviateProbability: 0.05, enemyAttackProbability: 0.8, botPlayers: []},
+          {roundNumber: 7, maxEnemyHealth: 20, maxTeamHealth: 10, bossDamage: 4, statProfile: "imbalanced-oneunique", playerDeviateProbability: 0.05, enemyAttackProbability: 0.8, botPlayers: []},
+          {roundNumber: 8, maxEnemyHealth: 20, maxTeamHealth: 10, bossDamage: 2, statProfile: "imbalanced-oneunique", playerDeviateProbability: 0.05, enemyAttackProbability: 0.8, botPlayers: []}
+        ]

@@ -4,10 +4,8 @@ import { usePlayer, useStage } from "@empirica/core/player/classic/react";
 export const GameEndScreen = React.memo(function GameEndScreen({
   outcome,
   endMessage,
-  enemyHealth,
-  teamHealth,
-  maxHealth,
-  maxEnemyHealth
+  totalPoints,
+  roundOutcomes = []
 }) {
   const player = usePlayer();
   const stage = useStage();
@@ -22,31 +20,18 @@ export const GameEndScreen = React.memo(function GameEndScreen({
   // don't show the button yet - wait for the actual gameEnd stage
   const isActualGameEndStage = stageType === "gameEnd";
 
-  // Determine outcome styling and icon
-  let bgColorClass, borderColorClass, textColorClass, icon, title, message;
+  // Calculate wins/losses/timeouts
+  const wins = roundOutcomes.filter(r => r.outcome === "WIN").length;
+  const losses = roundOutcomes.filter(r => r.outcome === "LOSE").length;
+  const timeouts = roundOutcomes.filter(r => r.outcome === "TIMEOUT").length;
 
-  if (outcome === "WIN") {
-    bgColorClass = "bg-green-50";
-    borderColorClass = "border-green-400";
-    textColorClass = "text-green-700";
-    icon = "🎉";
-    title = "Victory!";
-    message = "You defeated the enemy!";
-  } else if (outcome === "LOSE") {
-    bgColorClass = "bg-red-50";
-    borderColorClass = "border-red-400";
-    textColorClass = "text-red-700";
-    icon = "💀";
-    title = "Defeat";
-    message = "Your team was defeated.";
-  } else {
-    bgColorClass = "bg-yellow-50";
-    borderColorClass = "border-yellow-400";
-    textColorClass = "text-yellow-700";
-    icon = "⏱️";
-    title = "Time's Up!";
-    message = "The battle has ended.";
-  }
+  // Determine overall outcome styling
+  const bgColorClass = "bg-blue-50";
+  const borderColorClass = "border-blue-400";
+  const textColorClass = "text-blue-700";
+  const icon = "🎮";
+  const title = "Game Complete!";
+  const message = endMessage || `Finished all rounds!`;
 
   return (
     <div className="flex items-center justify-center h-full">
@@ -60,41 +45,51 @@ export const GameEndScreen = React.memo(function GameEndScreen({
 
         {/* Final Stats */}
         <div className="bg-white rounded-lg p-6 mb-6 border-2 border-gray-300">
-          <h3 className="text-lg font-bold text-gray-800 mb-4 text-center">Final Battle Statistics</h3>
+          <h3 className="text-lg font-bold text-gray-800 mb-4 text-center">Game Summary</h3>
 
-          <div className="grid grid-cols-2 gap-4">
-            {/* Enemy Health */}
-            <div className="text-center">
-              <div className="text-sm text-gray-600 mb-2">Enemy Health</div>
-              <div className="flex items-center justify-center gap-2">
-                <div className="text-3xl">👹</div>
-                <div className="text-2xl font-bold text-red-600">
-                  {enemyHealth} / {maxEnemyHealth}
-                </div>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-3 mt-2">
-                <div
-                  className="bg-red-500 h-3 rounded-full transition-all duration-300"
-                  style={{ width: `${Math.max(0, (enemyHealth / maxEnemyHealth) * 100)}%` }}
-                />
-              </div>
+          {/* Total Points */}
+          <div className="text-center mb-6">
+            <div className="text-5xl font-bold text-blue-600 mb-2">
+              {totalPoints || 0}
             </div>
+            <div className="text-lg text-gray-600">Total Points Earned</div>
+          </div>
 
-            {/* Team Health */}
+          {/* Win/Loss Stats */}
+          <div className="grid grid-cols-3 gap-4 mb-4">
             <div className="text-center">
-              <div className="text-sm text-gray-600 mb-2">Team Health</div>
-              <div className="flex items-center justify-center gap-2">
-                <div className="text-3xl">❤️</div>
-                <div className="text-2xl font-bold text-green-600">
-                  {teamHealth} / {maxHealth}
+              <div className="text-3xl mb-1">🎉</div>
+              <div className="text-2xl font-bold text-green-600">{wins}</div>
+              <div className="text-sm text-gray-600">Wins</div>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl mb-1">💔</div>
+              <div className="text-2xl font-bold text-red-600">{losses}</div>
+              <div className="text-sm text-gray-600">Losses</div>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl mb-1">⏰</div>
+              <div className="text-2xl font-bold text-yellow-600">{timeouts}</div>
+              <div className="text-sm text-gray-600">Timeouts</div>
+            </div>
+          </div>
+
+          {/* Round Details */}
+          <div className="border-t border-gray-200 pt-4">
+            <div className="text-xs font-semibold text-gray-600 mb-2 uppercase tracking-wide text-center">
+              Round Results
+            </div>
+            <div className="flex flex-wrap justify-center gap-2">
+              {roundOutcomes.map((round, idx) => (
+                <div key={idx} className="text-center">
+                  <div className="text-sm">
+                    {round.outcome === "WIN" && "🎉"}
+                    {round.outcome === "LOSE" && "💔"}
+                    {round.outcome === "TIMEOUT" && "⏰"}
+                  </div>
+                  <div className="text-xs text-gray-500">R{round.roundNumber}</div>
                 </div>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-3 mt-2">
-                <div
-                  className="bg-green-500 h-3 rounded-full transition-all duration-300"
-                  style={{ width: `${Math.max(0, (teamHealth / maxHealth) * 100)}%` }}
-                />
-              </div>
+              ))}
             </div>
           </div>
         </div>

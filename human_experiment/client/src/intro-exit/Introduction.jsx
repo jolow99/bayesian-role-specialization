@@ -18,13 +18,9 @@ export function Introduction({ next }) {
       showBorder: false, // Don't show blue pulsing border
       content: (
         <div>
-          <h3 className="text-lg font-bold text-gray-900 mb-3">Welcome to Cooperative Battle Game!</h3>
-          <p className="text-sm text-gray-700 mb-2">
-            This is the main battle screen. You'll see the enemy at the top right, your team at the bottom left,
-            and the battle history on the right side.
-          </p>
+          <h3 className="text-lg font-bold text-gray-900 mb-3">Welcome!</h3>
           <p className="text-sm text-gray-700">
-            Let's take a tour of the interface to understand how to play!
+            Let's take a tour of the interface to understand how to play
           </p>
         </div>
       )
@@ -68,13 +64,13 @@ export function Introduction({ next }) {
         <div>
           <h4 className="text-lg font-bold text-gray-900 mb-2">Role Selection</h4>
           <p className="text-sm text-gray-700 mb-3">
-            At the start, you'll choose one of three roles. Your role determines your action and
-            you'll be committed to the role for 2 rounds:
+            At the start, you'll choose one of three roles. Your role influences the actions taken and
+            you'll be committed to the role for 2 turns (1 stage):
           </p>
           <ul className="text-sm text-gray-700 space-y-2 ml-4">
             <li><strong>⚔️ Fighter:</strong> Attacks most of the time</li>
             <li><strong>🛡️ Tank:</strong> Defends when the enemy is attacking, most of the time. Otherwise, acts like a fighter</li>
-            <li><strong>💚 Healer:</strong> Heals if the team's health is less than 50%, most of the time. Otherwise, acts like a fighter</li>
+            <li><strong>💚 Healer:</strong> Heals if the team's health is less than or equal to 50%, most of the time. Otherwise, acts like a fighter</li>
           </ul>
         </div>
       )
@@ -86,7 +82,7 @@ export function Introduction({ next }) {
         <div>
           <h4 className="text-lg font-bold text-gray-900 mb-2">Battle History</h4>
           <p className="text-sm text-gray-700 mb-2">
-            The battle history shows past rounds and turns. You can see what actions each player took and the results.
+            The battle history shows past stages and turns. You can see what actions each player took and the results.
           </p>
           <p className="text-sm text-gray-700">
             This helps you coordinate with your team by understanding their strategies.
@@ -109,7 +105,7 @@ export function Introduction({ next }) {
             <li><strong>Healing:</strong> All healers' SUP stats are added together (up to max team health)</li>
           </ul>
           <p className="text-sm text-gray-700 mt-3 italic">
-            You're now ready for the tutorial! Click "Next" to start.
+            You're now ready for a trial game!
           </p>
         </div>
       )

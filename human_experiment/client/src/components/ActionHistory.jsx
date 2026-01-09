@@ -22,66 +22,74 @@ export function ActionHistory({ maxRows }) {
 
   const roleNames = ["Fighter", "Tank", "Healer"];
 
-  // Group turns by round
-  const roundHistory = useMemo(() => {
+  // Group turns by stage (each stage has 2 turns)
+  const stageHistory = useMemo(() => {
     const grouped = {};
 
     teamHistory.forEach(entry => {
-      if (!grouped[entry.round]) {
-        grouped[entry.round] = [];
+      if (!grouped[entry.stage]) {
+        grouped[entry.stage] = [];
       }
-      grouped[entry.round].push(entry);
+      grouped[entry.stage].push(entry);
     });
 
-    // Convert to array and sort by round number (ascending for chronological order)
+    // Convert to array and sort by stage number (ascending for chronological order)
     return Object.entries(grouped)
-      .map(([round, turns]) => ({
-        round: parseInt(round),
-        turns: turns.sort((a, b) => a.turn - b.turn) // Sort turns within round ascending (Turn 1, then Turn 2)
+      .map(([stage, turns]) => ({
+        stage: parseInt(stage),
+        turns: turns.sort((a, b) => a.turn - b.turn) // Sort turns within stage ascending (Turn 1, then Turn 2)
       }))
-      .sort((a, b) => a.round - b.round); // Sort rounds ascending (Round 1, Round 2, Round 3...)
+      .sort((a, b) => a.stage - b.stage); // Sort stages ascending (Stage 1, Stage 2, Stage 3...)
   }, [teamHistory]);
 
-  // Get player's action history to find their role for each round
+  // Get player's action history to find their role for each stage
   const playerActionHistory = player.get("actionHistory") || [];
 
-  if (roundHistory.length === 0) {
+  // Map role names (stored as "FIGHTER", "TANK", "HEALER") to display names
+  const roleNameMap = {
+    "FIGHTER": "Fighter",
+    "TANK": "Tank",
+    "HEALER": "Healer"
+  };
+
+  if (stageHistory.length === 0) {
     return (
       <div className="text-xs text-gray-500 italic text-center py-4">
-        No rounds completed yet...
+        No stages completed yet...
       </div>
     );
   }
 
   return (
     <div className="space-y-3">
-      {roundHistory.map((roundEntry, idx) => {
-        // Find player's role for this round from their action history
-        const playerRoundData = playerActionHistory.find(h => h.round === roundEntry.round);
-        const playerRole = playerRoundData?.role;
+      {stageHistory.map((stageEntry, idx) => {
+        // Find player's role for this stage from their action history
+        const playerStageData = playerActionHistory.find(h => h.stage === stageEntry.stage);
+        const playerRole = playerStageData?.role; // This is a string like "FIGHTER"
+        const displayRole = playerRole ? roleNameMap[playerRole] : null;
 
         return (
           <div
             key={idx}
             className="bg-gray-50 rounded-lg border border-gray-300 p-3"
           >
-            {/* Round header with player role */}
+            {/* Stage header with player role */}
             <div className="mb-2 flex items-center justify-between">
-              <span className="font-bold text-sm text-gray-800">Round {roundEntry.round}</span>
-              {playerRole !== null && playerRole !== undefined && (
+              <span className="font-bold text-sm text-gray-800">Stage {stageEntry.stage}</span>
+              {displayRole && (
                 <div className="text-xs text-blue-600 font-semibold bg-blue-50 px-2 py-1 rounded">
-                  Your role: {roleNames[playerRole]}
+                  Your role: {displayRole}
                 </div>
               )}
             </div>
 
-            {/* Turns within the round */}
+            {/* Turns within the stage */}
             <div className="space-y-2">
-              {roundEntry.turns.map((turn, turnIdx) => (
+              {stageEntry.turns.map((turn, turnIdx) => (
                 <div
                   key={turnIdx}
                   className="bg-white rounded border border-gray-200 p-2"
-                  data-tutorial-id={`battle-history-r${roundEntry.round}t${turn.turn}`}
+                  data-tutorial-id={`battle-history-s${stageEntry.stage}t${turn.turn}`}
                 >
                   <div className="flex items-center justify-between mb-2">
                     <div className="text-xs text-gray-600 font-semibold">

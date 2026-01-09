@@ -65,7 +65,7 @@ export const BattleField = React.memo(function BattleField({
               const isCurrentPlayer = entry.type === "real" && entry.player?.id === currentPlayerId;
               // Handle both tutorial mode (direct stats) and game mode (stats via .get())
               const stats = entry.type === "real"
-                ? (entry.player.get ? entry.player.get("stats") : entry.player.stats)
+                ? (entry.player.round?.get ? entry.player.round.get("stats") : entry.player.stats)
                 : entry.bot.stats;
               const size = isCurrentPlayer ? "text-6xl" : "text-4xl";
 
