@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { useGame, usePlayer, usePlayers } from "@empirica/core/player/classic/react";
+import { useGame, usePlayer, usePlayers, useRound } from "@empirica/core/player/classic/react";
 import { useTutorialContext } from "./tutorial/TutorialContext";
 
 export function ActionHistory({ maxRows }) {
@@ -10,9 +10,13 @@ export function ActionHistory({ maxRows }) {
   const game = isTutorialMode ? mockData.game : useGame();
   const player = isTutorialMode ? mockData.player : usePlayer();
   const players = isTutorialMode ? mockData.players : usePlayers();
+  const round = isTutorialMode ? mockData.round : useRound();
 
   // Get team action history from game
   const teamHistory = isTutorialMode ? (mockData.teamHistory || []) : (game.get("teamActionHistory") || []);
+
+  // Get current round number to filter history
+  const currentRound = round?.get("roundNumber");
 
   const actionIcons = {
     ATTACK: "⚔️",
@@ -23,10 +27,14 @@ export function ActionHistory({ maxRows }) {
   const roleNames = ["Fighter", "Tank", "Healer"];
 
   // Group turns by stage (each stage has 2 turns)
+  // Filter to only show history from the current round
   const stageHistory = useMemo(() => {
     const grouped = {};
 
-    teamHistory.forEach(entry => {
+    // Filter history to only include entries from the current round
+    const currentRoundHistory = teamHistory.filter(entry => entry.round === currentRound);
+
+    currentRoundHistory.forEach(entry => {
       if (!grouped[entry.stage]) {
         grouped[entry.stage] = [];
       }
@@ -40,7 +48,7 @@ export function ActionHistory({ maxRows }) {
         turns: turns.sort((a, b) => a.turn - b.turn) // Sort turns within stage ascending (Turn 1, then Turn 2)
       }))
       .sort((a, b) => a.stage - b.stage); // Sort stages ascending (Stage 1, Stage 2, Stage 3...)
-  }, [teamHistory]);
+  }, [teamHistory, currentRound]);
 
   // Get player's action history to find their role for each stage
   const playerActionHistory = player.get("actionHistory") || [];
