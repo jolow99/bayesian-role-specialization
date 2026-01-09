@@ -4,19 +4,19 @@ export function RoleButton({ role, selected, onClick, disabled, locked }) {
   const roleConfig = {
     FIGHTER: {
       label: "Fighter",
-      icon: "⚔️",
+      icon: "🤺",
       description: "Attacks most of the time.",
       color: "red"
     },
     TANK: {
       label: "Tank",
-      icon: "🛡️",
+      icon: "💂",
       description: "Defends when the enemy is attacking, most of the time. Otherwise, acts like a fighter.",
       color: "blue"
     },
     HEALER: {
       label: "Healer",
-      icon: "💚",
+      icon: "🧙",
       description: "Heals if the team's health is less than 50%, most of the time. Otherwise, acts like a fighter.",
       color: "green"
     }

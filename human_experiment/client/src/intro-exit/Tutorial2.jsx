@@ -959,18 +959,18 @@ export function Tutorial2({ next }) {
                         </p>
                         <div className="flex gap-3 justify-center">
                           <div className="text-center bg-gray-100 rounded p-2">
-                            <div className="text-2xl mb-1">🛡️</div>
+                            <div className="text-2xl mb-1">💂</div>
                             <div className="text-xs text-gray-600">P1: Tank</div>
                             <div className="text-xs text-gray-500">(Defends when attacked)</div>
                           </div>
                           <div className="text-center bg-gray-100 rounded p-2">
-                            <div className="text-2xl mb-1">💚</div>
+                            <div className="text-2xl mb-1">🧙</div>
                             <div className="text-xs text-gray-600">P2: Healer</div>
                             <div className="text-xs text-gray-500">(Heals when damaged)</div>
                           </div>
                           {selectedRole !== null && (
                             <div className="text-center bg-blue-100 border-2 border-blue-400 rounded p-2">
-                              <div className="text-2xl mb-1">{["⚔️", "🛡️", "💚"][selectedRole]}</div>
+                              <div className="text-2xl mb-1">{["🤺", "💂", "🧙"][selectedRole]}</div>
                               <div className="text-xs text-gray-600">You: {ROLE_NAMES[selectedRole]}</div>
                             </div>
                           )}

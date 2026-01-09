@@ -419,12 +419,12 @@ export function Tutorial1({ next }) {
                         <h4 className="font-semibold mb-3 text-center text-gray-700">Your Teammates' Roles:</h4>
                         <div className="flex gap-4 justify-center">
                           <div className="text-center bg-red-50 border-2 border-red-300 rounded p-3">
-                            <div className="text-3xl mb-1">⚔️</div>
+                            <div className="text-3xl mb-1">🤺</div>
                             <div className="text-xs font-semibold text-gray-600">Player 1</div>
                             <div className="text-sm font-bold text-red-700">Fighter</div>
                           </div>
                           <div className="text-center bg-red-50 border-2 border-red-300 rounded p-3">
-                            <div className="text-3xl mb-1">⚔️</div>
+                            <div className="text-3xl mb-1">🤺</div>
                             <div className="text-xs font-semibold text-gray-600">Player 2</div>
                             <div className="text-sm font-bold text-red-700">Fighter</div>
                           </div>
