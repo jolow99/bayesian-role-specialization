@@ -2,7 +2,7 @@ import React, { useMemo } from "react";
 import { useGame, usePlayer, usePlayers, useRound } from "@empirica/core/player/classic/react";
 import { useTutorialContext } from "./tutorial/TutorialContext";
 
-export function ActionHistory({ maxRows }) {
+export function ActionHistory({ currentStageView = null, currentTurnView = 0 }) {
   // Check if in tutorial mode
   const { isTutorialMode, mockData } = useTutorialContext();
 
@@ -12,11 +12,9 @@ export function ActionHistory({ maxRows }) {
   const players = isTutorialMode ? mockData.players : usePlayers();
   const round = isTutorialMode ? mockData.round : useRound();
 
-  // Get team action history from game
-  const teamHistory = isTutorialMode ? (mockData.teamHistory || []) : (game.get("teamActionHistory") || []);
-
-  // Get current round number to filter history
+  // Get current round number
   const currentRound = round?.get("roundNumber");
+  const currentRoundStageNumber = round?.get("stageNumber") || 0;
 
   const actionIcons = {
     ATTACK: "⚔️",
@@ -26,29 +24,53 @@ export function ActionHistory({ maxRows }) {
 
   const roleNames = ["Fighter", "Tank", "Healer"];
 
-  // Group turns by stage (each stage has 2 turns)
-  // Filter to only show history from the current round
+  // Build stage history from per-stage turn data stored on the round
+  // This is synchronized with the frontend's turn-by-turn display
   const stageHistory = useMemo(() => {
-    const grouped = {};
+    if (!round || !currentRound) return [];
 
-    // Filter history to only include entries from the current round
-    const currentRoundHistory = teamHistory.filter(entry => entry.round === currentRound);
+    const stages = [];
 
-    currentRoundHistory.forEach(entry => {
-      if (!grouped[entry.stage]) {
-        grouped[entry.stage] = [];
+    // Iterate through stages up to currentRoundStageNumber (which tracks completed stages)
+    for (let stageNum = 1; stageNum <= currentRoundStageNumber; stageNum++) {
+      const stageTurns = round.get(`stage${stageNum}Turns`);
+
+      if (stageTurns && stageTurns.length > 0) {
+        // Filter turns based on current viewing state
+        let turnsToShow = stageTurns;
+
+        // If we're currently viewing this stage, only show turns up to currentTurnView
+        if (currentStageView === stageNum && currentTurnView > 0) {
+          turnsToShow = stageTurns.slice(0, currentTurnView);
+        }
+        // If this is a future stage we haven't started viewing yet, don't show it
+        else if (currentStageView !== null && stageNum > currentStageView) {
+          continue;
+        }
+
+        // Only add stage if there are turns to show
+        if (turnsToShow.length > 0) {
+          // Convert turn data to match the expected format
+          const turns = turnsToShow.map(turn => ({
+            round: currentRound,
+            stage: stageNum,
+            turn: turn.turnNumber,
+            actions: turn.actions.map((action, idx) => ({ playerId: idx, action })),
+            enemyHealth: turn.newEnemyHealth,
+            teamHealth: turn.newTeamHealth,
+            enemyIntent: turn.enemyIntent
+          }));
+
+          stages.push({
+            stage: stageNum,
+            turns: turns
+          });
+        }
       }
-      grouped[entry.stage].push(entry);
-    });
+    }
 
-    // Convert to array and sort by stage number (ascending for chronological order)
-    return Object.entries(grouped)
-      .map(([stage, turns]) => ({
-        stage: parseInt(stage),
-        turns: turns.sort((a, b) => a.turn - b.turn) // Sort turns within stage ascending (Turn 1, then Turn 2)
-      }))
-      .sort((a, b) => a.stage - b.stage); // Sort stages ascending (Stage 1, Stage 2, Stage 3...)
-  }, [teamHistory, currentRound]);
+    return stages;
+  }, [round, currentRound, currentRoundStageNumber, currentStageView, currentTurnView]);
 
   // Get player's action history to find their role for each stage
   const playerActionHistory = player.get("actionHistory") || [];

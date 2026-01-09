@@ -29,6 +29,7 @@ function ActionSelection() {
   const [localSubmitted, setLocalSubmitted] = useState(false); // Local state to immediately show waiting screen
   const [currentTurnView, setCurrentTurnView] = useState(0); // 0 = role selection/waiting, 1 = turn 1 results, 2 = turn 2 results
   const [lastViewedStage, setLastViewedStage] = useState(0); // Track which stage's turns we've viewed
+  const [allowRoundEnd, setAllowRoundEnd] = useState(false); // Control when to show round end screen
 
   // Cache the current stage state HTML continuously (after every render)
   // This ensures the cache is ALWAYS up-to-date before any unmount happens
@@ -141,7 +142,7 @@ function ActionSelection() {
 
   // Check if round has ended
   const roundOutcome = round.get("outcome");
-  const shouldShowRoundEnd = isRoundEndStage || (roundOutcome && !isGameEndStage);
+  const shouldShowRoundEnd = (isRoundEndStage || (roundOutcome && !isGameEndStage)) && allowRoundEnd;
 
   // Check if game has ended
   const totalPoints = game.get("totalPoints");
@@ -152,10 +153,19 @@ function ActionSelection() {
   console.log(`[Client RENDER] Enemy HP: ${enemyHealth}, Team HP: ${teamHealth}`);
   console.log(`[Client RENDER] submitted: ${submitted}, hasTurns: ${hasTurns}, currentTurnView: ${currentTurnView}, turns.length: ${turns.length}`);
 
-  // Reset last viewed stage when moving to a new round
+  // Reset last viewed stage and round end flag when moving to a new round
   useEffect(() => {
     setLastViewedStage(0);
+    setAllowRoundEnd(false);
   }, [roundNumber]);
+
+  // If we're entering a round end stage directly (no turns to show), allow round end immediately
+  useEffect(() => {
+    if (isRoundEndStage && !hasTurns && !allowRoundEnd) {
+      console.log(`[Round End] Entered round end stage directly, allowing round end screen`);
+      setAllowRoundEnd(true);
+    }
+  }, [isRoundEndStage, hasTurns, allowRoundEnd]);
 
   // Auto-start showing turn 1 when turns data arrives
   useEffect(() => {
@@ -177,19 +187,32 @@ function ActionSelection() {
     }
   }, [currentTurnView, turns.length]);
 
-  // After viewing all turns, mark stage as viewed and reset to role selection
+  // After viewing all turns, mark stage as viewed and reset to role selection OR show round end
   useEffect(() => {
     if (currentTurnView === turns.length && turns.length > 0) {
-      console.log(`[Turn Auto-Advance] All turns viewed, scheduling transition to next stage in 8 seconds`);
-      const timer = setTimeout(() => {
-        console.log(`[Turn Auto-Advance] Marking stage ${stageToView} as viewed, resetting to role selection`);
-        setLastViewedStage(stageToView);
-        setCurrentTurnView(0);
-        setLocalSubmitted(false);
-      }, 8000); // 8 seconds to view final turn
-      return () => clearTimeout(timer);
+      const roundOutcomeExists = round.get("outcome");
+
+      if (roundOutcomeExists) {
+        // Round has ended (win/loss/timeout), transition to round end screen after delay
+        console.log(`[Turn Auto-Advance] All turns viewed, round ended with outcome: ${roundOutcomeExists}, showing round end in 8 seconds`);
+        const timer = setTimeout(() => {
+          console.log(`[Turn Auto-Advance] Enabling round end screen`);
+          setAllowRoundEnd(true);
+        }, 8000); // 8 seconds to view final turn before showing victory/defeat
+        return () => clearTimeout(timer);
+      } else {
+        // Round continues, transition to next stage's role selection
+        console.log(`[Turn Auto-Advance] All turns viewed, scheduling transition to next stage in 8 seconds`);
+        const timer = setTimeout(() => {
+          console.log(`[Turn Auto-Advance] Marking stage ${stageToView} as viewed, resetting to role selection`);
+          setLastViewedStage(stageToView);
+          setCurrentTurnView(0);
+          setLocalSubmitted(false);
+        }, 8000); // 8 seconds to view final turn
+        return () => clearTimeout(timer);
+      }
     }
-  }, [currentTurnView, turns.length, stageToView]);
+  }, [currentTurnView, turns.length, stageToView, round]);
 
   // Trigger damage animation during turn stages
   useEffect(() => {
@@ -339,7 +362,7 @@ function ActionSelection() {
                   <div className="w-full">
                     <ResultsPanel
                       roundNumber={roundNumber}
-                      stageNumber={stageNumber}
+                      stageNumber={stageToView}
                       turnNumber={currentTurnView}
                       actions={actions}
                       allPlayers={allPlayers}
@@ -415,7 +438,7 @@ function ActionSelection() {
               </h3>
             </div>
             <div className="flex-1 overflow-auto p-3 bg-white">
-              <ActionHistory />
+              <ActionHistory currentStageView={stageToView} currentTurnView={currentTurnView} />
             </div>
           </div>
 
