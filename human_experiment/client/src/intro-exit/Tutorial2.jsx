@@ -43,11 +43,11 @@ export function Tutorial2({ next }) {
       )
     },
     {
-      targetId: "battle-history-r1t1",
+      targetId: "battle-history-s1t1",
       tooltipPosition: "left",
       content: (
         <div>
-          <h4 className="text-lg font-bold text-gray-900 mb-2">Round 1, Turn 1</h4>
+          <h4 className="text-lg font-bold text-gray-900 mb-2">Stage 1, Turn 1</h4>
           <p className="text-sm text-gray-700 mb-2">
             The enemy attacked, dealing 6 damage. Player 1 chose DEFEND (reducing damage by 2) and Player 2 chose ATTACK (dealing 2 damage).
           </p>
@@ -58,11 +58,11 @@ export function Tutorial2({ next }) {
       )
     },
     {
-      targetId: "battle-history-r1t2",
+      targetId: "battle-history-s1t2",
       tooltipPosition: "left",
       content: (
         <div>
-          <h4 className="text-lg font-bold text-gray-900 mb-2">Round 1, Turn 2</h4>
+          <h4 className="text-lg font-bold text-gray-900 mb-2">Stage 1, Turn 2</h4>
           <p className="text-sm text-gray-700 mb-2">
             The enemy rested (no attack). Player 1 chose ATTACK and Player 2 chose HEAL (restoring 2 health).
           </p>
@@ -226,6 +226,11 @@ export function Tutorial2({ next }) {
       { id: "bot-2", playerId: 1, stats: { STR: 2, DEF: 2, SUP: 2 } }
     ];
 
+    const roundData = {
+      roundNumber: 1,
+      stageNumber: 0
+    };
+
     return {
       game: {
         enemyHealth: 10,
@@ -249,14 +254,14 @@ export function Tutorial2({ next }) {
       },
       players: players,
       round: {
-        roundNumber: 1
+        ...roundData,
+        get: (key) => roundData[key]
       },
       stage: {
         name: "initial",
         stageType: "initial",
         turnNumber: 0
-      },
-      teamHistory: []
+      }
     };
   };
 
@@ -277,19 +282,22 @@ export function Tutorial2({ next }) {
       { id: "bot-2", playerId: 1, stats: { STR: 2, DEF: 2, SUP: 2 } }
     ];
 
-    const teamHistory = [
-      {
-        round: 1,
-        turn: 1,
-        enemyHealth: turn1Result.enemyHealth,
-        teamHealth: turn1Result.teamHealth,
+    const roundData = {
+      roundNumber: 1,
+      stageNumber: 1,
+      stage1Turns: [{
+        turnNumber: 1,
         enemyIntent: turn1Result.enemyIntent,
-        actions: turn1Result.actions.map((action, idx) => ({
-          playerId: idx,
-          action: action
-        }))
-      }
-    ];
+        actions: turn1Result.actions,
+        damageToEnemy: turn1Result.damageToEnemy,
+        damageToTeam: turn1Result.damageToTeam,
+        healAmount: turn1Result.healAmount,
+        previousEnemyHealth: 10,
+        previousTeamHealth: 10,
+        newEnemyHealth: turn1Result.enemyHealth,
+        newTeamHealth: turn1Result.teamHealth
+      }]
+    };
 
     return {
       game: {
@@ -314,14 +322,14 @@ export function Tutorial2({ next }) {
       },
       players: players,
       round: {
-        roundNumber: 1
+        ...roundData,
+        get: (key) => roundData[key]
       },
       stage: {
         name: "turn1",
         stageType: "turn",
         turnNumber: 1
-      },
-      teamHistory: teamHistory
+      }
     };
   };
 
@@ -351,30 +359,36 @@ export function Tutorial2({ next }) {
       { id: "bot-2", playerId: 1, stats: { STR: 2, DEF: 2, SUP: 2 } }
     ];
 
-    const teamHistory = [
-      {
-        round: 1,
-        turn: 1,
-        enemyHealth: turn1Result.enemyHealth,
-        teamHealth: turn1Result.teamHealth,
-        enemyIntent: turn1Result.enemyIntent,
-        actions: turn1Result.actions.map((action, idx) => ({
-          playerId: idx,
-          action: action
-        }))
-      },
-      {
-        round: 1,
-        turn: 2,
-        enemyHealth: turn2Result.enemyHealth,
-        teamHealth: turn2Result.teamHealth,
-        enemyIntent: turn2Result.enemyIntent,
-        actions: turn2Result.actions.map((action, idx) => ({
-          playerId: idx,
-          action: action
-        }))
-      }
-    ];
+    const roundData = {
+      roundNumber: 1,
+      stageNumber: 1,
+      stage1Turns: [
+        {
+          turnNumber: 1,
+          enemyIntent: turn1Result.enemyIntent,
+          actions: turn1Result.actions,
+          damageToEnemy: turn1Result.damageToEnemy,
+          damageToTeam: turn1Result.damageToTeam,
+          healAmount: turn1Result.healAmount,
+          previousEnemyHealth: 10,
+          previousTeamHealth: 10,
+          newEnemyHealth: turn1Result.enemyHealth,
+          newTeamHealth: turn1Result.teamHealth
+        },
+        {
+          turnNumber: 2,
+          enemyIntent: turn2Result.enemyIntent,
+          actions: turn2Result.actions,
+          damageToEnemy: turn2Result.damageToEnemy,
+          damageToTeam: turn2Result.damageToTeam,
+          healAmount: turn2Result.healAmount,
+          previousEnemyHealth: turn1Result.enemyHealth,
+          previousTeamHealth: turn1Result.teamHealth,
+          newEnemyHealth: turn2Result.enemyHealth,
+          newTeamHealth: turn2Result.teamHealth
+        }
+      ]
+    };
 
     return {
       game: {
@@ -399,14 +413,14 @@ export function Tutorial2({ next }) {
       },
       players: players,
       round: {
-        roundNumber: 1
+        ...roundData,
+        get: (key) => roundData[key]
       },
       stage: {
         name: "turn2",
         stageType: "turn",
         turnNumber: 2
-      },
-      teamHistory: teamHistory
+      }
     };
   };
 
@@ -417,30 +431,36 @@ export function Tutorial2({ next }) {
       { id: "tutorial-player", playerId: 2, stats: { STR: 2, DEF: 2, SUP: 2 } }
     ];
 
-    const teamHistory = [
-      {
-        round: 1,
-        turn: 1,
-        enemyHealth: round1Turn1Result.enemyHealth,
-        teamHealth: round1Turn1Result.teamHealth,
-        enemyIntent: round1Turn1Result.enemyIntent,
-        actions: round1Turn1Result.actions.map((action, idx) => ({
-          playerId: idx,
-          action: action
-        }))
-      },
-      {
-        round: 1,
-        turn: 2,
-        enemyHealth: round1Turn2Result.enemyHealth,
-        teamHealth: round1Turn2Result.teamHealth,
-        enemyIntent: round1Turn2Result.enemyIntent,
-        actions: round1Turn2Result.actions.map((action, idx) => ({
-          playerId: idx,
-          action: action
-        }))
-      }
-    ];
+    const roundData = {
+      roundNumber: 1,
+      stageNumber: 1,
+      stage1Turns: [
+        {
+          turnNumber: 1,
+          enemyIntent: round1Turn1Result.enemyIntent,
+          actions: round1Turn1Result.actions,
+          damageToEnemy: round1Turn1Result.damageToEnemy,
+          damageToTeam: round1Turn1Result.damageToTeam,
+          healAmount: round1Turn1Result.healAmount,
+          previousEnemyHealth: 10,
+          previousTeamHealth: 10,
+          newEnemyHealth: round1Turn1Result.enemyHealth,
+          newTeamHealth: round1Turn1Result.teamHealth
+        },
+        {
+          turnNumber: 2,
+          enemyIntent: round1Turn2Result.enemyIntent,
+          actions: round1Turn2Result.actions,
+          damageToEnemy: round1Turn2Result.damageToEnemy,
+          damageToTeam: round1Turn2Result.damageToTeam,
+          healAmount: round1Turn2Result.healAmount,
+          previousEnemyHealth: round1Turn1Result.enemyHealth,
+          previousTeamHealth: round1Turn1Result.teamHealth,
+          newEnemyHealth: round1Turn2Result.enemyHealth,
+          newTeamHealth: round1Turn2Result.teamHealth
+        }
+      ]
+    };
 
     return {
       game: {
@@ -469,13 +489,13 @@ export function Tutorial2({ next }) {
       },
       players: players,
       round: {
-        roundNumber: 2
+        ...roundData,
+        get: (key) => roundData[key]
       },
       stage: {
         name: "roleSelection",
         stageType: "roleSelection"
-      },
-      teamHistory: teamHistory
+      }
     };
   };
 
@@ -486,60 +506,71 @@ export function Tutorial2({ next }) {
       { id: "tutorial-player", playerId: 2, stats: { STR: 2, DEF: 2, SUP: 2 } }
     ];
 
-    const teamHistory = [
-      {
-        round: 1,
-        turn: 1,
-        enemyHealth: round1Turn1Result.enemyHealth,
-        teamHealth: round1Turn1Result.teamHealth,
-        enemyIntent: round1Turn1Result.enemyIntent,
-        actions: round1Turn1Result.actions.map((action, idx) => ({
-          playerId: idx,
-          action: action
-        }))
-      },
-      {
-        round: 1,
-        turn: 2,
-        enemyHealth: round1Turn2Result.enemyHealth,
-        teamHealth: round1Turn2Result.teamHealth,
-        enemyIntent: round1Turn2Result.enemyIntent,
-        actions: round1Turn2Result.actions.map((action, idx) => ({
-          playerId: idx,
-          action: action
-        }))
-      },
-      {
-        round: 2,
-        turn: 1,
-        enemyHealth: turn1Result.enemyHealth,
-        teamHealth: turn1Result.teamHealth,
-        enemyIntent: turn1Result.enemyIntent,
-        actions: turn1Result.actions.map((action, idx) => ({
-          playerId: idx,
-          action: action
-        }))
-      }
-    ];
+    // Build round data with stage 1 (round 1) and stage 2 (round 2) turns
+    const roundData = {
+      roundNumber: 1,
+      stageNumber: 2, // We've completed stage 1, now on stage 2
+      stage1Turns: [
+        {
+          turnNumber: 1,
+          enemyIntent: round1Turn1Result.enemyIntent,
+          actions: round1Turn1Result.actions,
+          damageToEnemy: round1Turn1Result.damageToEnemy,
+          damageToTeam: round1Turn1Result.damageToTeam,
+          healAmount: round1Turn1Result.healAmount,
+          previousEnemyHealth: 10,
+          previousTeamHealth: 10,
+          newEnemyHealth: round1Turn1Result.enemyHealth,
+          newTeamHealth: round1Turn1Result.teamHealth
+        },
+        {
+          turnNumber: 2,
+          enemyIntent: round1Turn2Result.enemyIntent,
+          actions: round1Turn2Result.actions,
+          damageToEnemy: round1Turn2Result.damageToEnemy,
+          damageToTeam: round1Turn2Result.damageToTeam,
+          healAmount: round1Turn2Result.healAmount,
+          previousEnemyHealth: round1Turn1Result.enemyHealth,
+          previousTeamHealth: round1Turn1Result.teamHealth,
+          newEnemyHealth: round1Turn2Result.enemyHealth,
+          newTeamHealth: round1Turn2Result.teamHealth
+        }
+      ],
+      stage2Turns: [
+        {
+          turnNumber: 1,
+          enemyIntent: turn1Result.enemyIntent,
+          actions: turn1Result.actions,
+          damageToEnemy: turn1Result.damageToEnemy,
+          damageToTeam: turn1Result.damageToTeam,
+          healAmount: turn1Result.healAmount,
+          previousEnemyHealth: round1Turn2Result.enemyHealth,
+          previousTeamHealth: round1Turn2Result.teamHealth,
+          newEnemyHealth: turn1Result.enemyHealth,
+          newTeamHealth: turn1Result.teamHealth
+        }
+      ]
+    };
 
     if (turn2Result) {
-      teamHistory.push({
-        round: 2,
-        turn: 2,
-        enemyHealth: turn2Result.enemyHealth,
-        teamHealth: turn2Result.teamHealth,
+      roundData.stage2Turns.push({
+        turnNumber: 2,
         enemyIntent: turn2Result.enemyIntent,
-        actions: turn2Result.actions.map((action, idx) => ({
-          playerId: idx,
-          action: action
-        }))
+        actions: turn2Result.actions,
+        damageToEnemy: turn2Result.damageToEnemy,
+        damageToTeam: turn2Result.damageToTeam,
+        healAmount: turn2Result.healAmount,
+        previousEnemyHealth: turn1Result.enemyHealth,
+        previousTeamHealth: turn1Result.teamHealth,
+        newEnemyHealth: turn2Result.enemyHealth,
+        newTeamHealth: turn2Result.teamHealth
       });
     }
 
-    // Build player action history showing role for round 2
+    // Build player action history showing role for stage 2
     const playerActionHistory = [
       {
-        round: 2,
+        stage: 2,
         role: selectedRole
       }
     ];
@@ -571,14 +602,14 @@ export function Tutorial2({ next }) {
       },
       players: players,
       round: {
-        roundNumber: 2
+        ...roundData,
+        get: (key) => roundData[key]
       },
       stage: {
         name: `turn${currentTurn.turnNum}`,
         stageType: "turn",
         turnNumber: currentTurn.turnNum
-      },
-      teamHistory: teamHistory
+      }
     };
   };
 
