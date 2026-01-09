@@ -495,14 +495,19 @@ function resolveBothTurns(game, round, stage, stageNumber) {
       round.set("roundEndMessage", "Victory! You defeated the enemy!");
       console.log(`Round ${roundNumber} won after stage ${stageNumber}, turn ${turnNumber}!`);
 
-      // Calculate points for winning
-      const pointsEarned = Math.ceil(turnResult.newTeamHealth);
+      // Calculate points for winning: 100 - (100 * T / H)
+      // where T = total turns taken, H = max turns per round
+      const maxStagesPerRound = game.get("treatment").maxStagesPerRound;
+      const maxTurnsPerRound = maxStagesPerRound * TURNS_PER_STAGE; // H = 10
+      const totalTurnsTaken = (stageNumber - 1) * TURNS_PER_STAGE + turnNumber; // T
+      const pointsEarned = Math.max(0, Math.round(100 - (100 * totalTurnsTaken / maxTurnsPerRound)));
+
       const currentPoints = game.get("totalPoints");
       game.set("totalPoints", currentPoints + pointsEarned);
 
       // Record outcome
       const roundOutcomes = game.get("roundOutcomes");
-      roundOutcomes.push({ roundNumber, outcome: "WIN", pointsEarned });
+      roundOutcomes.push({ roundNumber, outcome: "WIN", pointsEarned, turnsTaken: totalTurnsTaken });
       game.set("roundOutcomes", roundOutcomes);
 
       // Store turn results on round (indexed by stage) for client access
@@ -516,8 +521,9 @@ function resolveBothTurns(game, round, stage, stageNumber) {
       console.log(`Round ${roundNumber} lost after stage ${stageNumber}, turn ${turnNumber}!`);
 
       // No points for losing
+      const totalTurnsTaken = (stageNumber - 1) * TURNS_PER_STAGE + turnNumber;
       const roundOutcomes = game.get("roundOutcomes");
-      roundOutcomes.push({ roundNumber, outcome: "LOSE", pointsEarned: 0 });
+      roundOutcomes.push({ roundNumber, outcome: "LOSE", pointsEarned: 0, turnsTaken: totalTurnsTaken });
       game.set("roundOutcomes", roundOutcomes);
 
       // Store turn results on round (indexed by stage) for client access
@@ -539,8 +545,9 @@ function resolveBothTurns(game, round, stage, stageNumber) {
     console.log(`Round ${roundNumber} timed out after max stages!`);
 
     // No points for timeout
+    const totalTurnsTaken = maxStagesPerRound * TURNS_PER_STAGE; // Used all available turns
     const roundOutcomes = game.get("roundOutcomes");
-    roundOutcomes.push({ roundNumber, outcome: "TIMEOUT", pointsEarned: 0 });
+    roundOutcomes.push({ roundNumber, outcome: "TIMEOUT", pointsEarned: 0, turnsTaken: totalTurnsTaken });
     game.set("roundOutcomes", roundOutcomes);
 
     addRoundEndStage(round);

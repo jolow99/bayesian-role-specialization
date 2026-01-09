@@ -50,6 +50,9 @@ export const GameEndScreen = React.memo(function GameEndScreen({
   // Determine overall outcome styling based on outcome or stage type
   let bgColorClass, borderColorClass, textColorClass, icon, title, message;
 
+  // Get the most recent round's points earned
+  const mostRecentRound = roundOutcomes.length > 0 ? roundOutcomes[roundOutcomes.length - 1] : null;
+
   if (isRoundEnd) {
     // Round end - style based on outcome
     if (outcome === "WIN") {
@@ -90,6 +93,21 @@ export const GameEndScreen = React.memo(function GameEndScreen({
           <div className="text-8xl mb-4">{icon}</div>
           <h1 className={`text-5xl font-bold ${textColorClass} mb-2`}>{title}</h1>
           <p className="text-xl text-gray-700">{message}</p>
+
+          {/* Show points earned for this round (if round end) */}
+          {isRoundEnd && mostRecentRound && (
+            <div className="mt-4 inline-block bg-white border-2 border-gray-300 rounded-lg px-6 py-3">
+              <div className="text-sm text-gray-600 mb-1">Points Earned This Round</div>
+              <div className={`text-4xl font-bold ${mostRecentRound.pointsEarned > 0 ? 'text-green-600' : 'text-gray-400'}`}>
+                +{mostRecentRound.pointsEarned}
+              </div>
+              {mostRecentRound.turnsTaken !== undefined && (
+                <div className="text-xs text-gray-500 mt-1">
+                  Completed in {mostRecentRound.turnsTaken} turn{mostRecentRound.turnsTaken !== 1 ? 's' : ''}
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Final Stats */}
@@ -125,23 +143,53 @@ export const GameEndScreen = React.memo(function GameEndScreen({
 
           {/* Round Details */}
           <div className="border-t border-gray-200 pt-4">
-            <div className="text-xs font-semibold text-gray-600 mb-2 uppercase tracking-wide text-center">
-              Round Results
+            <div className="text-xs font-semibold text-gray-600 mb-3 uppercase tracking-wide text-center">
+              Round-by-Round Results
             </div>
-            <div className="flex flex-wrap justify-center gap-2">
+            <div className="space-y-2">
               {roundOutcomes.map((round, idx) => (
-                <div key={idx} className="text-center">
-                  <div className="text-sm">
-                    {round.outcome === "WIN" && "🎉"}
-                    {round.outcome === "LOSE" && "💔"}
-                    {round.outcome === "TIMEOUT" && "⏰"}
+                <div key={idx} className="flex items-center justify-between bg-gray-50 rounded px-3 py-2 text-sm">
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg">
+                      {round.outcome === "WIN" && "🎉"}
+                      {round.outcome === "LOSE" && "💔"}
+                      {round.outcome === "TIMEOUT" && "⏰"}
+                    </span>
+                    <span className="font-semibold text-gray-700">Round {round.roundNumber}</span>
                   </div>
-                  <div className="text-xs text-gray-500">R{round.roundNumber}</div>
+                  <div className="flex items-center gap-4">
+                    {round.turnsTaken !== undefined && (
+                      <span className="text-gray-600 text-xs">
+                        {round.turnsTaken} turn{round.turnsTaken !== 1 ? 's' : ''}
+                      </span>
+                    )}
+                    <span className={`font-bold ${round.pointsEarned > 0 ? 'text-green-600' : 'text-gray-400'}`}>
+                      +{round.pointsEarned} pts
+                    </span>
+                  </div>
                 </div>
               ))}
             </div>
           </div>
         </div>
+
+        {/* Bonus Payment Information (only show on game end) */}
+        {isGameEnd && (
+          <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border-2 border-yellow-400 rounded-lg p-6 mb-6">
+            <h3 className="text-lg font-bold text-gray-800 mb-3 text-center">💰 Bonus Payment</h3>
+            <div className="text-center">
+              <div className="text-3xl font-bold text-orange-600 mb-2">
+                ${((totalPoints || 0) / 40 * 0.10).toFixed(2)}
+              </div>
+              <div className="text-sm text-gray-600 mb-2">
+                Earned from {totalPoints || 0} points
+              </div>
+              <div className="text-xs text-gray-500">
+                (40 points = $0.10)
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Next Button */}
         <div className="text-center">

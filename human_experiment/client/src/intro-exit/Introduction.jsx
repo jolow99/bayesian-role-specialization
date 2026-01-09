@@ -10,7 +10,7 @@ export function Introduction({ next }) {
   // Create mock data for the tutorial
   const mockData = createDefaultMockData();
 
-  // Define the 6 tutorial steps
+  // Define the 7 tutorial steps
   const tutorialSteps = [
     {
       targetId: "full-screen", // Show darkened background
@@ -19,8 +19,22 @@ export function Introduction({ next }) {
       content: (
         <div>
           <h3 className="text-lg font-bold text-gray-900 mb-3">Welcome!</h3>
+          <p className="text-sm text-gray-700 mb-3">
+            You'll play <strong>8 rounds</strong> of this cooperative game. In each round, work with your team to defeat the enemy before your team's health reaches 0.
+          </p>
+          <p className="text-sm text-gray-700 mb-3">
+            <strong>Points & Bonus:</strong> You earn points based on how quickly you win each round. Faster victories earn more points!
+          </p>
+          <ul className="text-sm text-gray-700 space-y-1 ml-4 mb-3">
+            <li>• Each round has a maximum of <strong>10 turns</strong></li>
+            <li>• <strong>Win:</strong> Earn 100 - (100 × Turns / 10) points</li>
+            <li>• <strong>Lose or timeout:</strong> Earn 0 points</li>
+          </ul>
+          <p className="text-sm text-gray-700 mb-2">
+            <strong>Bonus Payment:</strong> Every 40 points = $0.10 bonus (up to ~$1.00 total bonus on top of base payment)
+          </p>
           <p className="text-sm text-gray-700">
-            Let's take a tour of the interface to understand how to play
+            Let's take a tour of the interface to understand how to play!
           </p>
         </div>
       )
@@ -87,6 +101,28 @@ export function Introduction({ next }) {
           <p className="text-sm text-gray-700">
             This helps you coordinate with your team by understanding their strategies.
           </p>
+        </div>
+      )
+    },
+    {
+      targetId: "full-screen",
+      tooltipPosition: "center",
+      showBorder: false,
+      content: (
+        <div>
+          <h4 className="text-lg font-bold text-gray-900 mb-2">Turn Counter & Time Pressure</h4>
+          <p className="text-sm text-gray-700 mb-3">
+            At the top of the screen, you'll see a turn counter showing <strong>Turn: X / 10</strong>
+          </p>
+          <p className="text-sm text-gray-700 mb-3">
+            Remember: The faster you defeat the enemy, the more points you earn!
+          </p>
+          <ul className="text-sm text-gray-700 space-y-2 ml-4">
+            <li>• Win in 1-2 turns: Earn 80-90 points</li>
+            <li>• Win in 5 turns: Earn 50 points</li>
+            <li>• Win in 10 turns: Earn 0 points</li>
+            <li>• Lose or exceed 10 turns: Earn 0 points</li>
+          </ul>
         </div>
       )
     },
