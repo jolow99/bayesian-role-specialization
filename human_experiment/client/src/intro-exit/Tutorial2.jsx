@@ -37,7 +37,7 @@ export function Tutorial2({ next }) {
             In this tutorial, you'll learn how to analyze battle patterns and choose the best role to complement your team.
           </p>
           <p className="text-sm text-gray-700">
-            Round 1 has already been played out. Let's examine what happened to determine the best role for Round 2.
+            Stage 1 (Turn 1 and Turn 2) has already been played out. Let's examine what happened to determine the best role for Round 2.
           </p>
         </div>
       )
@@ -82,7 +82,7 @@ export function Tutorial2({ next }) {
             Based on these action patterns, what roles might the players have?
           </p>
           <p className="text-sm text-gray-700 font-semibold">
-            Select a role to complement your team for Round 2.
+            Select a role to complement your team for Stage 2.
           </p>
         </div>
       )
