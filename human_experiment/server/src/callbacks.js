@@ -6,7 +6,7 @@ const ACTIONS = { ATTACK: 0, DEFEND: 1, HEAL: 2 };
 const ACTION_NAMES = ["ATTACK", "DEFEND", "HEAL"];
 const ROLES = { FIGHTER: 0, TANK: 1, HEALER: 2 };
 const ROLE_NAMES = ["FIGHTER", "TANK", "HEALER"];
-const TURNS_PER_ROLE = 2; // Each role selection lasts for 2 turns
+const TURNS_PER_STAGE = 2; // Each stage (role commitment) lasts for 2 turns
 
 // Helper function to generate player stats
 // Stats now sum to 6
@@ -112,49 +112,82 @@ function getBotRoleChoice(bot, roundNumber, game) {
 Empirica.onGameStart(({ game }) => {
   const treatment = game.get("treatment");
   const {
-    statProfile,
     totalPlayers,
-    maxEnemyHealth,
-    maxTeamHealth,
-    botPlayers,
+    roundConfigs,
   } = treatment;
 
   // Generate random seed for this game (not from treatment)
   const gameSeed = Math.floor(Math.random() * 10000);
 
-  console.log(`\n===== BOT CONFIGURATION DEBUG =====`);
+  console.log(`\n===== GAME START =====`);
   console.log(`Game starting with ${game.players.length} human players, target totalPlayers: ${totalPlayers}`);
-  console.log(`botPlayers config:`, botPlayers);
+  console.log(`Game will have ${roundConfigs.length} rounds with different configurations`);
 
-  // Create virtual bot entries for each configured bot
-  const virtualBots = botPlayers.map(botConfig => ({
-    playerId: botConfig.playerId,
-    strategy: botConfig.strategy,
-    stats: generatePlayerStats(botConfig.playerId, gameSeed, statProfile),
-    currentRole: null // Will be set each round during role selection
-  }));
+  // Store game-level state
+  game.set("gameSeed", gameSeed);
+  game.set("totalPoints", 0); // Points accumulate across all rounds
+  game.set("roundOutcomes", []); // Track win/loss for each round
 
-  virtualBots.forEach(bot => {
-    console.log(`Configured virtual bot at playerId ${bot.playerId} with strategy:`, bot.strategy);
-  });
-
-  // Store only dynamic game state and generated values (not treatment config)
-  game.set("virtualBots", virtualBots);
-  game.set("gameSeed", gameSeed); // Generated at runtime, not from treatment
-  game.set("enemyHealth", maxEnemyHealth);
-  game.set("teamHealth", maxTeamHealth);
-
-  console.log(`Virtual bots configured: ${virtualBots.length}`);
+  console.log(`Game seed: ${gameSeed}`);
   console.log(`==============================\n`);
 
-  // Generate and assign player stats for REAL human players
+  // Generate and assign player stats and IDs for REAL human players
+  // Note: Player stats will be regenerated per round based on round config
+  game.players.forEach((player, idx) => {
+    player.set("actionHistory", []);
+    player.set("roleHistory", []);
+    player.set("isBot", false);
+    console.log(`Player ${idx} (id: ${player.id}) is a human player`);
+  });
+
+  // Create first round
+  addGameRound(game, 1);
+});
+
+function addGameRound(game, roundNumber) {
+  console.log(`!!! addGameRound called for round ${roundNumber}`);
+
+  const treatment = game.get("treatment");
+  const roundConfigs = treatment.roundConfigs;
+  const roundConfig = roundConfigs[roundNumber - 1]; // 0-indexed array
+
+  if (!roundConfig) {
+    console.error(`No config found for round ${roundNumber}`);
+    return;
+  }
+
+  const round = game.addRound({
+    name: `Round ${roundNumber}`,
+    roundNumber: roundNumber,
+  });
+
+  console.log(`!!! Created round ${roundNumber} with config:`, roundConfig);
+
+  // Store round number (minimal data that must be set here)
+  round.set("roundNumber", roundNumber);
+  round.set("stageNumber", 0); // Current stage within this round (0 means not started)
+
+  // Store round config on both game (for server callbacks) and round (for client access)
+  game.set(`round${roundNumber}Config`, roundConfig);
+  round.set("roundConfig", roundConfig);
+
+  // Note: virtualBots will be initialized in onRoundStart for proper persistence
+  const totalPlayers = treatment.totalPlayers;
+  const botPlayers = roundConfig.botPlayers || [];
+  const gameSeed = game.get("gameSeed");
+
+  console.log(`Round ${roundNumber}: Will configure ${botPlayers.length} virtual bots in onRoundStart`);
+
+  // Store player assignments for this round
+  const playerAssignments = [];
   game.players.forEach((player, idx) => {
     // Find the actual playerId for this player (accounting for virtual bots)
     let actualPlayerId = 0;
     let playersAssigned = 0;
 
     for (let i = 0; i < totalPlayers; i++) {
-      const isBotSlot = virtualBots.some(bot => bot.playerId === i);
+      // Check if this slot is taken by a bot using botPlayers config
+      const isBotSlot = botPlayers.some(botConfig => botConfig.playerId === i);
       if (!isBotSlot) {
         if (playersAssigned === idx) {
           actualPlayerId = i;
@@ -164,53 +197,38 @@ Empirica.onGameStart(({ game }) => {
       }
     }
 
-    const stats = generatePlayerStats(actualPlayerId, gameSeed, statProfile);
+    const stats = generatePlayerStats(actualPlayerId, gameSeed + roundNumber * 10000, roundConfig.statProfile);
 
-    // Set player properties
-    player.set("stats", stats);
-    player.set("playerId", actualPlayerId);
-    player.set("actionHistory", []);
-    player.set("roleHistory", []);
-    player.set("isBot", false);
+    playerAssignments.push({
+      empiricaPlayerId: player.id,
+      playerId: actualPlayerId,
+      stats: stats
+    });
 
-    console.log(`Player ${actualPlayerId} (id: ${player.id}) is a human player`);
+    console.log(`Round ${roundNumber}: Player ${actualPlayerId} stats:`, stats);
   });
 
-  // Create first round
-  addGameRound(game, 1);
-});
+  // Store player assignments on game object with round number key for immediate persistence
+  game.set(`round${roundNumber}Assignments`, playerAssignments);
+  console.log(`Stored ${playerAssignments.length} player assignments on game for round ${roundNumber}`);
 
-function addGameRound(game, roundNumber) {
-  console.log(`!!! addGameRound called for round ${roundNumber}`);
-  const round = game.addRound({
-    name: `Round ${roundNumber}`,
-    roundNumber: roundNumber,
+  // Add first stage (role selection + 2 turns)
+  addRoundStage(round, 1);
+}
+
+function addRoundStage(round, stageNumber) {
+  const roundNumber = round.get("roundNumber");
+  console.log(`!!! addRoundStage called for round ${roundNumber}, stage ${stageNumber}`);
+
+  // Create a stage for role selection (turns will be resolved automatically when stage starts)
+  const stage = round.addStage({
+    name: `Stage ${stageNumber}`,
+    duration: 300 // 5 minutes max for role selection
   });
 
-  console.log(`!!! Created round with ID: ${round.id}`);
+  stage.set("stageNumber", stageNumber);
 
-  // Initialize round state
-  round.set("roundNumber", roundNumber);
-  round.set("enemyHealth", game.get("enemyHealth"));
-  round.set("teamHealth", game.get("teamHealth"));
-
-  // Stage 1: Role Selection
-  const roleSelectionStage = round.addStage({
-    name: "Role Selection",
-    duration: 300 // 5 minutes max as safety
-  });
-  roleSelectionStage.set("stageType", "roleSelection");
-
-  // Stage 2: Turn 1 (actions resolve and results shown)
-  const turn1Stage = round.addStage({
-    name: "Turn 1",
-    duration: 8 // 8 seconds to view results
-  });
-  turn1Stage.set("stageType", "turn");
-  turn1Stage.set("turnNumber", 1);
-
-  // Turn 2 will be added dynamically after Turn 1 ends (if game hasn't ended)
-  console.log(`Created Round ${roundNumber} with stages: Role Selection -> Turn 1 (8s)`);
+  console.log(`Created Stage ${stageNumber} for Round ${roundNumber}`);
 }
 
 Empirica.onRoundStart(({ round }) => {
@@ -227,95 +245,206 @@ Empirica.onRoundStart(({ round }) => {
   }
   round.set("roundInitialized", true);
 
-  // Set enemy intents for BOTH turns in this round
-  const treatment = game.get("treatment");
-  const enemyAttackProbability = treatment.enemyAttackProbability;
+  // Set player-round properties now that round is started
+  // Retrieve from game-level storage for immediate persistence
+  const playerAssignments = game.get(`round${roundNumber}Assignments`) || [];
+  if (playerAssignments.length === 0) {
+    console.warn(`No player assignments found for round ${roundNumber}`);
+  }
 
-  const turn1Intent = Math.random() < enemyAttackProbability ? "WILL_ATTACK" : "WILL_NOT_ATTACK";
-  const turn2Intent = Math.random() < enemyAttackProbability ? "WILL_ATTACK" : "WILL_NOT_ATTACK";
+  game.players.forEach(player => {
+    const assignment = playerAssignments.find(a => a.empiricaPlayerId === player.id);
+    if (assignment) {
+      player.round.set("stats", assignment.stats);
+      player.round.set("playerId", assignment.playerId);
+      console.log(`Set player ${assignment.playerId} stats and ID on round ${roundNumber}`);
+    } else {
+      console.error(`No assignment found for player ${player.id}`);
+    }
+  });
 
-  round.set("turn1Intent", turn1Intent);
-  round.set("turn2Intent", turn2Intent);
+  // Retrieve from game-level storage for immediate persistence
+  const roundConfig = game.get(`round${roundNumber}Config`);
 
-  console.log(`Round ${roundNumber}: Turn 1 intent=${turn1Intent}, Turn 2 intent=${turn2Intent}`);
+  // Initialize round health from config (do this in onRoundStart for proper persistence)
+  round.set("enemyHealth", roundConfig.maxEnemyHealth);
+  round.set("teamHealth", roundConfig.maxTeamHealth);
+  console.log(`Round ${roundNumber}: Initialized health - Enemy: ${roundConfig.maxEnemyHealth}, Team: ${roundConfig.maxTeamHealth}`);
+
+  // Initialize virtual bots for this round (do this in onRoundStart for proper persistence)
+  const botPlayers = roundConfig.botPlayers || [];
+  const gameSeed = game.get("gameSeed");
+
+  const virtualBots = botPlayers.map(botConfig => ({
+    playerId: botConfig.playerId,
+    strategy: botConfig.strategy,
+    stats: generatePlayerStats(botConfig.playerId, gameSeed + roundNumber * 10000, roundConfig.statProfile),
+    currentRole: null // Will be set each stage during role selection
+  }));
+
+  round.set("virtualBots", virtualBots);
+  console.log(`Round ${roundNumber}: Initialized ${virtualBots.length} virtual bots`);
+
+  const enemyAttackProbability = roundConfig.enemyAttackProbability;
+  const maxStagesPerRound = game.get("treatment").maxStagesPerRound;
+
+  // Pre-generate enemy intents for all possible turns in this round
+  // Each stage has 2 turns, so we need up to maxStagesPerRound * 2 intents
+  const enemyIntents = [];
+  for (let i = 0; i < maxStagesPerRound * 2; i++) {
+    const intent = Math.random() < enemyAttackProbability ? "WILL_ATTACK" : "WILL_NOT_ATTACK";
+    enemyIntents.push(intent);
+  }
+
+  round.set("enemyIntents", enemyIntents);
+  console.log(`Round ${roundNumber}: Pre-generated ${enemyIntents.length} enemy intents:`, enemyIntents);
 });
 
 Empirica.onStageStart(({ stage }) => {
   const round = stage.round;
   const game = round.currentGame;
-  const stageName = stage.get("name");
-  const stageType = stage.get("stageType");
   const roundNumber = round.get("roundNumber");
-  console.log(`>>> STAGE START: Round ${roundNumber}, Stage: ${stageName} (type: ${stageType}), Stage ID: ${stage.id}`);
+  const stageNumber = stage.get("stageNumber");
 
-  if (stageType === "roleSelection") {
-    // Role Selection stage - handle bot role selection
-    const virtualBots = game.get("virtualBots") || [];
+  console.log(`>>> STAGE START: Round ${roundNumber}, Stage ${stageNumber}`);
 
-    // Create a new array with updated bots to ensure Empirica detects the change
-    const updatedBots = virtualBots.map(bot => {
-      const roleChoice = getBotRoleChoice(bot, roundNumber, game);
-      console.log(`Virtual Bot ${bot.playerId} auto-selected role: ${ROLE_NAMES[roleChoice]}`);
+  // Bots auto-select roles at stage start
+  const virtualBots = round.get("virtualBots") || [];
+  const updatedBots = virtualBots.map(bot => {
+    const roleChoice = getBotRoleChoice(bot, roundNumber, game);
+    console.log(`Virtual Bot ${bot.playerId} auto-selected role: ${ROLE_NAMES[roleChoice]}`);
+    return {
+      ...bot,
+      currentRole: roleChoice
+    };
+  });
+  round.set("virtualBots", updatedBots);
 
-      return {
-        ...bot,
-        currentRole: roleChoice
-      };
-    });
+  // Store bot roles on stage for client access
+  stage.set("botRoles", updatedBots.map(bot => ({
+    playerId: bot.playerId,
+    role: bot.currentRole
+  })));
+});
 
-    game.set("virtualBots", updatedBots);
+Empirica.onStageEnded(({ stage }) => {
+  const round = stage.round;
+  const game = round.currentGame;
+  const stageNumber = stage.get("stageNumber");
+  const roundNumber = round.get("roundNumber");
+  const stageType = stage.get("stageType");
 
-    // Store bot roles for this round
-    round.set("botRoles", updatedBots.map(bot => ({
-      playerId: bot.playerId,
-      role: bot.currentRole
-    })));
-  } else if (stageType === "turn") {
-    // Turn stage - resolve actions immediately so results are available to display
-    const turnNumber = stage.get("turnNumber");
+  console.log(`<<< STAGE END: Round ${roundNumber}, Stage ${stageNumber}`);
 
-    // Idempotency check: only resolve turn once even if hook is called multiple times
-    const alreadyResolved = stage.get("turnResolved");
-    if (alreadyResolved) {
-      console.log(`Turn ${turnNumber} already resolved (hook called multiple times), skipping.`);
-      return;
-    }
-    stage.set("turnResolved", true);
-
-    console.log(`Turn ${turnNumber} stage starting - resolving actions and showing results for 8 seconds`);
-
+  // Handle special stage types (roundEnd, gameEnd)
+  if (stageType === "roundEnd") {
+    // Round end stage finished - check if we should create next round or end game
     const treatment = game.get("treatment");
-    const gameSeed = game.get("gameSeed");
-    const playerDeviateProbability = treatment.playerDeviateProbability;
-    const teamHealth = game.get("teamHealth");
-    const maxHealth = treatment.maxTeamHealth;
-    const enemyIntent = round.get(`turn${turnNumber}Intent`);
-    const totalPlayers = treatment.totalPlayers;
-    const virtualBots = game.get("virtualBots") || [];
+    const maxRounds = treatment.maxRounds;
 
-    // Build a unified array of all players (real + virtual) indexed by playerId
-    const allPlayers = [];
-    for (let i = 0; i < totalPlayers; i++) {
-      allPlayers[i] = null;
+    if (roundNumber < maxRounds) {
+      console.log(`Round ${roundNumber} completed. Creating round ${roundNumber + 1}.`);
+      addGameRound(game, roundNumber + 1);
+    } else {
+      // All rounds completed - end the game
+      const totalPoints = game.get("totalPoints");
+      const roundOutcomes = game.get("roundOutcomes");
+      const wins = roundOutcomes.filter(r => r.outcome === "WIN").length;
+      const losses = roundOutcomes.filter(r => r.outcome === "LOSE").length;
+      const timeouts = roundOutcomes.filter(r => r.outcome === "TIMEOUT").length;
+
+      game.set("finalOutcome", `Game Complete! Wins: ${wins}, Losses: ${losses}, Timeouts: ${timeouts}, Total Points: ${totalPoints}`);
+      console.log(`All ${maxRounds} rounds completed. Ending game.`);
+
+      const gameEndStage = round.addStage({
+        name: "Game Over",
+        duration: 600
+      });
+      gameEndStage.set("stageType", "gameEnd");
+      gameEndStage.set("endMessage", `Game Complete! Total Points: ${totalPoints}`);
     }
+    return;
+  }
 
-    // Add real players
-    game.players.forEach(player => {
-      const playerId = player.get("playerId");
-      allPlayers[playerId] = { type: "real", player };
-    });
+  if (stageType === "gameEnd") {
+    // Game end stage finished - actually end the game
+    const endMessage = stage.get("endMessage");
+    console.log(`Game end stage completed. Ending game.`);
+    game.end(endMessage);
+    return;
+  }
 
-    // Add virtual bots
-    virtualBots.forEach(bot => {
-      allPlayers[bot.playerId] = { type: "virtual", bot };
-    });
+  // Normal game stage ended - players have submitted their roles, resolve both turns
+  console.log(`Stage ${stageNumber} role selection ended, resolving turns...`);
 
+  // Update round's current stage number
+  round.set("stageNumber", stageNumber);
+
+  // Resolve both turns for this stage
+  resolveBothTurns(game, round, stage, stageNumber);
+});
+
+function resolveBothTurns(game, round, stage, stageNumber) {
+  const roundNumber = round.get("roundNumber");
+  const treatment = game.get("treatment");
+  const roundConfig = game.get(`round${roundNumber}Config`);
+  const gameSeed = game.get("gameSeed");
+  const maxStagesPerRound = treatment.maxStagesPerRound;
+  const totalPlayers = treatment.totalPlayers;
+  const virtualBots = round.get("virtualBots") || [];
+  const enemyIntents = round.get("enemyIntents");
+
+  // Build unified player array
+  const allPlayers = [];
+  for (let i = 0; i < totalPlayers; i++) {
+    allPlayers[i] = null;
+  }
+
+  game.players.forEach(player => {
+    const playerId = player.round.get("playerId");
+    allPlayers[playerId] = { type: "real", player };
+  });
+
+  virtualBots.forEach(bot => {
+    allPlayers[bot.playerId] = { type: "virtual", bot };
+  });
+
+  // Collect player roles and log to history
+  game.players.forEach(player => {
+    const submittedRole = player.stage.get("selectedRole");
+    const playerId = player.round.get("playerId");
+
+    if (submittedRole !== null && submittedRole !== undefined) {
+      // Log to role history
+      const roleHistory = player.get("roleHistory") || [];
+      roleHistory.push({
+        round: roundNumber,
+        stage: stageNumber,
+        role: ROLE_NAMES[submittedRole]
+      });
+      player.set("roleHistory", roleHistory);
+
+      console.log(`Player ${playerId} selected role: ${ROLE_NAMES[submittedRole]} for stage ${stageNumber}`);
+    } else {
+      console.warn(`Player ${playerId} did not select a role!`);
+    }
+  });
+
+  // Resolve Turn 1 and Turn 2
+  const turns = [];
+  for (let turnNumber = 1; turnNumber <= 2; turnNumber++) {
+    const turnIndex = (stageNumber - 1) * 2 + (turnNumber - 1);
+    const enemyIntent = enemyIntents[turnIndex];
+    const teamHealth = round.get("teamHealth");
+    const maxHealth = roundConfig.maxTeamHealth;
+    const playerDeviateProbability = roundConfig.playerDeviateProbability;
+
+    // Determine actions for all players
     const actions = [];
     const actionNames = [];
     const roleNames = [];
     const stats = [];
 
-    // Process each player slot
     allPlayers.forEach((entry, playerId) => {
       if (!entry) {
         console.error(`ERROR: No player at playerId ${playerId}!`);
@@ -327,9 +456,8 @@ Empirica.onStageStart(({ stage }) => {
 
       if (entry.type === "real") {
         const player = entry.player;
-        // Get role selected during Role Selection stage
-        currentRole = player.round.get("selectedRole");
-        playerStats = player.get("stats");
+        currentRole = player.stage.get("selectedRole");
+        playerStats = player.round.get("stats");
       } else if (entry.type === "virtual") {
         const bot = entry.bot;
         currentRole = bot.currentRole;
@@ -337,7 +465,7 @@ Empirica.onStageStart(({ stage }) => {
       }
 
       // Convert role to action
-      const rng = seededRandom(gameSeed + roundNumber * 1000 + turnNumber * 100 + playerId);
+      const rng = seededRandom(gameSeed + roundNumber * 1000 + stageNumber * 100 + turnNumber * 10 + playerId);
       const gameState = { enemyIntent, teamHealth, maxHealth, playerDeviateProbability };
       const action = roleToAction(currentRole, gameState, playerStats, rng);
 
@@ -347,129 +475,111 @@ Empirica.onStageStart(({ stage }) => {
       stats.push(playerStats);
     });
 
-    // Store turn results on the round
-    round.set(`turn${turnNumber}Actions`, actionNames);
-    round.set(`turn${turnNumber}Roles`, roleNames);
+    // Resolve turn and update health
+    const turnResult = resolveTurnActions(game, round, stageNumber, turnNumber, actions, stats, enemyIntent);
 
-    // Resolve actions and update health
-    resolveTurnActions(game, round, turnNumber, actions, stats, enemyIntent);
-
-    // Log the results
-    const updatedEnemyHealth = game.get("enemyHealth");
-    const updatedTeamHealth = game.get("teamHealth");
-    console.log(`After Turn ${turnNumber}: Enemy HP=${updatedEnemyHealth}, Team HP=${updatedTeamHealth}`);
-
-    // Check if game should end immediately after this turn
-    const maxRounds = treatment.maxRounds;
-
-    if (updatedEnemyHealth <= 0) {
-      game.set("outcome", "WIN");
-      game.set("gameEndMessage", "Victory! You defeated the enemy!");
-      console.log("Enemy defeated after turn resolution!");
-      stage.set("gameEnded", true);
-
-      // End the turn stage immediately so we can proceed to game end
-      setTimeout(() => stage.end("Game ended - enemy defeated"), 100);
-    } else if (updatedTeamHealth <= 0) {
-      game.set("outcome", "LOSE");
-      game.set("gameEndMessage", "Defeat! Your team was defeated.");
-      console.log("Team defeated after turn resolution!");
-      stage.set("gameEnded", true);
-
-      // End the turn stage immediately so we can proceed to game end
-      setTimeout(() => stage.end("Game ended - team defeated"), 100);
-    } else if (roundNumber >= maxRounds && turnNumber === 2) {
-      // Only end on timeout if we've completed turn 2 of the final round
-      game.set("outcome", "TIMEOUT");
-      game.set("gameEndMessage", "Time's up! The battle has ended.");
-      console.log("Max rounds reached after turn 2!");
-      stage.set("gameEnded", true);
-
-      // End the turn stage immediately so we can proceed to game end
-      setTimeout(() => stage.end("Game ended - max rounds reached"), 100);
-    }
-  }
-});
-
-Empirica.onStageEnded(({ stage }) => {
-  const round = stage.round;
-  const game = round.currentGame;
-  const stageName = stage.get("name");
-  const stageType = stage.get("stageType");
-  const roundNumber = round.get("roundNumber");
-
-  console.log(`<<< STAGE END: Round ${roundNumber}, Stage: ${stageName} (type: ${stageType})`);
-
-  if (stageType === "roleSelection") {
-    // Role Selection stage ended - store player roles for this round
-    game.players.forEach(player => {
-      const submittedRole = player.round.get("selectedRole");
-      const playerId = player.get("playerId");
-
-      if (submittedRole !== null && submittedRole !== undefined) {
-        // Log to role history
-        const roleHistory = player.get("roleHistory") || [];
-        roleHistory.push({
-          round: roundNumber,
-          role: ROLE_NAMES[submittedRole]
-        });
-        player.set("roleHistory", roleHistory);
-
-        console.log(`Player ${playerId} selected role: ${ROLE_NAMES[submittedRole]}`);
-      } else {
-        console.warn(`Player ${playerId} did not select a role!`);
-      }
+    turns.push({
+      turnNumber,
+      actions: actionNames,
+      roles: roleNames,
+      enemyIntent,
+      ...turnResult
     });
-  } else if (stageType === "turn") {
-    const turnNumber = stage.get("turnNumber");
-    const gameEnded = stage.get("gameEnded");
 
-    if (gameEnded) {
-      // Game ended during this turn - add game end stage
-      const outcome = game.get("outcome");
-      const message = game.get("gameEndMessage");
-      console.log(`Game ended during turn ${turnNumber}. Adding game end stage with outcome: ${outcome}`);
+    console.log(`After Stage ${stageNumber}, Turn ${turnNumber}: Enemy HP=${turnResult.newEnemyHealth}, Team HP=${turnResult.newTeamHealth}`);
 
-      const gameEndStage = round.addStage({
-        name: "Game Over",
-        duration: 600 // 10 minutes max - wait for player to click continue
-      });
-      gameEndStage.set("stageType", "gameEnd");
-      gameEndStage.set("endMessage", message);
-      console.log(`Created game end stage with message: ${message}`);
-    } else if (turnNumber === 1) {
-      // Turn 1 ended and game hasn't ended - add Turn 2
-      // Idempotency check: only add Turn 2 once even if hook is called multiple times
-      const turn2Added = round.get("turn2Added");
-      if (!turn2Added) {
-        console.log(`Turn 1 ended, game continues. Adding Turn 2 stage.`);
-        round.set("turn2Added", true);
-        const turn2Stage = round.addStage({
-          name: "Turn 2",
-          duration: 8 // 8 seconds to view results
-        });
-        turn2Stage.set("stageType", "turn");
-        turn2Stage.set("turnNumber", 2);
-      } else {
-        console.log(`Turn 1 ended, but Turn 2 already added (hook called multiple times), skipping.`);
-      }
+    // Check if round ends after this turn
+    if (turnResult.newEnemyHealth <= 0) {
+      // Round won!
+      round.set("outcome", "WIN");
+      round.set("roundEndMessage", "Victory! You defeated the enemy!");
+      console.log(`Round ${roundNumber} won after stage ${stageNumber}, turn ${turnNumber}!`);
+
+      // Calculate points for winning: 100 - (100 * T / H)
+      // where T = total turns taken, H = max turns per round
+      const maxStagesPerRound = game.get("treatment").maxStagesPerRound;
+      const maxTurnsPerRound = maxStagesPerRound * TURNS_PER_STAGE; // H = 10
+      const totalTurnsTaken = (stageNumber - 1) * TURNS_PER_STAGE + turnNumber; // T
+      const pointsEarned = Math.max(0, Math.round(100 - (100 * totalTurnsTaken / maxTurnsPerRound)));
+
+      const currentPoints = game.get("totalPoints");
+      game.set("totalPoints", currentPoints + pointsEarned);
+
+      // Record outcome
+      const roundOutcomes = game.get("roundOutcomes");
+      roundOutcomes.push({ roundNumber, outcome: "WIN", pointsEarned, turnsTaken: totalTurnsTaken });
+      game.set("roundOutcomes", roundOutcomes);
+
+      // Store turn results on round (indexed by stage) for client access
+      round.set(`stage${stageNumber}Turns`, turns);
+      addRoundEndStage(round);
+      return;
+    } else if (turnResult.newTeamHealth <= 0) {
+      // Round lost!
+      round.set("outcome", "LOSE");
+      round.set("roundEndMessage", "Defeat! Your team was defeated.");
+      console.log(`Round ${roundNumber} lost after stage ${stageNumber}, turn ${turnNumber}!`);
+
+      // No points for losing
+      const totalTurnsTaken = (stageNumber - 1) * TURNS_PER_STAGE + turnNumber;
+      const roundOutcomes = game.get("roundOutcomes");
+      roundOutcomes.push({ roundNumber, outcome: "LOSE", pointsEarned: 0, turnsTaken: totalTurnsTaken });
+      game.set("roundOutcomes", roundOutcomes);
+
+      // Store turn results on round (indexed by stage) for client access
+      round.set(`stage${stageNumber}Turns`, turns);
+      addRoundEndStage(round);
+      return;
     }
-    // If turn 2 ended without game ending, onRoundEnded will handle creating next round
-  } else if (stageType === "gameEnd") {
-    // Game end stage finished - now actually end the game
-    const outcome = game.get("outcome");
-    const endMessage = stage.get("endMessage");
-    console.log(`Game end stage completed. Ending game with outcome: ${outcome}`);
-    game.end(endMessage);
   }
-});
 
-function resolveTurnActions(game, round, turnNumber, actions, stats, enemyIntent) {
-  const treatment = game.get("treatment");
-  const currentEnemyHealth = game.get("enemyHealth");
-  const currentTeamHealth = game.get("teamHealth");
-  const bossDamage = treatment.bossDamage;
-  const maxHealth = treatment.maxTeamHealth;
+  // Both turns completed, round hasn't ended
+  // Store turn results on round (indexed by stage) for client access
+  round.set(`stage${stageNumber}Turns`, turns);
+
+  // Check if we've hit max stages
+  if (stageNumber >= maxStagesPerRound) {
+    // Max stages reached - round timeout
+    round.set("outcome", "TIMEOUT");
+    round.set("roundEndMessage", "Time's up! You couldn't defeat the enemy in time.");
+    console.log(`Round ${roundNumber} timed out after max stages!`);
+
+    // No points for timeout
+    const totalTurnsTaken = maxStagesPerRound * TURNS_PER_STAGE; // Used all available turns
+    const roundOutcomes = game.get("roundOutcomes");
+    roundOutcomes.push({ roundNumber, outcome: "TIMEOUT", pointsEarned: 0, turnsTaken: totalTurnsTaken });
+    game.set("roundOutcomes", roundOutcomes);
+
+    addRoundEndStage(round);
+  } else {
+    // Continue to next stage
+    console.log(`Stage ${stageNumber} complete, round continues. Adding stage ${stageNumber + 1}.`);
+    addRoundStage(round, stageNumber + 1);
+  }
+}
+
+function addRoundEndStage(round) {
+  const roundNumber = round.get("roundNumber");
+  const outcome = round.get("outcome");
+  const message = round.get("roundEndMessage");
+
+  console.log(`Adding round end stage with outcome: ${outcome}`);
+
+  const roundEndStage = round.addStage({
+    name: "Round Over",
+    duration: 600 // 10 minutes max - wait for player to click continue
+  });
+  roundEndStage.set("stageType", "roundEnd");
+  roundEndStage.set("endMessage", message);
+}
+
+function resolveTurnActions(game, round, stageNumber, turnNumber, actions, stats, enemyIntent) {
+  const roundNumber = round.get("roundNumber");
+  const roundConfig = game.get(`round${roundNumber}Config`);
+  const currentEnemyHealth = round.get("enemyHealth");
+  const currentTeamHealth = round.get("teamHealth");
+  const bossDamage = roundConfig.bossDamage;
+  const maxHealth = roundConfig.maxTeamHealth;
 
   // Calculate total attack strength (additive)
   let totalAttack = 0;
@@ -509,56 +619,37 @@ function resolveTurnActions(game, round, turnNumber, actions, stats, enemyIntent
   const healAmount = totalHeal;
   const newTeamHealth = Math.max(0, Math.min(maxHealth, currentTeamHealth - damageToTeam + healAmount));
 
-  // Store results for this turn on the round
-  round.set(`turn${turnNumber}PreviousEnemyHealth`, Math.round(currentEnemyHealth));
-  round.set(`turn${turnNumber}PreviousTeamHealth`, Math.round(currentTeamHealth));
-  round.set(`turn${turnNumber}DamageToEnemy`, Math.round(damageToEnemy));
-  round.set(`turn${turnNumber}DamageToTeam`, Math.round(damageToTeam));
-  round.set(`turn${turnNumber}HealAmount`, Math.round(healAmount));
-  round.set(`turn${turnNumber}NewEnemyHealth`, Math.round(newEnemyHealth));
-  round.set(`turn${turnNumber}NewTeamHealth`, Math.round(newTeamHealth));
-
-  // Update game state
-  game.set("enemyHealth", Math.round(newEnemyHealth));
-  game.set("teamHealth", Math.round(newTeamHealth));
+  // Update round state (health persists across turns within the round)
+  round.set("enemyHealth", Math.round(newEnemyHealth));
+  round.set("teamHealth", Math.round(newTeamHealth));
 
   // Log action history for each REAL player
   game.players.forEach((player) => {
-    const playerId = player.get("playerId");
+    const playerId = player.round.get("playerId");
     const history = player.get("actionHistory") || [];
-    const roundNumber = round.get("roundNumber");
 
-    // Get the player's role for this round
-    const currentRole = player.round.get("selectedRole");
+    // Get the player's role for this stage from player.stage
+    const currentRole = player.stage.get("selectedRole");
 
-    // Check if we already have an entry for this round (to avoid duplicates across turns)
-    const existingEntry = history.find(h => h.round === roundNumber);
-
-    if (!existingEntry) {
-      // First turn of this round - create new entry with role
-      history.push({
-        round: roundNumber,
-        turn: turnNumber,
-        action: ACTION_NAMES[actions[playerId]],
-        role: currentRole,
-        enemyHealth: Math.round(newEnemyHealth),
-        teamHealth: Math.round(newTeamHealth)
-      });
-    } else {
-      // Update existing entry for subsequent turns
-      existingEntry.turn = turnNumber;
-      existingEntry.action = ACTION_NAMES[actions[playerId]];
-      existingEntry.enemyHealth = Math.round(newEnemyHealth);
-      existingEntry.teamHealth = Math.round(newTeamHealth);
-    }
+    // Add entry for this turn
+    history.push({
+      round: roundNumber,
+      stage: stageNumber,
+      turn: turnNumber,
+      action: ACTION_NAMES[actions[playerId]],
+      role: ROLE_NAMES[currentRole],
+      enemyHealth: Math.round(newEnemyHealth),
+      teamHealth: Math.round(newTeamHealth)
+    });
 
     player.set("actionHistory", history);
   });
 
-  // Also store the full team action history on the game
+  // Store team action history on the game for the action history panel
   const gameHistory = game.get("teamActionHistory") || [];
   gameHistory.push({
-    round: round.get("roundNumber"),
+    round: roundNumber,
+    stage: stageNumber,
     turn: turnNumber,
     actions: actions.map((action, idx) => ({
       playerId: idx,
@@ -569,35 +660,46 @@ function resolveTurnActions(game, round, turnNumber, actions, stats, enemyIntent
     enemyIntent: enemyIntent
   });
   game.set("teamActionHistory", gameHistory);
+
+  // Return results for storage on stage
+  return {
+    previousEnemyHealth: Math.round(currentEnemyHealth),
+    previousTeamHealth: Math.round(currentTeamHealth),
+    damageToEnemy: Math.round(damageToEnemy),
+    damageToTeam: Math.round(damageToTeam),
+    healAmount: Math.round(healAmount),
+    newEnemyHealth: Math.round(newEnemyHealth),
+    newTeamHealth: Math.round(newTeamHealth)
+  };
 }
 
 Empirica.onRoundEnded(({ round }) => {
   const game = round.currentGame;
   const roundNumber = round.get("roundNumber");
-  const outcome = game.get("outcome");
+  const outcome = round.get("outcome");
 
-  console.log(`!!! onRoundEnded called: Round ${roundNumber}, Round ID: ${round.id}, Outcome: ${outcome || "ongoing"}`);
+  console.log(`!!! onRoundEnded called: Round ${roundNumber}, Outcome: ${outcome || "ongoing"}`);
 
   // Clean up round-specific player data
   game.players.forEach((player) => {
-    player.round.set("selectedRole", null);
+    player.round.set("stats", null);
+    player.round.set("playerId", null);
   });
 
-  // If game has ended (outcome is set), the gameEnd stage will handle the transition
-  // Otherwise, continue to next round
-  if (!outcome) {
-    console.log(`Creating round ${roundNumber + 1} from onRoundEnded`);
-    addGameRound(game, roundNumber + 1);
-  } else {
-    console.log(`Game ended with outcome: ${outcome}. Waiting for gameEnd stage to complete.`);
-  }
+  console.log(`Round ${roundNumber} cleanup complete. Next round will be created from onStageEnded.`);
 });
 
 Empirica.onGameEnded(({ game }) => {
-  // Calculate final scores/metrics if needed
-  const outcome = game.get("outcome");
+  // Calculate final scores/metrics
+  const totalPoints = game.get("totalPoints");
+  const roundOutcomes = game.get("roundOutcomes");
+  const finalOutcome = game.get("finalOutcome");
+
+  console.log(`Game ended. Total points: ${totalPoints}`);
+  console.log(`Round outcomes:`, roundOutcomes);
 
   game.players.forEach(player => {
-    player.set("finalOutcome", outcome);
+    player.set("finalOutcome", finalOutcome);
+    player.set("totalPoints", totalPoints);
   });
 });

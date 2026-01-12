@@ -10,7 +10,7 @@ export function Introduction({ next }) {
   // Create mock data for the tutorial
   const mockData = createDefaultMockData();
 
-  // Define the 6 tutorial steps
+  // Define the 7 tutorial steps
   const tutorialSteps = [
     {
       targetId: "full-screen", // Show darkened background
@@ -18,10 +18,20 @@ export function Introduction({ next }) {
       showBorder: false, // Don't show blue pulsing border
       content: (
         <div>
-          <h3 className="text-lg font-bold text-gray-900 mb-3">Welcome to Cooperative Battle Game!</h3>
+          <h3 className="text-lg font-bold text-gray-900 mb-3">Welcome!</h3>
+          <p className="text-sm text-gray-700 mb-3">
+            You'll play <strong>8 rounds</strong> of this cooperative game. In each round, work with your team to defeat the enemy before your team's health reaches 0.
+          </p>
+          <p className="text-sm text-gray-700 mb-3">
+            <strong>Points & Bonus:</strong> You earn points based on how quickly you win each round. Faster victories earn more points!
+          </p>
+          <ul className="text-sm text-gray-700 space-y-1 ml-4 mb-3">
+            <li>• Each round has a maximum of <strong>10 turns</strong></li>
+            <li>• <strong>Win:</strong> Earn 100 - (100 × Turns / 10) points</li>
+            <li>• <strong>Lose or timeout:</strong> Earn 0 points</li>
+          </ul>
           <p className="text-sm text-gray-700 mb-2">
-            This is the main battle screen. You'll see the enemy at the top right, your team at the bottom left,
-            and the battle history on the right side.
+            <strong>Bonus Payment:</strong> Every 40 points = $0.10 bonus (up to ~$1.00 total bonus on top of base payment)
           </p>
           <p className="text-sm text-gray-700">
             Let's take a tour of the interface to understand how to play!
@@ -68,13 +78,13 @@ export function Introduction({ next }) {
         <div>
           <h4 className="text-lg font-bold text-gray-900 mb-2">Role Selection</h4>
           <p className="text-sm text-gray-700 mb-3">
-            At the start, you'll choose one of three roles. Your role determines your action and
-            you'll be committed to the role for 2 rounds:
+            At the start, you'll choose one of three roles. Your role influences the actions taken and
+            you'll be committed to the role for 2 turns (1 stage):
           </p>
           <ul className="text-sm text-gray-700 space-y-2 ml-4">
             <li><strong>⚔️ Fighter:</strong> Attacks most of the time</li>
             <li><strong>🛡️ Tank:</strong> Defends when the enemy is attacking, most of the time. Otherwise, acts like a fighter</li>
-            <li><strong>💚 Healer:</strong> Heals if the team's health is less than 50%, most of the time. Otherwise, acts like a fighter</li>
+            <li><strong>💚 Healer:</strong> Heals if the team's health is less than or equal to 50%, most of the time. Otherwise, acts like a fighter</li>
           </ul>
         </div>
       )
@@ -86,11 +96,33 @@ export function Introduction({ next }) {
         <div>
           <h4 className="text-lg font-bold text-gray-900 mb-2">Battle History</h4>
           <p className="text-sm text-gray-700 mb-2">
-            The battle history shows past rounds and turns. You can see what actions each player took and the results.
+            The battle history shows past stages and turns. You can see what actions each player took and the results.
           </p>
           <p className="text-sm text-gray-700">
             This helps you coordinate with your team by understanding their strategies.
           </p>
+        </div>
+      )
+    },
+    {
+      targetId: "full-screen",
+      tooltipPosition: "center",
+      showBorder: false,
+      content: (
+        <div>
+          <h4 className="text-lg font-bold text-gray-900 mb-2">Turn Counter & Time Pressure</h4>
+          <p className="text-sm text-gray-700 mb-3">
+            At the top of the screen, you'll see a turn counter showing <strong>Turn: X / 10</strong>
+          </p>
+          <p className="text-sm text-gray-700 mb-3">
+            Remember: The faster you defeat the enemy, the more points you earn!
+          </p>
+          <ul className="text-sm text-gray-700 space-y-2 ml-4">
+            <li>• Win in 1-2 turns: Earn 80-90 points</li>
+            <li>• Win in 5 turns: Earn 50 points</li>
+            <li>• Win in 10 turns: Earn 0 points</li>
+            <li>• Lose or exceed 10 turns: Earn 0 points</li>
+          </ul>
         </div>
       )
     },
@@ -109,7 +141,7 @@ export function Introduction({ next }) {
             <li><strong>Healing:</strong> All healers' SUP stats are added together (up to max team health)</li>
           </ul>
           <p className="text-sm text-gray-700 mt-3 italic">
-            You're now ready for the tutorial! Click "Next" to start.
+            You're now ready for a trial game!
           </p>
         </div>
       )

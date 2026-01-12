@@ -185,7 +185,7 @@ export function Tutorial1({ next }) {
 
     // Show first round
     const firstRound = results[0];
-    const firstRoundMockData = createMockDataForRound(firstRound, 1, [firstRound]);
+    const firstRoundMockData = createMockDataForRound(firstRound, [firstRound]);
     setMockData(firstRoundMockData);
     setCurrentRound(1);
   };
@@ -205,7 +205,6 @@ export function Tutorial1({ next }) {
       // Pass all results up to and including the next round for history
       const nextRoundMockData = createMockDataForRound(
         nextRoundResult,
-        currentRound + 1,
         roundResults.slice(0, currentRound + 1)
       );
       setMockData(nextRoundMockData);
@@ -222,6 +221,11 @@ export function Tutorial1({ next }) {
       { id: "bot-2", playerId: 1, stats: { STR: 2, DEF: 2, SUP: 2 } },
       { id: "tutorial-player", playerId: 2, stats: { STR: 2, DEF: 2, SUP: 2 } }
     ];
+
+    const roundData = {
+      roundNumber: 1,
+      stageNumber: 0
+    };
 
     return {
       game: {
@@ -250,48 +254,54 @@ export function Tutorial1({ next }) {
       },
       players: players,
       round: {
-        roundNumber: 1
+        ...roundData,
+        get: (key) => roundData[key]
       },
       stage: {
         name: "roleSelection",
         stageType: "roleSelection"
-      },
-      teamHistory: []
+      }
     };
   };
 
-  const createMockDataForRound = (roundResult, roundNum, previousResults) => {
+  const createMockDataForRound = (roundResult, previousResults) => {
     const players = [
       { id: "bot-1", playerId: 0, stats: { STR: 2, DEF: 2, SUP: 2 } },
       { id: "bot-2", playerId: 1, stats: { STR: 2, DEF: 2, SUP: 2 } },
       { id: "tutorial-player", playerId: 2, stats: { STR: 2, DEF: 2, SUP: 2 } }
     ];
 
-    // Build team history from all previous rounds
-    const teamHistory = [];
+    // Build stage turns data from all previous results
+    // In Tutorial1, each round is treated as a stage with 1 turn
     const playerActionHistory = [];
+    const roundData = {
+      roundNumber: 1,
+      stageNumber: previousResults.length, // Track how many stages completed
+    };
 
     previousResults.forEach((result, idx) => {
-      const roundNumber = idx + 1;
+      const stageNumber = idx + 1;
 
-      // Add player's role to action history
+      // Add player's role to action history (using stage instead of round)
       playerActionHistory.push({
-        round: roundNumber,
+        stage: stageNumber,
         role: result.playerRole
       });
 
-      // Add team history entry for this round's turn
-      teamHistory.push({
-        round: roundNumber,
-        turn: 1,
+      // Store turns for this stage in the new format
+      roundData[`stage${stageNumber}Turns`] = [{
+        turnNumber: 1,
         enemyIntent: result.enemyIntent,
-        actions: result.actions.map((action, playerIdx) => ({
-          action: action,
-          playerId: playerIdx
-        })),
-        enemyHealth: result.enemyHealth,
-        teamHealth: result.teamHealth
-      });
+        actions: result.actions,
+        roles: result.roles,
+        damageToEnemy: result.damageToEnemy,
+        damageToTeam: result.damageToTeam,
+        healAmount: result.healAmount,
+        previousEnemyHealth: result.previousEnemyHealth,
+        previousTeamHealth: result.previousTeamHealth,
+        newEnemyHealth: result.enemyHealth,
+        newTeamHealth: result.teamHealth
+      }];
     });
 
     return {
@@ -321,22 +331,14 @@ export function Tutorial1({ next }) {
       },
       players: players,
       round: {
-        roundNumber: roundNum,
-        [`turn1Intent`]: roundResult.enemyIntent,
-        [`turn1Actions`]: roundResult.actions,
-        [`turn1Roles`]: roundResult.roles,
-        [`turn1DamageToEnemy`]: roundResult.damageToEnemy,
-        [`turn1DamageToTeam`]: roundResult.damageToTeam,
-        [`turn1HealAmount`]: roundResult.healAmount,
-        [`turn1PreviousEnemyHealth`]: roundResult.previousEnemyHealth,
-        [`turn1PreviousTeamHealth`]: roundResult.previousTeamHealth
+        ...roundData,
+        get: (key) => roundData[key]
       },
       stage: {
         name: `turn1`,
         stageType: "turn",
         turnNumber: 1
-      },
-      teamHistory: teamHistory
+      }
     };
   };
 
@@ -417,12 +419,12 @@ export function Tutorial1({ next }) {
                         <h4 className="font-semibold mb-3 text-center text-gray-700">Your Teammates' Roles:</h4>
                         <div className="flex gap-4 justify-center">
                           <div className="text-center bg-red-50 border-2 border-red-300 rounded p-3">
-                            <div className="text-3xl mb-1">⚔️</div>
+                            <div className="text-3xl mb-1">🤺</div>
                             <div className="text-xs font-semibold text-gray-600">Player 1</div>
                             <div className="text-sm font-bold text-red-700">Fighter</div>
                           </div>
                           <div className="text-center bg-red-50 border-2 border-red-300 rounded p-3">
-                            <div className="text-3xl mb-1">⚔️</div>
+                            <div className="text-3xl mb-1">🤺</div>
                             <div className="text-xs font-semibold text-gray-600">Player 2</div>
                             <div className="text-sm font-bold text-red-700">Fighter</div>
                           </div>

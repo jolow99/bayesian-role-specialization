@@ -1,6 +1,11 @@
 import React from "react";
 
 export function HealthBar({ label, current, max, color = "green", previousHealth = null, damageAmount = 0, healAmount = 0, showChange = false }) {
+  // Handle undefined/null values gracefully
+  if (current === undefined || current === null || max === undefined || max === null) {
+    return null;
+  }
+
   const percentage = Math.max(0, Math.min(100, (current / max) * 100));
   const previousPercentage = previousHealth !== null ? Math.max(0, Math.min(100, (previousHealth / max) * 100)) : percentage;
 

@@ -56,16 +56,17 @@ export const BattleField = React.memo(function BattleField({
             .sort((a, b) => {
               const aIsYou = a.entry.type === "real" && a.entry.player?.id === currentPlayerId;
               const bIsYou = b.entry.type === "real" && b.entry.player?.id === currentPlayerId;
-              if (aIsYou) return 0; // YOU in middle
-              if (bIsYou) return 0;
-              // Others: maintain relative order
+              // Put YOU in the middle by sorting to index 1
+              if (aIsYou && !bIsYou) return -1; // a (YOU) comes before b
+              if (!aIsYou && bIsYou) return 1;  // b (YOU) comes before a
+              // For non-YOU players, maintain their relative order
               return a.playerId - b.playerId;
             })
             .map(({ entry, playerId }, sortedIdx) => {
               const isCurrentPlayer = entry.type === "real" && entry.player?.id === currentPlayerId;
               // Handle both tutorial mode (direct stats) and game mode (stats via .get())
               const stats = entry.type === "real"
-                ? (entry.player.get ? entry.player.get("stats") : entry.player.stats)
+                ? (entry.player.round?.get ? entry.player.round.get("stats") : entry.player.stats)
                 : entry.bot.stats;
               const size = isCurrentPlayer ? "text-6xl" : "text-4xl";
 

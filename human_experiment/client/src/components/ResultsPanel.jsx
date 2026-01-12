@@ -8,6 +8,7 @@ const actionIcons = {
 
 export const ResultsPanel = React.memo(function ResultsPanel({
   roundNumber,
+  stageNumber,
   turnNumber,
   actions = [],
   allPlayers = [],
@@ -18,12 +19,14 @@ export const ResultsPanel = React.memo(function ResultsPanel({
   return (
     <div className="animate-fadeIn">
       <div className="bg-gray-800 text-white rounded-lg px-4 py-3 text-center mb-4">
-        <h3 className="text-xl font-bold">Round {roundNumber} - Turn {turnNumber} Results</h3>
+        <h3 className="text-xl font-bold">
+          Stage {stageNumber} - Turn {turnNumber} Results
+        </h3>
       </div>
 
       {/* Action Summary */}
       <div className="bg-blue-50 border-2 border-blue-300 rounded-lg p-4 mb-4">
-        <div className="text-xs font-semibold text-gray-600 mb-2 uppercase tracking-wide">What Happened This Round</div>
+        <div className="text-xs font-semibold text-gray-600 mb-2 uppercase tracking-wide">What Happened This Turn</div>
 
         {/* Team Actions */}
         <div className="mb-3">
@@ -61,14 +64,14 @@ export const ResultsPanel = React.memo(function ResultsPanel({
       <div className="text-center text-gray-500 text-sm">
         {countdown !== null && countdown > 0 ? (
           <div className="text-lg font-bold text-blue-600">
-            Next round in {countdown}...
+            Next turn in {countdown}...
           </div>
         ) : countdown === 0 ? (
           <div className="text-lg font-bold text-green-600">
             Starting now!
           </div>
         ) : (
-          "Next round starting soon..."
+          "Next turn starting soon..."
         )}
       </div>
     </div>
