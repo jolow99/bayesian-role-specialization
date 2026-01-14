@@ -19,12 +19,41 @@ export const BattleField = React.memo(function BattleField({
   allPlayers = [],
   currentPlayerId,
   previousEnemyHealth,
-  previousTeamHealth
+  previousTeamHealth,
+  bossDamage,
+  enemyAttackProbability
 }) {
   return (
     <div className="bg-gradient-to-b from-green-200 to-green-300 p-6 relative h-full overflow-hidden" data-tutorial-id="battlefield">
       {/* Enemy Side (Top Right) */}
       <div className="absolute top-4 right-12 flex flex-col items-center" data-tutorial-id="enemy-section">
+        {/* Boss stats above boss */}
+        <div className="bg-white/90 rounded px-2 py-1 mb-2 border border-gray-400" style={{ width: '120px' }} data-tutorial-id="boss-stats">
+          <div className="space-y-1">
+            {/* Boss STR */}
+            <div className="flex items-center gap-1">
+              <span className="text-xs font-semibold w-10">STR</span>
+              <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-red-500 transition-all"
+                  style={{ width: `${Math.min(100, (bossDamage / 6) * 100)}%` }}
+                />
+              </div>
+              <span className="text-xs font-bold w-3 text-right">{bossDamage}</span>
+            </div>
+            {/* Boss Attack Chance */}
+            <div className="flex items-center gap-1">
+              <span className="text-xs font-semibold w-10">ATK%</span>
+              <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-orange-500 transition-all"
+                  style={{ width: `${enemyAttackProbability * 100}%` }}
+                />
+              </div>
+              <span className="text-xs font-bold w-6 text-right">{Math.round(enemyAttackProbability * 100)}%</span>
+            </div>
+          </div>
+        </div>
         <div className="relative">
           <div className="text-8xl mb-2">👹</div>
         </div>

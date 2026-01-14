@@ -191,6 +191,8 @@ export function Introduction({ next }) {
                     currentPlayerId="tutorial-player"
                     previousEnemyHealth={mockData.game.enemyHealth}
                     previousTeamHealth={mockData.game.teamHealth}
+                    bossDamage={3}
+                    enemyAttackProbability={1.0}
                   />
                 </div>
 

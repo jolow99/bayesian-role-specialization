@@ -404,6 +404,8 @@ export function Tutorial1({ next }) {
                   currentPlayerId="tutorial-player"
                   previousEnemyHealth={currentRoundResult?.previousEnemyHealth || mockData.game.enemyHealth}
                   previousTeamHealth={currentRoundResult?.previousTeamHealth || mockData.game.teamHealth}
+                  bossDamage={3}
+                  enemyAttackProbability={1.0}
                 />
               </div>
 
