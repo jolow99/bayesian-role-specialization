@@ -5,8 +5,8 @@ import { ActionMenu } from "../components/ActionMenu";
 import { ResultsPanel } from "../components/ResultsPanel";
 import { ActionHistory } from "../components/ActionHistory";
 import { GameEndScreen } from "../components/GameEndScreen";
+import { ROLES, ROLE_LABELS } from "../constants";
 
-const ROLES = { FIGHTER: 0, TANK: 1, MEDIC: 2 };
 const EMPTY_ARRAY = []; // Stable reference to prevent unnecessary re-renders
 
 let renderCount = 0;
@@ -366,7 +366,7 @@ function ActionSelection() {
                     <div className="text-4xl mb-3">⏳</div>
                     <div className="text-lg font-bold text-gray-700 mb-2">Waiting for other players...</div>
                     <div className="text-gray-500 text-sm">
-                      {selectedRole !== null && `Your selected role: ${["Fighter", "Tank", "Medic"][selectedRole]}`}
+                      {selectedRole !== null && `Your selected role: ${ROLE_LABELS[selectedRole]}`}
                     </div>
                   </div>
                 )}

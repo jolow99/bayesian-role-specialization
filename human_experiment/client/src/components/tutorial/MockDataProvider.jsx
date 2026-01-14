@@ -1,5 +1,6 @@
 import React from "react";
 import { TutorialProvider } from "./TutorialContext";
+import { ROLES } from "../../constants";
 
 /**
  * MockDataProvider wraps tutorial components and provides mock data
@@ -92,7 +93,7 @@ export function createDefaultMockData() {
       id: "tutorial-player",
       playerId: 0,
       stats: { STR: 2, DEF: 2, SUP: 2 },
-      roleOrder: [0, 1, 2], // Fighter, Tank, Medic
+      roleOrder: [ROLES.FIGHTER, ROLES.TANK, ROLES.MEDIC],
       stage: {},
       round: {}
     },

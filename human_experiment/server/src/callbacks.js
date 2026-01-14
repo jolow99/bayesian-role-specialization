@@ -1,11 +1,9 @@
 import { ClassicListenersCollector } from "@empirica/core/admin/classic";
+import { ACTIONS, ACTION_NAMES, ROLES, ROLE_NAMES } from "./constants.js";
+
 export const Empirica = new ClassicListenersCollector();
 
-// Constants
-const ACTIONS = { ATTACK: 0, BLOCK: 1, HEAL: 2 };
-const ACTION_NAMES = ["ATTACK", "BLOCK", "HEAL"];
-const ROLES = { FIGHTER: 0, TANK: 1, MEDIC: 2 };
-const ROLE_NAMES = ["FIGHTER", "TANK", "MEDIC"];
+// Game configuration constants
 const TURNS_PER_STAGE = 2; // Each stage (role commitment) lasts for 2 turns
 
 // Helper function to generate player stats

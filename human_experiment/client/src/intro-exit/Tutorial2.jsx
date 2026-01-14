@@ -4,9 +4,9 @@ import { BattleField } from "../components/BattleField";
 import { ActionMenu } from "../components/ActionMenu";
 import { ResultsPanel } from "../components/ResultsPanel";
 import { ActionHistory } from "../components/ActionHistory";
+import { ROLES, ROLE_LABELS, ROLE_ICONS } from "../constants";
 
-const ROLES = { FIGHTER: 0, TANK: 1, MEDIC: 2 };
-const ROLE_NAMES = ["Fighter", "Tank", "Medic"];
+const ROLE_NAMES = ROLE_LABELS;
 
 export function Tutorial2({ next }) {
   const [selectedRole, setSelectedRole] = useState(null);
@@ -959,18 +959,18 @@ export function Tutorial2({ next }) {
                         </p>
                         <div className="flex gap-3 justify-center">
                           <div className="text-center bg-gray-100 rounded p-2">
-                            <div className="text-2xl mb-1">💂</div>
+                            <div className="text-2xl mb-1">{ROLE_ICONS.TANK}</div>
                             <div className="text-xs text-gray-600">P1: Tank</div>
                             <div className="text-xs text-gray-500">(Blocks when attacked)</div>
                           </div>
                           <div className="text-center bg-gray-100 rounded p-2">
-                            <div className="text-2xl mb-1">👩🏻‍⚕️</div>
+                            <div className="text-2xl mb-1">{ROLE_ICONS.MEDIC}</div>
                             <div className="text-xs text-gray-600">P2: MEDIC</div>
                             <div className="text-xs text-gray-500">(Heals when damaged)</div>
                           </div>
                           {selectedRole !== null && (
                             <div className="text-center bg-blue-100 border-2 border-blue-400 rounded p-2">
-                              <div className="text-2xl mb-1">{["🤺", "💂", "👩🏻‍⚕️"][selectedRole]}</div>
+                              <div className="text-2xl mb-1">{Object.values(ROLE_ICONS)[selectedRole]}</div>
                               <div className="text-xs text-gray-600">You: {ROLE_NAMES[selectedRole]}</div>
                             </div>
                           )}

@@ -4,8 +4,7 @@ import { BattleField } from "../components/BattleField";
 import { ActionMenu } from "../components/ActionMenu";
 import { ResultsPanel } from "../components/ResultsPanel";
 import { ActionHistory } from "../components/ActionHistory";
-
-const ROLES = { FIGHTER: 0, TANK: 1, MEDIC: 2 };
+import { ROLES } from "../constants";
 
 export function Tutorial1({ next }) {
   const [selectedRole, setSelectedRole] = useState(null);

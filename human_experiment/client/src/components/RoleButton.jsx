@@ -1,28 +1,8 @@
 import React from "react";
+import { ROLE_CONFIG } from "../constants";
 
 export function RoleButton({ role, selected, onClick, disabled, locked }) {
-  const roleConfig = {
-    FIGHTER: {
-      label: "Fighter",
-      icon: "🤺",
-      description: "Attacks most of the time.",
-      color: "red"
-    },
-    TANK: {
-      label: "Tank",
-      icon: "💂",
-      description: "Blocks when the enemy is attacking, most of the time. Otherwise, acts like a fighter.",
-      color: "blue"
-    },
-    MEDIC: {
-      label: "Medic",
-      icon: "👩🏻‍⚕️",
-      description: "Heals if the team's health is less than 50%, most of the time. Otherwise, acts like a fighter.",
-      color: "green"
-    }
-  };
-
-  const config = roleConfig[role];
+  const config = ROLE_CONFIG[role];
 
   const baseClasses = "flex flex-col items-center justify-center p-4 rounded-lg border-2 transition-all duration-200";
 

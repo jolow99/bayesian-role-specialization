@@ -1,11 +1,8 @@
 import React from "react";
 import { HealthBar } from "./HealthBar";
+import { ACTION_ICONS } from "../constants";
 
-const actionIcons = {
-  ATTACK: "⚔️",
-  BLOCK: "🛡️",
-  HEAL: "💚"
-};
+const actionIcons = ACTION_ICONS;
 
 export const BattleField = React.memo(function BattleField({
   enemyHealth,

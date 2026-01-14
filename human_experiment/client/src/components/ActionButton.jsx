@@ -1,28 +1,8 @@
 import React from "react";
+import { ACTION_CONFIG } from "../constants";
 
 export function ActionButton({ action, selected, onClick, disabled }) {
-  const actionConfig = {
-    ATTACK: {
-      label: "Attack",
-      icon: "⚔️",
-      description: "Deal damage to enemy",
-      color: "red"
-    },
-    BLOCK: {
-      label: "Block",
-      icon: "🛡️",
-      description: "Protect team from enemy attacks",
-      color: "blue"
-    },
-    HEAL: {
-      label: "Heal",
-      icon: "💚",
-      description: "Restore team health",
-      color: "green"
-    }
-  };
-
-  const config = actionConfig[action];
+  const config = ACTION_CONFIG[action];
 
   const baseClasses = "flex flex-col items-center justify-center p-6 rounded-lg border-2 transition-all duration-200 cursor-pointer hover:scale-105";
 

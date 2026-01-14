@@ -1,6 +1,7 @@
 import React, { useMemo } from "react";
 import { useGame, usePlayer, usePlayers, useRound } from "@empirica/core/player/classic/react";
 import { useTutorialContext } from "./tutorial/TutorialContext";
+import { ACTION_ICONS, ROLE_LABELS } from "../constants";
 
 export function ActionHistory({ currentStageView = null, currentTurnView = 0 }) {
   // Check if in tutorial mode
@@ -16,13 +17,8 @@ export function ActionHistory({ currentStageView = null, currentTurnView = 0 }) 
   const currentRound = round?.get("roundNumber");
   const currentRoundStageNumber = round?.get("stageNumber") || 0;
 
-  const actionIcons = {
-    ATTACK: "⚔️",
-    BLOCK: "🛡️",
-    HEAL: "💚"
-  };
-
-  const roleNames = ["Fighter", "Tank", "Medic"];
+  const actionIcons = ACTION_ICONS;
+  const roleNames = ROLE_LABELS;
 
   // Build stage history from per-stage turn data stored on the round
   // This is synchronized with the frontend's turn-by-turn display
@@ -80,9 +76,9 @@ export function ActionHistory({ currentStageView = null, currentTurnView = 0 }) 
 
   // Map role names (stored as "FIGHTER", "TANK", "MEDIC") to display names
   const roleNameMap = {
-    "FIGHTER": "Fighter",
-    "TANK": "Tank",
-    "MEDIC": "Medic"
+    "FIGHTER": ROLE_LABELS[0],
+    "TANK": ROLE_LABELS[1],
+    "MEDIC": ROLE_LABELS[2]
   };
 
   if (stageHistory.length === 0) {

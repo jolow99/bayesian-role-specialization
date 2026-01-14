@@ -1,10 +1,7 @@
 import React from "react";
+import { ACTION_ICONS } from "../constants";
 
-const actionIcons = {
-  ATTACK: "⚔️",
-  BLOCK: "🛡️",
-  HEAL: "💚"
-};
+const actionIcons = ACTION_ICONS;
 
 export const ResultsPanel = React.memo(function ResultsPanel({
   roundNumber,

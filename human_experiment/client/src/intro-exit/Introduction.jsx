@@ -3,8 +3,7 @@ import { MockDataProvider, TutorialWrapper, createDefaultMockData } from "../com
 import { BattleField } from "../components/BattleField";
 import { ActionMenu } from "../components/ActionMenu";
 import { ActionHistory } from "../components/ActionHistory";
-
-const ROLES = { FIGHTER: 0, TANK: 1, MEDIC: 2 };
+import { ROLES } from "../constants";
 
 export function Introduction({ next }) {
   // Create mock data for the tutorial
