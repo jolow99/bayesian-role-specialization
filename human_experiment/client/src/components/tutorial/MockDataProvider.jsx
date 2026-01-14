@@ -92,7 +92,7 @@ export function createDefaultMockData() {
       id: "tutorial-player",
       playerId: 0,
       stats: { STR: 2, DEF: 2, SUP: 2 },
-      roleOrder: [0, 1, 2], // Fighter, Tank, Healer
+      roleOrder: [0, 1, 2], // Fighter, Tank, Medic
       stage: {},
       round: {}
     },

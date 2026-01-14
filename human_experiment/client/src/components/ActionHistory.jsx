@@ -18,11 +18,11 @@ export function ActionHistory({ currentStageView = null, currentTurnView = 0 }) 
 
   const actionIcons = {
     ATTACK: "⚔️",
-    DEFEND: "🛡️",
+    BLOCK: "🛡️",
     HEAL: "💚"
   };
 
-  const roleNames = ["Fighter", "Tank", "Healer"];
+  const roleNames = ["Fighter", "Tank", "Medic"];
 
   // Build stage history from per-stage turn data stored on the round
   // This is synchronized with the frontend's turn-by-turn display
@@ -78,11 +78,11 @@ export function ActionHistory({ currentStageView = null, currentTurnView = 0 }) 
   // Get current player's playerId (their slot position: 0, 1, or 2)
   const currentPlayerPlayerId = player.round?.get ? player.round.get("playerId") : player.playerId;
 
-  // Map role names (stored as "FIGHTER", "TANK", "HEALER") to display names
+  // Map role names (stored as "FIGHTER", "TANK", "MEDIC") to display names
   const roleNameMap = {
     "FIGHTER": "Fighter",
     "TANK": "Tank",
-    "HEALER": "Healer"
+    "MEDIC": "Medic"
   };
 
   if (stageHistory.length === 0) {

@@ -22,17 +22,17 @@ export function StatsInfo() {
             <div className="space-y-2">
               <div>
                 <div className="font-semibold text-red-600 mb-1">⚔️ Attack</div>
-                <div className="text-gray-700">Each attacker deals damage equal to their STR. Total damage = sum of all attackers' STR.</div>
+                <div className="text-gray-700">Each fighter deals damage equal to their STR. Total damage = sum of all fighters' STR.</div>
               </div>
 
               <div>
-                <div className="font-semibold text-blue-600 mb-1">🛡️ Defend</div>
-                <div className="text-gray-700">Incoming damage is reduced by the highest DEF among all defenders.</div>
+                <div className="font-semibold text-blue-600 mb-1">🛡️ Block</div>
+                <div className="text-gray-700">Incoming damage is reduced by the highest DEF among all tanks.</div>
               </div>
 
               <div>
                 <div className="font-semibold text-green-600 mb-1">💚 Heal</div>
-                <div className="text-gray-700">Each healer restores health equal to their SUP. Total healing = sum of all healers' SUP (up to max team health).</div>
+                <div className="text-gray-700">Each medic restores health equal to their SUP. Total healing = sum of all medics' SUP (up to max team health).</div>
               </div>
             </div>
 

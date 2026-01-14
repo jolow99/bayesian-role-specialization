@@ -11,12 +11,12 @@ export function RoleButton({ role, selected, onClick, disabled, locked }) {
     TANK: {
       label: "Tank",
       icon: "💂",
-      description: "Defends when the enemy is attacking, most of the time. Otherwise, acts like a fighter.",
+      description: "Blocks when the enemy is attacking, most of the time. Otherwise, acts like a fighter.",
       color: "blue"
     },
-    HEALER: {
-      label: "Healer",
-      icon: "🧙",
+    MEDIC: {
+      label: "Medic",
+      icon: "👩🏻‍⚕️",
       description: "Heals if the team's health is less than 50%, most of the time. Otherwise, acts like a fighter.",
       color: "green"
     }

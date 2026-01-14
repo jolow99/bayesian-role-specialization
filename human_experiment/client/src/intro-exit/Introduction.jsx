@@ -4,7 +4,7 @@ import { BattleField } from "../components/BattleField";
 import { ActionMenu } from "../components/ActionMenu";
 import { ActionHistory } from "../components/ActionHistory";
 
-const ROLES = { FIGHTER: 0, TANK: 1, HEALER: 2 };
+const ROLES = { FIGHTER: 0, TANK: 1, MEDIC: 2 };
 
 export function Introduction({ next }) {
   // Create mock data for the tutorial
@@ -65,7 +65,7 @@ export function Introduction({ next }) {
           </p>
           <ul className="text-sm text-gray-700 space-y-2 ml-4">
             <li><strong className="text-red-600">STR (Strength):</strong> Determines attack damage</li>
-            <li><strong className="text-blue-600">DEF (Defense):</strong> Determines damage blocked when defending</li>
+            <li><strong className="text-blue-600">DEF (Defense):</strong> Determines damage blocked when blocking</li>
             <li><strong className="text-green-600">SUP (Support):</strong> Determines healing effectiveness</li>
           </ul>
         </div>
@@ -83,8 +83,8 @@ export function Introduction({ next }) {
           </p>
           <ul className="text-sm text-gray-700 space-y-2 ml-4">
             <li><strong>⚔️ Fighter:</strong> Attacks most of the time</li>
-            <li><strong>🛡️ Tank:</strong> Defends when the enemy is attacking, most of the time. Otherwise, acts like a fighter</li>
-            <li><strong>💚 Healer:</strong> Heals if the team's health is less than or equal to 50%, most of the time. Otherwise, acts like a fighter</li>
+            <li><strong>🛡️ Tank:</strong> Blocks most of the time if the enemy is attacking. Otherwise, acts like a fighter</li>
+            <li><strong>💚 Medic:</strong> Heals most of the time if the team's health is less than or equal to 50%. Otherwise, acts like a fighter</li>
           </ul>
         </div>
       )
@@ -136,9 +136,9 @@ export function Introduction({ next }) {
             Click this info button anytime to learn how stats combine:
           </p>
           <ul className="text-sm text-gray-700 space-y-2 ml-4">
-            <li><strong>Attack damage:</strong> All attackers' STR stats are added together</li>
-            <li><strong>Defense:</strong> Only the highest DEF stat among defenders counts (not the sum)</li>
-            <li><strong>Healing:</strong> All healers' SUP stats are added together (up to max team health)</li>
+            <li><strong>Attack damage:</strong> All fighters' STR stats are added together</li>
+            <li><strong>Defense:</strong> Only the highest DEF stat among tanks counts (not the sum)</li>
+            <li><strong>Healing:</strong> All medics' SUP stats are added together (up to max team health)</li>
           </ul>
           <p className="text-sm text-gray-700 mt-3 italic">
             You're now ready for a trial game!
@@ -207,7 +207,7 @@ export function Introduction({ next }) {
                         currentRole={null}
                         roundsRemaining={0}
                         submitted={false}
-                        roleOrder={[ROLES.FIGHTER, ROLES.TANK, ROLES.HEALER]}
+                        roleOrder={[ROLES.FIGHTER, ROLES.TANK, ROLES.MEDIC]}
                       />
                     </div>
                   </div>

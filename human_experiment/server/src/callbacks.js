@@ -2,10 +2,10 @@ import { ClassicListenersCollector } from "@empirica/core/admin/classic";
 export const Empirica = new ClassicListenersCollector();
 
 // Constants
-const ACTIONS = { ATTACK: 0, DEFEND: 1, HEAL: 2 };
-const ACTION_NAMES = ["ATTACK", "DEFEND", "HEAL"];
-const ROLES = { FIGHTER: 0, TANK: 1, HEALER: 2 };
-const ROLE_NAMES = ["FIGHTER", "TANK", "HEALER"];
+const ACTIONS = { ATTACK: 0, BLOCK: 1, HEAL: 2 };
+const ACTION_NAMES = ["ATTACK", "BLOCK", "HEAL"];
+const ROLES = { FIGHTER: 0, TANK: 1, MEDIC: 2 };
+const ROLE_NAMES = ["FIGHTER", "TANK", "MEDIC"];
 const TURNS_PER_STAGE = 2; // Each stage (role commitment) lasts for 2 turns
 
 // Helper function to generate player stats
@@ -59,9 +59,9 @@ function roleToAction(role, gameState, playerStats, rng) {
       primaryAction = ACTIONS.ATTACK;
       break;
     case ROLES.TANK:
-      primaryAction = (enemyIntent === "WILL_ATTACK") ? ACTIONS.DEFEND : ACTIONS.ATTACK;
+      primaryAction = (enemyIntent === "WILL_ATTACK") ? ACTIONS.BLOCK : ACTIONS.ATTACK;
       break;
-    case ROLES.HEALER:
+    case ROLES.MEDIC:
       primaryAction = (teamHealth <= maxHealth * 0.5) ? ACTIONS.HEAL : ACTIONS.ATTACK;
       break;
     default:
@@ -589,10 +589,10 @@ function resolveTurnActions(game, round, stageNumber, turnNumber, actions, stats
     }
   });
 
-  // Calculate max defense (sub-additive: only best defender counts)
+  // Calculate max defense (sub-additive: only best tank counts)
   let maxDefense = 0;
   actions.forEach((action, idx) => {
-    if (action === ACTIONS.DEFEND) {
+    if (action === ACTIONS.BLOCK) {
       maxDefense = Math.max(maxDefense, stats[idx].DEF);
     }
   });

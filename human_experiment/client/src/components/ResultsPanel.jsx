@@ -2,7 +2,7 @@ import React from "react";
 
 const actionIcons = {
   ATTACK: "⚔️",
-  DEFEND: "🛡️",
+  BLOCK: "🛡️",
   HEAL: "💚"
 };
 

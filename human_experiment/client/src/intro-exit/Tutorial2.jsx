@@ -5,8 +5,8 @@ import { ActionMenu } from "../components/ActionMenu";
 import { ResultsPanel } from "../components/ResultsPanel";
 import { ActionHistory } from "../components/ActionHistory";
 
-const ROLES = { FIGHTER: 0, TANK: 1, HEALER: 2 };
-const ROLE_NAMES = ["Fighter", "Tank", "Healer"];
+const ROLES = { FIGHTER: 0, TANK: 1, MEDIC: 2 };
+const ROLE_NAMES = ["Fighter", "Tank", "Medic"];
 
 export function Tutorial2({ next }) {
   const [selectedRole, setSelectedRole] = useState(null);
@@ -22,8 +22,8 @@ export function Tutorial2({ next }) {
   const [round1PlaybackStep, setRound1PlaybackStep] = useState(0); // 0: initial, 1: turn1 shown, 2: turn2 shown
   const [tutorialComplete, setTutorialComplete] = useState(false);
 
-  // Bot players: One Tank (defends when enemy attacks), One Healer (heals when health < 50%)
-  const actualBotRoles = [ROLES.TANK, ROLES.HEALER];
+  // Bot players: One Tank (blocks when enemy attacks), One MEDIC (heals when health < 50%)
+  const actualBotRoles = [ROLES.TANK, ROLES.MEDIC];
 
   // Define tutorial steps
   const tutorialSteps = [
@@ -49,7 +49,7 @@ export function Tutorial2({ next }) {
         <div>
           <h4 className="text-lg font-bold text-gray-900 mb-2">Stage 1, Turn 1</h4>
           <p className="text-sm text-gray-700 mb-2">
-            The enemy attacked, dealing 6 damage. Player 1 chose DEFEND (reducing damage by 2) and Player 2 chose ATTACK (dealing 2 damage).
+            The enemy attacked, dealing 6 damage. Player 1 chose BLOCK (reducing damage by 2) and Player 2 chose ATTACK (dealing 2 damage).
           </p>
           <p className="text-sm text-gray-700 font-semibold">
             Result: Enemy 10→{round1Turn1Result?.enemyHealth}, Team 10→{round1Turn1Result?.teamHealth}
@@ -116,9 +116,9 @@ export function Tutorial2({ next }) {
 
   const getBotAction = (role, enemyAttacks, teamHealth) => {
     if (role === ROLES.FIGHTER) return "ATTACK";
-    if (role === ROLES.TANK) return enemyAttacks ? "DEFEND" : "ATTACK";
-    if (role === ROLES.HEALER) {
-      // Healer heals when team health <= 50% (which is 5 out of 10)
+    if (role === ROLES.TANK) return enemyAttacks ? "BLOCK" : "ATTACK";
+    if (role === ROLES.MEDIC) {
+      // MEDIC heals when team health <= 50% (which is 5 out of 10)
       return teamHealth <= 5 ? "HEAL" : "ATTACK";
     }
     return "ATTACK";
@@ -162,7 +162,7 @@ export function Tutorial2({ next }) {
     // Calculate defense using real game logic (max DEF, not additive)
     let maxDefense = 0;
     actions.forEach((action, idx) => {
-      if (action === "DEFEND") {
+      if (action === "BLOCK") {
         maxDefense = Math.max(maxDefense, stats[idx].DEF);
       }
     });
@@ -248,7 +248,7 @@ export function Tutorial2({ next }) {
         id: "tutorial-player",
         playerId: 2,
         stats: { STR: 2, DEF: 2, SUP: 2 },
-        roleOrder: [ROLES.FIGHTER, ROLES.TANK, ROLES.HEALER],
+        roleOrder: [ROLES.FIGHTER, ROLES.TANK, ROLES.MEDIC],
         stage: {},
         round: {}
       },
@@ -316,7 +316,7 @@ export function Tutorial2({ next }) {
         id: "tutorial-player",
         playerId: 2,
         stats: { STR: 2, DEF: 2, SUP: 2 },
-        roleOrder: [ROLES.FIGHTER, ROLES.TANK, ROLES.HEALER],
+        roleOrder: [ROLES.FIGHTER, ROLES.TANK, ROLES.MEDIC],
         stage: {},
         round: {}
       },
@@ -407,7 +407,7 @@ export function Tutorial2({ next }) {
         id: "tutorial-player",
         playerId: 2,
         stats: { STR: 2, DEF: 2, SUP: 2 },
-        roleOrder: [ROLES.FIGHTER, ROLES.TANK, ROLES.HEALER],
+        roleOrder: [ROLES.FIGHTER, ROLES.TANK, ROLES.MEDIC],
         stage: {},
         round: {}
       },
@@ -479,7 +479,7 @@ export function Tutorial2({ next }) {
         id: "tutorial-player",
         playerId: 2,
         stats: { STR: 2, DEF: 2, SUP: 2 },
-        roleOrder: [ROLES.FIGHTER, ROLES.TANK, ROLES.HEALER],
+        roleOrder: [ROLES.FIGHTER, ROLES.TANK, ROLES.MEDIC],
         stage: {},
         round: {},
         get: (key) => {
@@ -592,7 +592,7 @@ export function Tutorial2({ next }) {
         id: "tutorial-player",
         playerId: 2,
         stats: { STR: 2, DEF: 2, SUP: 2 },
-        roleOrder: [ROLES.FIGHTER, ROLES.TANK, ROLES.HEALER],
+        roleOrder: [ROLES.FIGHTER, ROLES.TANK, ROLES.MEDIC],
         stage: {},
         round: {},
         get: (key) => {
@@ -850,7 +850,7 @@ export function Tutorial2({ next }) {
                             currentRole={null}
                             roundsRemaining={0}
                             submitted={false}
-                            roleOrder={[ROLES.FIGHTER, ROLES.TANK, ROLES.HEALER]}
+                            roleOrder={[ROLES.FIGHTER, ROLES.TANK, ROLES.MEDIC]}
                           />
                         </div>
                       </div>
@@ -961,16 +961,16 @@ export function Tutorial2({ next }) {
                           <div className="text-center bg-gray-100 rounded p-2">
                             <div className="text-2xl mb-1">💂</div>
                             <div className="text-xs text-gray-600">P1: Tank</div>
-                            <div className="text-xs text-gray-500">(Defends when attacked)</div>
+                            <div className="text-xs text-gray-500">(Blocks when attacked)</div>
                           </div>
                           <div className="text-center bg-gray-100 rounded p-2">
-                            <div className="text-2xl mb-1">🧙</div>
-                            <div className="text-xs text-gray-600">P2: Healer</div>
+                            <div className="text-2xl mb-1">👩🏻‍⚕️</div>
+                            <div className="text-xs text-gray-600">P2: MEDIC</div>
                             <div className="text-xs text-gray-500">(Heals when damaged)</div>
                           </div>
                           {selectedRole !== null && (
                             <div className="text-center bg-blue-100 border-2 border-blue-400 rounded p-2">
-                              <div className="text-2xl mb-1">{["🤺", "💂", "🧙"][selectedRole]}</div>
+                              <div className="text-2xl mb-1">{["🤺", "💂", "👩🏻‍⚕️"][selectedRole]}</div>
                               <div className="text-xs text-gray-600">You: {ROLE_NAMES[selectedRole]}</div>
                             </div>
                           )}

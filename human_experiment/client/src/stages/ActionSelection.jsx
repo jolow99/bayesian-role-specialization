@@ -6,7 +6,7 @@ import { ResultsPanel } from "../components/ResultsPanel";
 import { ActionHistory } from "../components/ActionHistory";
 import { GameEndScreen } from "../components/GameEndScreen";
 
-const ROLES = { FIGHTER: 0, TANK: 1, HEALER: 2 };
+const ROLES = { FIGHTER: 0, TANK: 1, MEDIC: 2 };
 const EMPTY_ARRAY = []; // Stable reference to prevent unnecessary re-renders
 
 let renderCount = 0;
@@ -65,14 +65,14 @@ function ActionSelection() {
   useEffect(() => {
     if (!player.get("roleOrder")) {
       // Generate random permutation of [0, 1, 2]
-      const roles = [ROLES.FIGHTER, ROLES.TANK, ROLES.HEALER];
+      const roles = [ROLES.FIGHTER, ROLES.TANK, ROLES.MEDIC];
       const shuffled = [...roles].sort(() => Math.random() - 0.5);
       player.set("roleOrder", shuffled);
       console.log("[ActionSelection] Initialized random role order:", shuffled);
     }
   }, [player]);
 
-  const roleOrder = player.get("roleOrder") || [ROLES.FIGHTER, ROLES.TANK, ROLES.HEALER];
+  const roleOrder = player.get("roleOrder") || [ROLES.FIGHTER, ROLES.TANK, ROLES.MEDIC];
   const submitted = player.stage.get("submit") || localSubmitted; // Use local state during delay period
 
   const stageNumber = stage.get("stageNumber");
@@ -366,7 +366,7 @@ function ActionSelection() {
                     <div className="text-4xl mb-3">⏳</div>
                     <div className="text-lg font-bold text-gray-700 mb-2">Waiting for other players...</div>
                     <div className="text-gray-500 text-sm">
-                      {selectedRole !== null && `Your selected role: ${["Fighter", "Tank", "Healer"][selectedRole]}`}
+                      {selectedRole !== null && `Your selected role: ${["Fighter", "Tank", "Medic"][selectedRole]}`}
                     </div>
                   </div>
                 )}

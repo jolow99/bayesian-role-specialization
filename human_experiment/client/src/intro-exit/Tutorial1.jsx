@@ -5,7 +5,7 @@ import { ActionMenu } from "../components/ActionMenu";
 import { ResultsPanel } from "../components/ResultsPanel";
 import { ActionHistory } from "../components/ActionHistory";
 
-const ROLES = { FIGHTER: 0, TANK: 1, HEALER: 2 };
+const ROLES = { FIGHTER: 0, TANK: 1, MEDIC: 2 };
 
 export function Tutorial1({ next }) {
   const [selectedRole, setSelectedRole] = useState(null);
@@ -73,29 +73,29 @@ export function Tutorial1({ next }) {
     // Calculate team actions based on roles
     const roles = [...botRoles, playerRole];
 
-    // Calculate damage to enemy: sum of all attackers' STR (each player has STR=2)
-    let attackers = [];
-    let defenders = [];
-    let healers = [];
+    // Calculate damage to enemy: sum of all fighters' STR (each player has STR=2)
+    let fighters = [];
+    let tanks = [];
+    let medics = [];
 
     roles.forEach((role, idx) => {
       if (role === ROLES.FIGHTER) {
-        attackers.push(idx);
+        fighters.push(idx);
       } else if (role === ROLES.TANK) {
-        defenders.push(idx);
-      } else if (role === ROLES.HEALER) {
-        healers.push(idx);
+        tanks.push(idx);
+      } else if (role === ROLES.MEDIC) {
+        medics.push(idx);
       }
     });
 
-    // Everyone attacks (fighters, and healers attack too when not healing)
-    // Healers only heal if team health <= 50%
-    const willHeal = healers.length > 0 && currentTeamHP <= 3; // 3 is 50% of 6
+    // Everyone attacks (fighters, and medics attack too when not healing)
+    // medics only heal if team health <= 50%
+    const willHeal = medics.length > 0 && currentTeamHP <= 3; // 3 is 50% of 6
 
-    // Damage to enemy: attackers + healers who don't heal this turn
-    let damageToEnemy = attackers.length * 2;
-    if (!willHeal && healers.length > 0) {
-      damageToEnemy += healers.length * 2; // Healers attack if not healing
+    // Damage to enemy: fighters + medics who don't heal this turn
+    let damageToEnemy = fighters.length * 2;
+    if (!willHeal && medics.length > 0) {
+      damageToEnemy += medics.length * 2; // medics attack if not healing
     }
 
     // Boss always does 3 damage
@@ -104,19 +104,19 @@ export function Tutorial1({ next }) {
     // Damage to team calculation
     let damageToTeam = bossDamage;
 
-    // If there's a defender, reduce damage by highest DEF (each has DEF=2)
-    if (defenders.length > 0) {
+    // If there's a tank, reduce damage by highest DEF (each has DEF=2)
+    if (tanks.length > 0) {
       damageToTeam = Math.max(0, bossDamage - 2); // Highest DEF is 2, so 3 - 2 = 1
     }
 
-    // Healing - sum of all healers' SUP (each has SUP=2), only if they're healing
-    let healAmount = willHeal ? healers.length * 2 : 0;
+    // Healing - sum of all medics' SUP (each has SUP=2), only if they're healing
+    let healAmount = willHeal ? medics.length * 2 : 0;
 
     // Determine actions for display
     const actions = roles.map(role => {
       if (role === ROLES.FIGHTER) return "ATTACK";
-      if (role === ROLES.TANK) return "DEFEND";
-      if (role === ROLES.HEALER) return willHeal ? "HEAL" : "ATTACK";
+      if (role === ROLES.TANK) return "BLOCK";
+      if (role === ROLES.MEDIC) return willHeal ? "HEAL" : "ATTACK";
       return "ATTACK";
     });
 
@@ -244,7 +244,7 @@ export function Tutorial1({ next }) {
         id: "tutorial-player",
         playerId: 2,
         stats: { STR: 2, DEF: 2, SUP: 2 },
-        roleOrder: [ROLES.FIGHTER, ROLES.TANK, ROLES.HEALER],
+        roleOrder: [ROLES.FIGHTER, ROLES.TANK, ROLES.MEDIC],
         stage: {},
         round: {},
         get: (key) => {
@@ -321,7 +321,7 @@ export function Tutorial1({ next }) {
         id: "tutorial-player",
         playerId: 2,
         stats: { STR: 2, DEF: 2, SUP: 2 },
-        roleOrder: [ROLES.FIGHTER, ROLES.TANK, ROLES.HEALER],
+        roleOrder: [ROLES.FIGHTER, ROLES.TANK, ROLES.MEDIC],
         stage: {},
         round: {},
         get: (key) => {
@@ -440,7 +440,7 @@ export function Tutorial1({ next }) {
                           currentRole={null}
                           roundsRemaining={0}
                           submitted={false}
-                          roleOrder={[ROLES.FIGHTER, ROLES.TANK, ROLES.HEALER]}
+                          roleOrder={[ROLES.FIGHTER, ROLES.TANK, ROLES.MEDIC]}
                         />
                       </div>
                     </div>

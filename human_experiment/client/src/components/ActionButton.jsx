@@ -8,8 +8,8 @@ export function ActionButton({ action, selected, onClick, disabled }) {
       description: "Deal damage to enemy",
       color: "red"
     },
-    DEFEND: {
-      label: "Defend",
+    BLOCK: {
+      label: "Block",
       icon: "🛡️",
       description: "Protect team from enemy attacks",
       color: "blue"

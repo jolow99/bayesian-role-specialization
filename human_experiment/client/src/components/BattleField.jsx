@@ -3,7 +3,7 @@ import { HealthBar } from "./HealthBar";
 
 const actionIcons = {
   ATTACK: "⚔️",
-  DEFEND: "🛡️",
+  BLOCK: "🛡️",
   HEAL: "💚"
 };
 

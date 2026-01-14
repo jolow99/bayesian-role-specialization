@@ -2,7 +2,7 @@ import React from "react";
 import { RoleButton } from "./RoleButton";
 import { StatsInfo } from "./StatsInfo";
 
-const ROLES = { FIGHTER: 0, TANK: 1, HEALER: 2 };
+const ROLES = { FIGHTER: 0, TANK: 1, MEDIC: 2 };
 
 export const ActionMenu = React.memo(function ActionMenu({
   selectedRole,
@@ -12,9 +12,9 @@ export const ActionMenu = React.memo(function ActionMenu({
   currentRole,
   roundsRemaining,
   submitted,
-  roleOrder = [ROLES.FIGHTER, ROLES.TANK, ROLES.HEALER] // Default order if not provided
+  roleOrder = [ROLES.FIGHTER, ROLES.TANK, ROLES.MEDIC] // Default order if not provided
 }) {
-  const ROLE_NAMES = ["FIGHTER", "TANK", "HEALER"];
+  const ROLE_NAMES = ["FIGHTER", "TANK", "MEDIC"];
   const orderedRoleNames = roleOrder.map(roleId => ROLE_NAMES[roleId]);
   return (
     <div data-tutorial-id="action-menu">
