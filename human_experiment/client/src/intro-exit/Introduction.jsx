@@ -26,7 +26,7 @@ export function Introduction({ next }) {
           </p>
           <ul className="text-sm text-gray-700 space-y-1 ml-4 mb-3">
             <li>• Each round has a maximum of <strong>10 turns</strong></li>
-            <li>• <strong>Win:</strong> Earn 100 - (100 × Turns / 10) points</li>
+            <li>• <strong>Win up to 100 points</strong> - for every additional turn you take, you get 10 points less</li>
             <li>• <strong>Lose or timeout:</strong> Earn 0 points</li>
           </ul>
           <p className="text-sm text-gray-700 mb-2">
@@ -78,12 +78,12 @@ export function Introduction({ next }) {
           <h4 className="text-lg font-bold text-gray-900 mb-2">Role Selection</h4>
           <p className="text-sm text-gray-700 mb-3">
             At the start, you'll choose one of three roles. Your role influences the actions taken and
-            you'll be committed to the role for 2 turns (1 stage):
+            you'll be committed to the role for 2 turns:
           </p>
           <ul className="text-sm text-gray-700 space-y-2 ml-4">
-            <li><strong>⚔️ Fighter:</strong> Attacks most of the time</li>
-            <li><strong>🛡️ Tank:</strong> Blocks most of the time if the enemy is attacking. Otherwise, acts like a fighter</li>
-            <li><strong>💚 Medic:</strong> Heals most of the time if the team's health is less than or equal to 50%. Otherwise, acts like a fighter</li>
+            <li><strong>🤺 Fighter:</strong> Attacks most of the time</li>
+            <li><strong>💂 Tank:</strong> Blocks most of the time if the enemy is attacking. Otherwise, acts like a fighter</li>
+            <li><strong>👩🏻‍⚕️ Medic:</strong> Heals most of the time if the team's health is less than or equal to 50%. Otherwise, acts like a fighter</li>
           </ul>
         </div>
       )
@@ -132,14 +132,23 @@ export function Introduction({ next }) {
         <div>
           <h4 className="text-lg font-bold text-gray-900 mb-2">How Stats Combine</h4>
           <p className="text-sm text-gray-700 mb-3">
-            Click this info button anytime to learn how stats combine:
+            Hover over this info button anytime during the game to see how stats combine:
           </p>
-          <ul className="text-sm text-gray-700 space-y-2 ml-4">
-            <li><strong>Attack damage:</strong> All fighters' STR stats are added together</li>
-            <li><strong>Defense:</strong> Only the highest DEF stat among tanks counts (not the sum)</li>
-            <li><strong>Healing:</strong> All medics' SUP stats are added together (up to max team health)</li>
-          </ul>
-          <p className="text-sm text-gray-700 mt-3 italic">
+          <div className="space-y-2 mb-3">
+            <div>
+              <div className="font-semibold text-red-600 mb-1">⚔️ Attack</div>
+              <div className="text-sm text-gray-700">The amount of damage taken by a boss is the sum of all STR stats of players who attack</div>
+            </div>
+            <div>
+              <div className="font-semibold text-blue-600 mb-1">🛡️ Block</div>
+              <div className="text-sm text-gray-700">The amount of damage blocked by the team is the highest DEF stat amongst players who defend</div>
+            </div>
+            <div>
+              <div className="font-semibold text-green-600 mb-1">💚 Heal</div>
+              <div className="text-sm text-gray-700">The amount of health healed by the team is the sum of all SUP stats of players who heal</div>
+            </div>
+          </div>
+          <p className="text-sm text-gray-700 italic">
             You're now ready for a trial game!
           </p>
         </div>
