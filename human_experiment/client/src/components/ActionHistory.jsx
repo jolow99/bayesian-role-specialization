@@ -130,11 +130,11 @@ export function ActionHistory({ currentStageView = null, currentTurnView = 0 }) 
                       )}
                     </div>
                     <div className="flex gap-3 text-xs">
-                      <span className="text-red-600 font-semibold">
-                        👹 {turn.enemyHealth}HP
-                      </span>
                       <span className="text-green-600 font-semibold">
                         👥 {turn.teamHealth}HP
+                      </span>
+                      <span className="text-red-600 font-semibold">
+                        👹 {turn.enemyHealth}HP
                       </span>
                     </div>
                   </div>

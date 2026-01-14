@@ -503,20 +503,20 @@ export function Tutorial1({ next }) {
                     <h3 className="text-lg font-bold text-gray-800 mb-4 text-center">Final Battle Statistics</h3>
                     <div className="grid grid-cols-2 gap-4">
                       <div className="text-center">
-                        <div className="text-sm text-gray-600 mb-2">Enemy Health</div>
-                        <div className="flex items-center justify-center gap-2">
-                          <div className="text-3xl">👹</div>
-                          <div className={`text-2xl font-bold ${outcome.enemyHealth === 0 ? 'text-gray-400 line-through' : 'text-red-600'}`}>
-                            {outcome.enemyHealth} / 8
-                          </div>
-                        </div>
-                      </div>
-                      <div className="text-center">
                         <div className="text-sm text-gray-600 mb-2">Team Health</div>
                         <div className="flex items-center justify-center gap-2">
                           <div className="text-3xl">❤️</div>
                           <div className={`text-2xl font-bold ${outcome.teamHealth === 0 ? 'text-gray-400 line-through' : 'text-green-600'}`}>
                             {outcome.teamHealth} / 6
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-sm text-gray-600 mb-2">Enemy Health</div>
+                        <div className="flex items-center justify-center gap-2">
+                          <div className="text-3xl">👹</div>
+                          <div className={`text-2xl font-bold ${outcome.enemyHealth === 0 ? 'text-gray-400 line-through' : 'text-red-600'}`}>
+                            {outcome.enemyHealth} / 8
                           </div>
                         </div>
                       </div>

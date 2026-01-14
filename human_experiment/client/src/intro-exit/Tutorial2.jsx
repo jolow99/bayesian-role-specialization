@@ -52,7 +52,7 @@ export function Tutorial2({ next }) {
             The enemy attacked, dealing 6 damage. Player 1 chose BLOCK (reducing damage by 2) and Player 2 chose ATTACK (dealing 2 damage).
           </p>
           <p className="text-sm text-gray-700 font-semibold">
-            Result: Enemy 10→{round1Turn1Result?.enemyHealth}, Team 10→{round1Turn1Result?.teamHealth}
+            Result: Team 10→{round1Turn1Result?.teamHealth}, Enemy 10→{round1Turn1Result?.enemyHealth}
           </p>
         </div>
       )
@@ -67,7 +67,7 @@ export function Tutorial2({ next }) {
             The enemy rested (no attack). Player 1 chose ATTACK and Player 2 chose HEAL (restoring 2 health).
           </p>
           <p className="text-sm text-gray-700 font-semibold">
-            Result: Enemy {round1Turn1Result?.enemyHealth}→{round1Turn2Result?.enemyHealth}, Team {round1Turn1Result?.teamHealth}→{round1Turn2Result?.teamHealth}
+            Result: Team {round1Turn1Result?.teamHealth}→{round1Turn2Result?.teamHealth}, Enemy {round1Turn1Result?.enemyHealth}→{round1Turn2Result?.enemyHealth}
           </p>
         </div>
       )
@@ -935,20 +935,20 @@ export function Tutorial2({ next }) {
                       <h3 className="text-lg font-bold text-gray-800 mb-4 text-center">Final Battle Statistics</h3>
                       <div className="grid grid-cols-2 gap-4 mb-4">
                         <div className="text-center">
-                          <div className="text-sm text-gray-600 mb-2">Enemy Health</div>
-                          <div className="flex items-center justify-center gap-2">
-                            <div className="text-3xl">👹</div>
-                            <div className={`text-2xl font-bold ${outcome.enemyHealth === 0 ? 'text-gray-400 line-through' : 'text-red-600'}`}>
-                              {outcome.enemyHealth} / 10
-                            </div>
-                          </div>
-                        </div>
-                        <div className="text-center">
                           <div className="text-sm text-gray-600 mb-2">Team Health</div>
                           <div className="flex items-center justify-center gap-2">
                             <div className="text-3xl">❤️</div>
                             <div className={`text-2xl font-bold ${outcome.teamHealth === 0 ? 'text-gray-400 line-through' : 'text-green-600'}`}>
                               {outcome.teamHealth} / 10
+                            </div>
+                          </div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-sm text-gray-600 mb-2">Enemy Health</div>
+                          <div className="flex items-center justify-center gap-2">
+                            <div className="text-3xl">👹</div>
+                            <div className={`text-2xl font-bold ${outcome.enemyHealth === 0 ? 'text-gray-400 line-through' : 'text-red-600'}`}>
+                              {outcome.enemyHealth} / 10
                             </div>
                           </div>
                         </div>
