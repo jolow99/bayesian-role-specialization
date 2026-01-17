@@ -60,7 +60,7 @@ function roleToAction(role, gameState, playerStats, rng) {
       primaryAction = (enemyIntent === "WILL_ATTACK") ? ACTIONS.BLOCK : ACTIONS.ATTACK;
       break;
     case ROLES.MEDIC:
-      primaryAction = (teamHealth <= maxHealth * 0.5) ? ACTIONS.HEAL : ACTIONS.ATTACK;
+      primaryAction = (teamHealth < maxHealth) ? ACTIONS.HEAL : ACTIONS.ATTACK;
       break;
     default:
       primaryAction = ACTIONS.ATTACK;

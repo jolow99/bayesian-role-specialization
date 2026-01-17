@@ -83,7 +83,7 @@ export function Introduction({ next }) {
           <ul className="text-sm text-gray-700 space-y-2 ml-4">
             <li><strong>🤺 Fighter:</strong> Attacks most of the time</li>
             <li><strong>💂 Tank:</strong> Blocks most of the time if the enemy is attacking. Otherwise, acts like a fighter</li>
-            <li><strong>👩🏻‍⚕️ Medic:</strong> Heals most of the time if the team's health is less than or equal to 50%. Otherwise, acts like a fighter</li>
+            <li><strong>👩🏻‍⚕️ Medic:</strong> Heals most of the time if the team's health is not full. Otherwise, acts like a fighter</li>
           </ul>
         </div>
       )

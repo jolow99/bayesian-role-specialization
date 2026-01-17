@@ -88,8 +88,8 @@ export function Tutorial1({ next }) {
     });
 
     // Everyone attacks (fighters, and medics attack too when not healing)
-    // medics only heal if team health <= 50%
-    const willHeal = medics.length > 0 && currentTeamHP <= 3; // 3 is 50% of 6
+    // medics only heal if team health < 100%
+    const willHeal = medics.length > 0 && currentTeamHP < 6; // max hp is 6
 
     // Damage to enemy: fighters + medics who don't heal this turn
     let damageToEnemy = fighters.length * 2;

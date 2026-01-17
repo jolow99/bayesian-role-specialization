@@ -22,7 +22,7 @@ export function Tutorial2({ next }) {
   const [round1PlaybackStep, setRound1PlaybackStep] = useState(0); // 0: initial, 1: turn1 shown, 2: turn2 shown
   const [tutorialComplete, setTutorialComplete] = useState(false);
 
-  // Bot players: One Tank (blocks when enemy attacks), One MEDIC (heals when health < 50%)
+  // Bot players: One Tank (blocks when enemy attacks), One MEDIC (heals when health < 100%)
   const actualBotRoles = [ROLES.TANK, ROLES.MEDIC];
 
   // Define tutorial steps
@@ -118,8 +118,8 @@ export function Tutorial2({ next }) {
     if (role === ROLES.FIGHTER) return "ATTACK";
     if (role === ROLES.TANK) return enemyAttacks ? "BLOCK" : "ATTACK";
     if (role === ROLES.MEDIC) {
-      // MEDIC heals when team health <= 50% (which is 5 out of 10)
-      return teamHealth <= 5 ? "HEAL" : "ATTACK";
+      // MEDIC heals when team health < 100% 
+      return teamHealth < 10 ? "HEAL" : "ATTACK";
     }
     return "ATTACK";
   };
@@ -770,7 +770,7 @@ export function Tutorial2({ next }) {
                     currentPlayerId="tutorial-player"
                     previousEnemyHealth={currentTurnResult?.previousEnemyHealth || mockData.game.enemyHealth}
                     previousTeamHealth={currentTurnResult?.previousTeamHealth || mockData.game.teamHealth}
-                    bossDamage={4}
+                    bossDamage={6}
                     enemyAttackProbability={0.5}
                   />
                 </div>
