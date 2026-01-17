@@ -21,17 +21,6 @@ export function Introduction({ next }) {
           <p className="text-sm text-gray-700 mb-3">
             You'll play <strong>8 rounds</strong> of this cooperative game. In each round, work with your team to defeat the enemy before your team's health reaches 0.
           </p>
-          <p className="text-sm text-gray-700 mb-3">
-            <strong>Points & Bonus:</strong> You earn points based on how quickly you win each round. Faster victories earn more points!
-          </p>
-          <ul className="text-sm text-gray-700 space-y-1 ml-4 mb-3">
-            <li>• Each round has a maximum of <strong>10 turns</strong></li>
-            <li>• <strong>Win up to 100 points</strong> - for every additional turn you take, you get 10 points less</li>
-            <li>• <strong>Lose or timeout:</strong> Earn 0 points</li>
-          </ul>
-          <p className="text-sm text-gray-700 mb-2">
-            <strong>Bonus Payment:</strong> Every 40 points = $0.10 bonus (up to ~$1.00 total bonus on top of base payment)
-          </p>
           <p className="text-sm text-gray-700">
             Let's take a tour of the interface to understand how to play!
           </p>
@@ -45,28 +34,14 @@ export function Introduction({ next }) {
         <div>
           <h4 className="text-lg font-bold text-gray-900 mb-2">The Battlefield</h4>
           <p className="text-sm text-gray-700 mb-2">
-            The battlefield shows the enemy's health (red bar) and your team's health (green bar).
+          <ul className="text-sm text-gray-700 space-y-2 ml-4">
+            <li>• On the left is your team. You are playing with 2 other players who are either humans or bots. Your team's health is the green bar.</li>
+            <li>• On the right is the enemy, whose health is the red bar. </li>
+          </ul>
           </p>
           <p className="text-sm text-gray-700">
             Your goal is to reduce the enemy's health to 0 before your team's health reaches 0.
           </p>
-        </div>
-      )
-    },
-    {
-      targetId: "player-stats",
-      tooltipPosition: "right",
-      content: (
-        <div>
-          <h4 className="text-lg font-bold text-gray-900 mb-2">Player Stats</h4>
-          <p className="text-sm text-gray-700 mb-3">
-            Each player has unique stats that determine how effective they are at each action:
-          </p>
-          <ul className="text-sm text-gray-700 space-y-2 ml-4">
-            <li><strong className="text-red-600">STR (Strength):</strong> Determines attack damage</li>
-            <li><strong className="text-blue-600">DEF (Defense):</strong> Determines damage blocked when blocking</li>
-            <li><strong className="text-green-600">SUP (Support):</strong> Determines healing effectiveness</li>
-          </ul>
         </div>
       )
     },
@@ -84,6 +59,23 @@ export function Introduction({ next }) {
             <li><strong>🤺 Fighter:</strong> Attacks most of the time</li>
             <li><strong>💂 Tank:</strong> Blocks most of the time if the enemy is attacking. Otherwise, acts like a fighter</li>
             <li><strong>👩🏻‍⚕️ Medic:</strong> Heals most of the time if the team's health is not full. Otherwise, acts like a fighter</li>
+          </ul>
+        </div>
+      )
+    },
+    {
+      targetId: "player-stats",
+      tooltipPosition: "right",
+      content: (
+        <div>
+          <h4 className="text-lg font-bold text-gray-900 mb-2">Player Stats</h4>
+          <p className="text-sm text-gray-700 mb-3">
+            Each player has unique stats that determine how effective they are at each action:
+          </p>
+          <ul className="text-sm text-gray-700 space-y-2 ml-4">
+            <li><strong className="text-red-600">STR (Strength):</strong> Determines attack damage</li>
+            <li><strong className="text-blue-600">DEF (Defense):</strong> Determines damage blocked when blocking</li>
+            <li><strong className="text-green-600">SUP (Support):</strong> Determines healing effectiveness</li>
           </ul>
         </div>
       )
