@@ -15,7 +15,7 @@ export function StatsInfo() {
       </button>
 
       {showTooltip && (
-        <div className="absolute z-10 bg-white border-2 border-gray-300 rounded-lg shadow-xl p-4 w-80 -top-2 left-full ml-2" data-tutorial-id="stats-info-tooltip">
+        <div className="absolute z-50 bg-white border-2 border-gray-300 rounded-lg shadow-xl p-4 w-80 bottom-full mb-2 right-0" data-tutorial-id="stats-info-tooltip">
           <div className="text-xs space-y-2">
             <div className="font-bold text-gray-800 mb-3">How Stats Work</div>
 

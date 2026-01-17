@@ -175,7 +175,7 @@ export function TutorialWrapper({ steps = [], onComplete, onSkip, children }) {
         onNext={handleNext}
         onBack={currentStep > 0 ? handleBack : null}
         onSkip={onSkip}
-        onReplay={currentStep === steps.length - 1 ? handleReplay : null}
+        onReplay={currentStep === steps.length - 1 && steps.length > 1 ? handleReplay : null}
         stepNumber={currentStep + 1}
         totalSteps={steps.length}
         showNext={true}
