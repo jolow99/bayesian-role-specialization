@@ -1,15 +1,92 @@
 import React from "react";
-import { MockDataProvider, TutorialWrapper, createDefaultMockData } from "../components/tutorial";
+import { MockDataProvider, TutorialWrapper } from "../components/tutorial";
 import { BattleField } from "../components/BattleField";
 import { ActionMenu } from "../components/ActionMenu";
 import { ActionHistory } from "../components/ActionHistory";
 import { ROLES } from "../constants";
 
-export function Introduction({ next }) {
-  // Create mock data for the tutorial
-  const mockData = createDefaultMockData();
+// Create mock data with placeholder battle history for the tutorial
+const createMockDataWithHistory = () => {
+  const players = [
+    { id: "player-1", playerId: 0, stats: { STR: 3, DEF: 1, SUP: 1 } },
+    { id: "player-2", playerId: 1, stats: { STR: 1, DEF: 3, SUP: 1 } },
+    { id: "tutorial-player", playerId: 2, stats: { STR: 1, DEF: 1, SUP: 3 } }
+  ];
 
-  // Define the 7 tutorial steps
+  // Create placeholder battle history with 1 stage and 2 turns
+  const roundData = {
+    roundNumber: 1,
+    stageNumber: 1,
+    stage1Turns: [
+      {
+        turnNumber: 1,
+        enemyIntent: "WILL_ATTACK",
+        actions: ["ATTACK", "BLOCK", "HEAL"],
+        damageToEnemy: 3,
+        damageToTeam: 1,
+        healAmount: 3,
+        previousEnemyHealth: 10,
+        previousTeamHealth: 10,
+        newEnemyHealth: 7,
+        newTeamHealth: 10
+      },
+      {
+        turnNumber: 2,
+        enemyIntent: "WILL_REST",
+        actions: ["ATTACK", "ATTACK", "ATTACK"],
+        damageToEnemy: 5,
+        damageToTeam: 0,
+        healAmount: 0,
+        previousEnemyHealth: 7,
+        previousTeamHealth: 10,
+        newEnemyHealth: 2,
+        newTeamHealth: 10
+      }
+    ]
+  };
+
+  return {
+    game: {
+      enemyHealth: 2,
+      maxEnemyHealth: 10,
+      teamHealth: 10,
+      maxTeamHealth: 10,
+      treatment: {
+        totalPlayers: 3,
+        maxRounds: 5,
+        maxEnemyHealth: 10,
+        maxTeamHealth: 10
+      }
+    },
+    player: {
+      id: "tutorial-player",
+      playerId: 2,
+      stats: { STR: 1, DEF: 1, SUP: 3 },
+      roleOrder: [ROLES.FIGHTER, ROLES.TANK, ROLES.MEDIC],
+      stage: {},
+      round: {},
+      get: (key) => {
+        if (key === "actionHistory") return [{ stage: 1, role: "MEDIC" }];
+        return undefined;
+      }
+    },
+    players: players,
+    round: {
+      ...roundData,
+      get: (key) => roundData[key]
+    },
+    stage: {
+      name: "roleSelection",
+      stageType: "roleSelection"
+    }
+  };
+};
+
+export function Introduction({ next }) {
+  // Create mock data for the tutorial with placeholder battle history
+  const mockData = createMockDataWithHistory();
+
+  // Define the tutorial steps
   const tutorialSteps = [
     {
       targetId: "full-screen", // Show darkened background
@@ -52,8 +129,8 @@ export function Introduction({ next }) {
         <div>
           <h4 className="text-lg font-bold text-gray-900 mb-2">Role Selection</h4>
           <p className="text-sm text-gray-700 mb-3">
-            At the start, you'll choose one of three roles. Your role influences the actions taken and
-            you'll be committed to the role for 2 turns:
+            At each stage you'll have to choose a role, which determines the actions your character takes. 
+            You'll be committed to the role for 2 turns:
           </p>
           <ul className="text-sm text-gray-700 space-y-2 ml-4">
             <li><strong>🤺 Fighter:</strong> Attacks most of the time</li>
@@ -68,15 +145,27 @@ export function Introduction({ next }) {
       tooltipPosition: "right",
       content: (
         <div>
-          <h4 className="text-lg font-bold text-gray-900 mb-2">Player Stats</h4>
+          <h4 className="text-lg font-bold text-gray-900 mb-2">Player Stats & How They Combine</h4>
           <p className="text-sm text-gray-700 mb-3">
             Each player has unique stats that determine how effective they are at each action:
           </p>
-          <ul className="text-sm text-gray-700 space-y-2 ml-4">
-            <li><strong className="text-red-600">STR (Strength):</strong> Determines attack damage</li>
-            <li><strong className="text-blue-600">DEF (Defense):</strong> Determines damage blocked when blocking</li>
-            <li><strong className="text-green-600">SUP (Support):</strong> Determines healing effectiveness</li>
-          </ul>
+          <div className="space-y-2 mb-3">
+            <div>
+              <div className="font-semibold text-red-600 mb-1">⚔️ STR (Strength) → Attack</div>
+              <div className="text-sm text-gray-700">Damage to enemy = <strong>sum</strong> of all attackers' STR</div>
+            </div>
+            <div>
+              <div className="font-semibold text-blue-600 mb-1">🛡️ DEF (Defense) → Block</div>
+              <div className="text-sm text-gray-700">Damage blocked = <strong>highest</strong> DEF among blockers</div>
+            </div>
+            <div>
+              <div className="font-semibold text-green-600 mb-1">💚 SUP (Support) → Heal</div>
+              <div className="text-sm text-gray-700">Health restored = <strong>sum</strong> of all healers' SUP</div>
+            </div>
+          </div>
+          <p className="text-sm text-gray-700 italic">
+            Tip: You can hover over the ⓘ button anytime during the game to review this!
+          </p>
         </div>
       )
     },
@@ -87,10 +176,31 @@ export function Introduction({ next }) {
         <div>
           <h4 className="text-lg font-bold text-gray-900 mb-2">Battle History</h4>
           <p className="text-sm text-gray-700 mb-2">
-            The battle history shows past stages and turns. You can see what actions each player took and the results.
+            The battle history shows past stages and turns. This helps you coordinate with your team by understanding their strategies.
           </p>
           <p className="text-sm text-gray-700">
-            This helps you coordinate with your team by understanding their strategies.
+            Let's look at how to read it in detail...
+          </p>
+        </div>
+      )
+    },
+    {
+      targetId: "battle-history-s1t1",
+      tooltipPosition: "left",
+      content: (
+        <div>
+          <h4 className="text-lg font-bold text-gray-900 mb-2">Reading Turn Details</h4>
+          <p className="text-sm text-gray-700 mb-2">
+            Each turn entry shows:
+          </p>
+          <ul className="text-sm text-gray-700 space-y-1 ml-4 mb-2">
+            <li>• <strong>Turn number</strong> and whether the <strong>enemy attacked or rested</strong></li>
+            <li>• <strong>Health status</strong> after the turn (👥 Team, 👹 Enemy)</li>
+            <li>• <strong>Action icons</strong> for each player (⚔️ Attack, 🛡️ Block, 💚 Heal)</li>
+            <li>• <strong>"YOU"</strong> label marks your own actions</li>
+          </ul>
+          <p className="text-sm text-gray-700 italic">
+            In this example: P1 attacked, P2 blocked, and YOU healed. The enemy attacked but only dealt 1 damage thanks to P2's block!
           </p>
         </div>
       )
@@ -101,45 +211,18 @@ export function Introduction({ next }) {
       showBorder: false,
       content: (
         <div>
-          <h4 className="text-lg font-bold text-gray-900 mb-2">Turn Counter & Time Pressure</h4>
+          <h4 className="text-lg font-bold text-gray-900 mb-2">Points & Bonus</h4>
           <p className="text-sm text-gray-700 mb-3">
-            At the top of the screen, you'll see a turn counter showing <strong>Turn: X / 10</strong>
+            You earn points based on how quickly you win each round. Faster victories earn more points!
           </p>
-          <p className="text-sm text-gray-700 mb-3">
-            Remember: The faster you defeat the enemy, the more points you earn!
-          </p>
-          <ul className="text-sm text-gray-700 space-y-2 ml-4">
-            <li>• Win in 1-2 turns: Earn 80-90 points</li>
-            <li>• Win in 5 turns: Earn 50 points</li>
-            <li>• Win in 10 turns: Earn 0 points</li>
-            <li>• Lose or exceed 10 turns: Earn 0 points</li>
+          <ul className="text-sm text-gray-700 space-y-1 ml-4 mb-3">
+            <li>• Each round has a maximum of <strong>10 turns</strong></li>
+            <li>• <strong>Win up to 100 points</strong> - for every additional turn you take, you get 10 points less</li>
+            <li>• <strong>Lose or timeout:</strong> Earn 0 points</li>
           </ul>
-        </div>
-      )
-    },
-    {
-      targetId: "stats-info",
-      tooltipPosition: "bottom",
-      content: (
-        <div>
-          <h4 className="text-lg font-bold text-gray-900 mb-2">How Stats Combine</h4>
           <p className="text-sm text-gray-700 mb-3">
-            Hover over this info button anytime during the game to see how stats combine:
+            <strong>Bonus Payment:</strong> Every 40 points = $0.10 bonus (up to ~$1.00 total bonus on top of base payment)
           </p>
-          <div className="space-y-2 mb-3">
-            <div>
-              <div className="font-semibold text-red-600 mb-1">⚔️ Attack</div>
-              <div className="text-sm text-gray-700">The amount of damage taken by a boss is the sum of all STR stats of players who attack</div>
-            </div>
-            <div>
-              <div className="font-semibold text-blue-600 mb-1">🛡️ Block</div>
-              <div className="text-sm text-gray-700">The amount of damage blocked by the team is the highest DEF stat amongst players who defend</div>
-            </div>
-            <div>
-              <div className="font-semibold text-green-600 mb-1">💚 Heal</div>
-              <div className="text-sm text-gray-700">The amount of health healed by the team is the sum of all SUP stats of players who heal</div>
-            </div>
-          </div>
           <p className="text-sm text-gray-700 italic">
             You're now ready for a trial game!
           </p>
@@ -153,11 +236,12 @@ export function Introduction({ next }) {
   };
 
   // Build allPlayers array for BattleField component
+  // Player at index 2 is the tutorial player (real), others are virtual
   const allPlayers = mockData.players.map((p, idx) => ({
-    type: idx === 0 ? "real" : "virtual",
+    type: idx === 2 ? "real" : "virtual",
     player: p,
     playerId: p.playerId,
-    bot: idx === 0 ? null : { stats: p.stats, playerId: p.playerId }
+    bot: idx === 2 ? null : { stats: p.stats, playerId: p.playerId }
   }));
 
   return (

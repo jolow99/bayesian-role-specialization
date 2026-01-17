@@ -61,7 +61,7 @@ export const ROLE_CONFIG = {
   MEDIC: {
     label: "Medic",
     icon: "👩🏻‍⚕️",
-    description: "Heals most of the time if the team's health is less than or equal to 50%. Otherwise, acts like a fighter.",
+    description: "Heals most of the time if the team's health is not full. Otherwise, acts like a fighter.",
     color: "green"
   }
 };

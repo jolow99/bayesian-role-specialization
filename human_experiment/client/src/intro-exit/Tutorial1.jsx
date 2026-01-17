@@ -25,6 +25,22 @@ export function Tutorial1({ next }) {
   // Define tutorial steps
   const tutorialSteps = [
     {
+      targetId: "full-screen",
+      tooltipPosition: "center",
+      showBorder: false,
+      content: (
+        <div>
+          <h3 className="text-lg font-bold text-gray-900 mb-3">Tutorial Game 1</h3>
+          <p className="text-sm text-gray-700 mb-3">
+            Let's play a practice game to see how everything works together!
+          </p>
+          <p className="text-sm text-gray-700">
+            In this tutorial, you'll get to see your teammates' roles before choosing your own.
+          </p>
+        </div>
+      )
+    },
+    {
       targetId: "teammate-roles",
       tooltipPosition: "right",
       content: (
@@ -374,7 +390,7 @@ export function Tutorial1({ next }) {
 
   const content = (
     <MockDataProvider mockData={mockData}>
-      <div className="fixed inset-0 bg-gradient-to-b from-blue-400 to-blue-600 flex items-center justify-center p-2">
+      <div className="fixed inset-0 bg-gradient-to-b from-blue-400 to-blue-600 flex items-center justify-center p-2" data-tutorial-id="full-screen">
         <div className="w-full h-full flex items-center justify-center" style={{ maxWidth: '1400px' }}>
           {/* Battle Screen */}
           <div className="bg-white rounded-lg shadow-2xl border-4 border-gray-800 w-full h-full flex overflow-hidden relative">
@@ -498,24 +514,82 @@ export function Tutorial1({ next }) {
                     <p className="text-xl text-gray-700">{outcome.message}</p>
                   </div>
 
-                  {/* Final Stats */}
+                  {/* Explanation based on role choice */}
                   <div className="bg-white rounded-lg p-6 mb-6 border-2 border-gray-300">
-                    <h3 className="text-lg font-bold text-gray-800 mb-4 text-center">Final Battle Statistics</h3>
+                    <h3 className="text-lg font-bold text-gray-800 mb-4 text-center">What Happened</h3>
+
+                    {selectedRole === ROLES.FIGHTER && (
+                      <div className="text-gray-700 space-y-3">
+                        <p>
+                          <span className="font-semibold">You chose Fighter 🤺</span> — With 3 Fighters attacking (2 damage each), your team dealt 6 damage per turn.
+                        </p>
+                        <p>
+                          However, with no one to block or heal, the boss's attacks (3 damage per turn) went unmitigated:
+                        </p>
+                        <ul className="list-disc list-inside ml-2 space-y-1 text-sm">
+                          <li>Turn 1: Team dealt 6 damage to boss (8 → 2 HP). Boss dealt 3 damage to team (6 → 3 HP)</li>
+                          <li>Turn 2: Team dealt 6 damage to boss (2 → 0 HP). Boss dealt 3 damage to team (3 → 0 HP)</li>
+                        </ul>
+                        <p className="font-semibold text-red-600">
+                          Both sides were defeated in the same turn. The team must survive to win!
+                        </p>
+                      </div>
+                    )}
+
+                    {selectedRole === ROLES.TANK && (
+                      <div className="text-gray-700 space-y-3">
+                        <p>
+                          <span className="font-semibold">You chose Tank 🛡️</span> — Your 2 Fighter teammates dealt 4 damage per turn, while you blocked to protect the team.
+                        </p>
+                        <p>
+                          The boss deals 3 damage per turn, but your DEF of 2 reduced it to only 1 damage:
+                        </p>
+                        <ul className="list-disc list-inside ml-2 space-y-1 text-sm">
+                          <li>Turn 1: Team dealt 4 damage to boss (8 → 4 HP). Boss dealt 3 - 2 = 1 damage to team (6 → 5 HP)</li>
+                          <li>Turn 2: Team dealt 4 damage to boss (4 → 0 HP). Boss dealt 3 - 2 = 1 damage to team (5 → 4 HP)</li>
+                        </ul>
+                        <p className="font-semibold text-green-600">
+                          Your team survived with 4 HP remaining, securing the victory!
+                        </p>
+                      </div>
+                    )}
+
+                    {selectedRole === ROLES.MEDIC && (
+                      <div className="text-gray-700 space-y-3">
+                        <p>
+                          <span className="font-semibold">You chose Medic 💚</span> — Your healing kept the team alive.
+                        </p>
+                        <p>
+                          Medics only heal when the team is damaged. At full health, they act like a fighter instead:
+                        </p>
+                        <ul className="list-disc list-inside ml-2 space-y-1 text-sm">
+                          <li>Turn 1: Team at full HP, so you attacked. Team dealt 6 damage to boss (8 → 2 HP). Boss dealt 3 damage to team (6 → 3 HP)</li>
+                          <li>Turn 2: Team damaged, so you healed for 2. Team dealt 4 damage to boss (2 → 0 HP). Boss dealt 3 damage, you healed 2 (3 - 3 + 2 = 2 HP)</li>
+                        </ul>
+                        <p className="font-semibold text-green-600">
+                          Your team survived with 2 HP remaining, securing the victory!
+                        </p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Final Stats */}
+                  <div className="bg-gray-100 rounded-lg p-4 mb-6 border border-gray-300">
                     <div className="grid grid-cols-2 gap-4">
                       <div className="text-center">
-                        <div className="text-sm text-gray-600 mb-2">Team Health</div>
+                        <div className="text-sm text-gray-600 mb-1">Team Health</div>
                         <div className="flex items-center justify-center gap-2">
-                          <div className="text-3xl">❤️</div>
-                          <div className={`text-2xl font-bold ${outcome.teamHealth === 0 ? 'text-gray-400 line-through' : 'text-green-600'}`}>
+                          <div className="text-2xl">❤️</div>
+                          <div className={`text-xl font-bold ${outcome.teamHealth === 0 ? 'text-gray-400 line-through' : 'text-green-600'}`}>
                             {outcome.teamHealth} / 6
                           </div>
                         </div>
                       </div>
                       <div className="text-center">
-                        <div className="text-sm text-gray-600 mb-2">Enemy Health</div>
+                        <div className="text-sm text-gray-600 mb-1">Boss Health</div>
                         <div className="flex items-center justify-center gap-2">
-                          <div className="text-3xl">👹</div>
-                          <div className={`text-2xl font-bold ${outcome.enemyHealth === 0 ? 'text-gray-400 line-through' : 'text-red-600'}`}>
+                          <div className="text-2xl">👹</div>
+                          <div className={`text-xl font-bold ${outcome.enemyHealth === 0 ? 'text-gray-400 line-through' : 'text-red-600'}`}>
                             {outcome.enemyHealth} / 8
                           </div>
                         </div>
@@ -529,14 +603,16 @@ export function Tutorial1({ next }) {
                       onClick={handlePlayAgain}
                       className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg text-lg shadow-lg transition-colors"
                     >
-                      Play Again
+                      {outcome.success ? 'Play Again' : 'Try Again'}
                     </button>
-                    <button
-                      onClick={handleContinueToTutorial2}
-                      className={`${outcome.success ? 'bg-green-600 hover:bg-green-700' : 'bg-gray-600 hover:bg-gray-700'} text-white font-bold py-3 px-6 rounded-lg text-lg shadow-lg transition-colors`}
-                    >
-                      Continue to Tutorial 2 →
-                    </button>
+                    {outcome.success && (
+                      <button
+                        onClick={handleContinueToTutorial2}
+                        className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg text-lg shadow-lg transition-colors"
+                      >
+                        Continue to Tutorial 2 →
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
