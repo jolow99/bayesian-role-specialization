@@ -6,7 +6,8 @@ export const GameEndScreen = React.memo(function GameEndScreen({
   totalPoints,
   roundOutcomes = [],
   isBotRoundEarlyFinish = false, // True when player finished bot round before round end stage
-  onEarlyFinishContinue = null // Callback when player clicks continue after early finish
+  onEarlyFinishContinue = null, // Callback when player clicks continue after early finish
+  otherPlayersStatus = [] // Status of other players for waiting display
 }) {
   const player = usePlayer();
   const stage = useStage();
@@ -25,17 +26,9 @@ export const GameEndScreen = React.memo(function GameEndScreen({
       setLocalSubmitted(true);
       onEarlyFinishContinue();
     } else if (isRoundEndStage) {
-      // Add random delay (1-10 seconds) for round transitions to mask bot/human differences
-      const randomDelay = Math.floor(Math.random() * 9000) + 1000; // 1000-10000ms
-      console.log(`Adding ${randomDelay}ms delay before submitting round end to mask bot response times`);
-
-      // Set local state to immediately show waiting screen
+      // Submit immediately - waiting is now based on other real players
       setLocalSubmitted(true);
-
-      // Delay the submit to mask bot response times
-      setTimeout(() => {
-        player.stage.set("submit", true);
-      }, randomDelay);
+      player.stage.set("submit", true);
     } else {
       // Game end - no delay needed
       player.stage.set("submit", true);
@@ -200,7 +193,22 @@ export const GameEndScreen = React.memo(function GameEndScreen({
           ) : (submitted || localSubmitted) ? (
             <div className="text-gray-600 text-lg">
               <div className="text-3xl mb-2">⏳</div>
-              {isBotRoundEarlyFinish ? "Waiting for other players to finish..." : (isRoundEnd ? "Waiting for next round..." : "Waiting for other players...")}
+              <div className="mb-2">Waiting for other players...</div>
+              {/* Show other players' submission status */}
+              {otherPlayersStatus.length > 0 && (
+                <div className="flex justify-center gap-4 mt-2">
+                  {otherPlayersStatus.map((p) => (
+                    <div key={p.odId} className="flex items-center gap-2">
+                      <span className="text-sm text-gray-600">P{(p.playerId ?? 0) + 1}:</span>
+                      {p.submitted ? (
+                        <span className="text-green-600 font-semibold">✓ Ready</span>
+                      ) : (
+                        <span className="text-orange-500 font-semibold animate-pulse">⏳ Waiting...</span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           ) : (
             <button

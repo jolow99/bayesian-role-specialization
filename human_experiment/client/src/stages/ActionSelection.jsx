@@ -544,6 +544,7 @@ function ActionSelection() {
                 roundOutcomes={player.get("roundOutcomes") || []}
                 isBotRoundEarlyFinish={isBotRound && roundOutcome && !isRoundEndStage}
                 onEarlyFinishContinue={() => setAcknowledgedEarlyFinish(true)}
+                otherPlayersStatus={otherPlayersStatus}
               />
             </div>
           )}
@@ -556,6 +557,7 @@ function ActionSelection() {
                 endMessage={stage.get("endMessage")}
                 totalPoints={totalPoints}
                 roundOutcomes={player.get("roundOutcomes") || []}
+                otherPlayersStatus={otherPlayersStatus}
               />
             </div>
           )}
