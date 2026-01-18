@@ -4,7 +4,9 @@ import { usePlayer, useStage } from "@empirica/core/player/classic/react";
 export const GameEndScreen = React.memo(function GameEndScreen({
   outcome,
   totalPoints,
-  roundOutcomes = []
+  roundOutcomes = [],
+  isBotRoundEarlyFinish = false, // True when player finished bot round before round end stage
+  onEarlyFinishContinue = null // Callback when player clicks continue after early finish
 }) {
   const player = usePlayer();
   const stage = useStage();
@@ -15,9 +17,14 @@ export const GameEndScreen = React.memo(function GameEndScreen({
   const handleContinue = () => {
     if (localSubmitted) return; // Prevent double-click
 
-    const isRoundEnd = stageType === "roundEnd";
+    const isRoundEndStage = stageType === "roundEnd";
 
-    if (isRoundEnd) {
+    if (isBotRoundEarlyFinish && onEarlyFinishContinue) {
+      // Early finish in bot round - notify parent to start auto-submitting
+      // Don't actually submit here, let the parent handle it
+      setLocalSubmitted(true);
+      onEarlyFinishContinue();
+    } else if (isRoundEndStage) {
       // Add random delay (1-10 seconds) for round transitions to mask bot/human differences
       const randomDelay = Math.floor(Math.random() * 9000) + 1000; // 1000-10000ms
       console.log(`Adding ${randomDelay}ms delay before submitting round end to mask bot response times`);
@@ -37,9 +44,10 @@ export const GameEndScreen = React.memo(function GameEndScreen({
 
   // If we're showing the overlay during a turn stage (game just ended),
   // don't show the button yet - wait for the actual gameEnd or roundEnd stage
-  const isActualEndStage = stageType === "gameEnd" || stageType === "roundEnd";
+  // For bot rounds, treat early finish as a round end for styling purposes
+  const isActualEndStage = stageType === "gameEnd" || stageType === "roundEnd" || isBotRoundEarlyFinish;
   const isGameEnd = stageType === "gameEnd";
-  const isRoundEnd = stageType === "roundEnd";
+  const isRoundEnd = stageType === "roundEnd" || isBotRoundEarlyFinish;
 
   // Calculate wins/losses/timeouts
   const wins = roundOutcomes.filter(r => r.outcome === "WIN").length;
@@ -192,14 +200,14 @@ export const GameEndScreen = React.memo(function GameEndScreen({
           ) : (submitted || localSubmitted) ? (
             <div className="text-gray-600 text-lg">
               <div className="text-3xl mb-2">⏳</div>
-              {isRoundEnd ? "Waiting for next round..." : "Waiting for other players..."}
+              {isBotRoundEarlyFinish ? "Waiting for other players to finish..." : (isRoundEnd ? "Waiting for next round..." : "Waiting for other players...")}
             </div>
           ) : (
             <button
               onClick={handleContinue}
               className={`${textColorClass} ${bgColorClass} border-2 ${borderColorClass} px-8 py-4 rounded-lg text-xl font-bold hover:opacity-80 transition-opacity shadow-lg`}
             >
-              {isRoundEnd ? "Go to Next Round →" : "Next →"}
+              {isRoundEnd ? "Continue →" : "Next →"}
             </button>
           )}
         </div>

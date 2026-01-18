@@ -135,6 +135,7 @@ Empirica.onGameStart(({ game }) => {
   game.players.forEach((player, idx) => {
     player.set("actionHistory", []);
     player.set("roleHistory", []);
+    player.set("roundOutcomes", []); // Player-specific round outcomes (for accurate bot round display)
     player.set("isBot", false);
     player.set("gamePlayerId", idx); // Permanent player ID (0, 1, or 2)
     console.log(`Player ${idx} (id: ${player.id}) assigned permanent gamePlayerId: ${idx}`);
@@ -567,10 +568,18 @@ function resolveBothTurns(game, round, stage, stageNumber) {
       const currentPoints = game.get("totalPoints");
       game.set("totalPoints", currentPoints + pointsEarned);
 
-      // Record outcome
+      // Record outcome on game level and each player
       const roundOutcomes = game.get("roundOutcomes");
-      roundOutcomes.push({ roundNumber, outcome: "WIN", pointsEarned, turnsTaken: totalTurnsTaken });
+      const outcomeRecord = { roundNumber, outcome: "WIN", pointsEarned, turnsTaken: totalTurnsTaken };
+      roundOutcomes.push(outcomeRecord);
       game.set("roundOutcomes", roundOutcomes);
+
+      // Also store on each player for consistent client access
+      game.players.forEach(p => {
+        const playerOutcomes = p.get("roundOutcomes") || [];
+        playerOutcomes.push(outcomeRecord);
+        p.set("roundOutcomes", playerOutcomes);
+      });
 
       // Store turn results on round (indexed by stage) for client access
       round.set(`stage${stageNumber}Turns`, turns);
@@ -585,8 +594,16 @@ function resolveBothTurns(game, round, stage, stageNumber) {
       // No points for losing
       const totalTurnsTaken = (stageNumber - 1) * TURNS_PER_STAGE + turnNumber;
       const roundOutcomes = game.get("roundOutcomes");
-      roundOutcomes.push({ roundNumber, outcome: "LOSE", pointsEarned: 0, turnsTaken: totalTurnsTaken });
+      const outcomeRecord = { roundNumber, outcome: "LOSE", pointsEarned: 0, turnsTaken: totalTurnsTaken };
+      roundOutcomes.push(outcomeRecord);
       game.set("roundOutcomes", roundOutcomes);
+
+      // Also store on each player for consistent client access
+      game.players.forEach(p => {
+        const playerOutcomes = p.get("roundOutcomes") || [];
+        playerOutcomes.push(outcomeRecord);
+        p.set("roundOutcomes", playerOutcomes);
+      });
 
       // Store turn results on round (indexed by stage) for client access
       round.set(`stage${stageNumber}Turns`, turns);
@@ -609,8 +626,16 @@ function resolveBothTurns(game, round, stage, stageNumber) {
     // No points for timeout
     const totalTurnsTaken = maxStagesPerRound * TURNS_PER_STAGE; // Used all available turns
     const roundOutcomes = game.get("roundOutcomes");
-    roundOutcomes.push({ roundNumber, outcome: "TIMEOUT", pointsEarned: 0, turnsTaken: totalTurnsTaken });
+    const outcomeRecord = { roundNumber, outcome: "TIMEOUT", pointsEarned: 0, turnsTaken: totalTurnsTaken };
+    roundOutcomes.push(outcomeRecord);
     game.set("roundOutcomes", roundOutcomes);
+
+    // Also store on each player for consistent client access
+    game.players.forEach(p => {
+      const playerOutcomes = p.get("roundOutcomes") || [];
+      playerOutcomes.push(outcomeRecord);
+      p.set("roundOutcomes", playerOutcomes);
+    });
 
     addRoundEndStage(round);
   } else {
@@ -819,7 +844,7 @@ function resolveBothTurnsPerPlayer(game, round, _stage, stageNumber) {
     const roundOutcome = wins >= losses ? "WIN" : "LOSE";
     round.set("outcome", roundOutcome);
 
-    // Calculate average points
+    // Calculate average points for game-level tracking
     let totalPointsEarned = 0;
     game.players.forEach(p => {
       totalPointsEarned += p.round.get("pointsEarned") || 0;
@@ -829,9 +854,25 @@ function resolveBothTurnsPerPlayer(game, round, _stage, stageNumber) {
     const currentPoints = game.get("totalPoints");
     game.set("totalPoints", currentPoints + avgPoints);
 
+    // Update game-level roundOutcomes with average (for backward compat)
     const roundOutcomes = game.get("roundOutcomes");
     roundOutcomes.push({ roundNumber, outcome: roundOutcome, pointsEarned: avgPoints });
     game.set("roundOutcomes", roundOutcomes);
+
+    // Store player-specific outcomes with their individual turnsTaken and outcome
+    game.players.forEach(p => {
+      const playerOutcome = p.round.get("outcome");
+      const playerPoints = p.round.get("pointsEarned") || 0;
+      const playerTurns = p.round.get("turnsTaken") || 0;
+      const playerOutcomes = p.get("roundOutcomes") || [];
+      playerOutcomes.push({
+        roundNumber,
+        outcome: playerOutcome,
+        pointsEarned: playerPoints,
+        turnsTaken: playerTurns
+      });
+      p.set("roundOutcomes", playerOutcomes);
+    });
 
     round.set("roundEndMessage", roundOutcome === "WIN" ? "Victory!" : "Defeat!");
     addRoundEndStage(round);
@@ -842,15 +883,32 @@ function resolveBothTurnsPerPlayer(game, round, _stage, stageNumber) {
         p.round.set("outcome", "TIMEOUT");
         p.round.set("roundEndMessage", "Time's up!");
         p.round.set("pointsEarned", 0);
+        p.round.set("turnsTaken", maxStagesPerRound * TURNS_PER_STAGE);
       }
     });
 
     round.set("outcome", "TIMEOUT");
     round.set("roundEndMessage", "Time's up! You couldn't defeat the enemy in time.");
 
+    // Update game-level roundOutcomes
     const roundOutcomes = game.get("roundOutcomes");
     roundOutcomes.push({ roundNumber, outcome: "TIMEOUT", pointsEarned: 0 });
     game.set("roundOutcomes", roundOutcomes);
+
+    // Store player-specific outcomes
+    game.players.forEach(p => {
+      const playerOutcome = p.round.get("outcome");
+      const playerPoints = p.round.get("pointsEarned") || 0;
+      const playerTurns = p.round.get("turnsTaken") || maxStagesPerRound * TURNS_PER_STAGE;
+      const playerOutcomes = p.get("roundOutcomes") || [];
+      playerOutcomes.push({
+        roundNumber,
+        outcome: playerOutcome,
+        pointsEarned: playerPoints,
+        turnsTaken: playerTurns
+      });
+      p.set("roundOutcomes", playerOutcomes);
+    });
 
     addRoundEndStage(round);
   } else {

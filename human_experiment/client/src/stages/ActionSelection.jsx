@@ -31,6 +31,12 @@ function ActionSelection() {
   const [lastViewedStage, setLastViewedStage] = useState(0); // Track which stage's turns we've viewed
   const [allowRoundEnd, setAllowRoundEnd] = useState(false); // Control when to show round end screen
 
+  // Track if player clicked continue after early finish - stored in Empirica state to persist across remounts
+  const acknowledgedEarlyFinish = player.round.get("acknowledgedEarlyFinish") || false;
+  const setAcknowledgedEarlyFinish = useCallback((value) => {
+    player.round.set("acknowledgedEarlyFinish", value);
+  }, [player]);
+
   // Cache the current stage state HTML continuously (after every render)
   // This ensures the cache is ALWAYS up-to-date before any unmount happens
   useEffect(() => {
@@ -166,14 +172,58 @@ function ActionSelection() {
   console.log(`[Client RENDER] submitted: ${submitted}, hasTurns: ${hasTurns}, currentTurnView: ${currentTurnView}, turns.length: ${turns.length}`);
 
   // Reset last viewed stage and round end flag when moving to a new round
+  // Note: acknowledgedEarlyFinish is stored in player.round state, so it auto-resets with new rounds
   useEffect(() => {
     setLastViewedStage(0);
     setAllowRoundEnd(false);
   }, [roundNumber]);
 
-  // If we're entering a round end stage, allow round end screen
+  // Reset localSubmitted when stage changes (but preserve acknowledgedEarlyFinish)
+  const stageId = stage?.id;
   useEffect(() => {
-    if (isRoundEndStage && !allowRoundEnd) {
+    console.log(`[Stage Change] Stage ID changed to ${stageId}, resetting localSubmitted`);
+    setLocalSubmitted(false);
+  }, [stageId]);
+
+  // Auto-submit for players who have finished their bot round early
+  // This runs continuously while the player has acknowledged their early finish
+  // Includes round end stage (so they don't have to click Continue again)
+  // but stops at game end stage (they need to see final results)
+  useEffect(() => {
+    if (!isBotRound || !roundOutcome || !acknowledgedEarlyFinish || isGameEndStage) {
+      return;
+    }
+
+    // Set up an interval to keep checking and submitting
+    // This handles cases where the stage changes but the effect doesn't re-run immediately
+    const submitIfNeeded = () => {
+      const currentSubmitStatus = player.stage.get("submit");
+      if (!currentSubmitStatus) {
+        console.log(`[Auto-Submit] Player finished bot round early with ${roundOutcome}, auto-submitting for stage ${stageId} (isRoundEndStage: ${isRoundEndStage})`);
+        player.stage.set("submit", true);
+      }
+    };
+
+    // Initial submit attempt after a small delay
+    const initialTimer = setTimeout(submitIfNeeded, 100);
+
+    // Keep checking in case the initial attempt didn't work (e.g., stage wasn't ready)
+    const intervalTimer = setInterval(submitIfNeeded, 500);
+
+    return () => {
+      clearTimeout(initialTimer);
+      clearInterval(intervalTimer);
+    };
+  }, [isBotRound, roundOutcome, acknowledgedEarlyFinish, isRoundEndStage, isGameEndStage, player, stageId]);
+
+  // If we're entering a round end stage, allow round end screen
+  // Also handle bot rounds where player may finish before round end stage is created
+  useEffect(() => {
+    // For bot rounds: if player has an outcome but we're not in round end stage yet,
+    // still allow showing the round end screen after viewing turns
+    const playerFinishedBotRound = isBotRound && roundOutcome && !isRoundEndStage;
+
+    if ((isRoundEndStage || playerFinishedBotRound) && !allowRoundEnd) {
       if (!hasTurns) {
         // No turns to show, allow round end immediately
         console.log(`[Round End] Entered round end stage directly (no turns), allowing round end screen`);
@@ -188,7 +238,7 @@ function ActionSelection() {
         setCurrentTurnView(1);
       }
     }
-  }, [isRoundEndStage, hasTurns, allowRoundEnd, currentTurnView, turns.length]);
+  }, [isRoundEndStage, hasTurns, allowRoundEnd, currentTurnView, turns.length, isBotRound, roundOutcome]);
 
   // Auto-start showing turn 1 when turns data arrives
   useEffect(() => {
@@ -213,11 +263,11 @@ function ActionSelection() {
   // After viewing all turns, mark stage as viewed and reset to role selection OR show round end
   useEffect(() => {
     if (currentTurnView === turns.length && turns.length > 0) {
-      const roundOutcomeExists = round.get("outcome");
-
-      if (roundOutcomeExists) {
+      // Use roundOutcome which already handles bot rounds (player.round.get("outcome"))
+      // vs human rounds (round.get("outcome"))
+      if (roundOutcome) {
         // Round has ended (win/loss/timeout), transition to round end screen after delay
-        console.log(`[Turn Auto-Advance] All turns viewed, round ended with outcome: ${roundOutcomeExists}, showing round end in 8 seconds`);
+        console.log(`[Turn Auto-Advance] All turns viewed, round ended with outcome: ${roundOutcome}, showing round end in 3 seconds`);
         const timer = setTimeout(() => {
           console.log(`[Turn Auto-Advance] Enabling round end screen`);
           setAllowRoundEnd(true);
@@ -225,7 +275,7 @@ function ActionSelection() {
         return () => clearTimeout(timer);
       } else {
         // Round continues, transition to next stage's role selection
-        console.log(`[Turn Auto-Advance] All turns viewed, scheduling transition to next stage in 8 seconds`);
+        console.log(`[Turn Auto-Advance] All turns viewed, scheduling transition to next stage in 3 seconds`);
         const timer = setTimeout(() => {
           console.log(`[Turn Auto-Advance] Marking stage ${stageToView} as viewed, resetting to role selection`);
           setLastViewedStage(stageToView);
@@ -235,7 +285,7 @@ function ActionSelection() {
         return () => clearTimeout(timer);
       }
     }
-  }, [currentTurnView, turns.length, stageToView, round]);
+  }, [currentTurnView, turns.length, stageToView, roundOutcome]);
 
   // Trigger damage animation during turn stages
   useEffect(() => {
@@ -490,7 +540,9 @@ function ActionSelection() {
                 outcome={roundOutcome}
                 endMessage={round.get("roundEndMessage")}
                 totalPoints={totalPoints}
-                roundOutcomes={game.get("roundOutcomes") || []}
+                roundOutcomes={player.get("roundOutcomes") || []}
+                isBotRoundEarlyFinish={isBotRound && roundOutcome && !isRoundEndStage}
+                onEarlyFinishContinue={() => setAcknowledgedEarlyFinish(true)}
               />
             </div>
           )}
@@ -502,7 +554,7 @@ function ActionSelection() {
                 outcome={game.get("finalOutcome")}
                 endMessage={stage.get("endMessage")}
                 totalPoints={totalPoints}
-                roundOutcomes={game.get("roundOutcomes")}
+                roundOutcomes={player.get("roundOutcomes") || []}
               />
             </div>
           )}
