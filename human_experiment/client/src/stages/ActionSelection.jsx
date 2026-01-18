@@ -483,9 +483,9 @@ function ActionSelection() {
             </div>
           </div>
 
-          {/* Round End Overlay */}
+          {/* Round End Overlay - covers left panel only, leaves history visible */}
           {shouldShowRoundEnd && (
-            <div className="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
+            <div className="absolute top-0 bottom-0 left-0 bg-black bg-opacity-60 flex items-center justify-center z-50" style={{ right: 'calc(22% + 4px)', minWidth: 'calc(100% - 354px)' }}>
               <GameEndScreen
                 outcome={roundOutcome}
                 endMessage={round.get("roundEndMessage")}
@@ -495,9 +495,9 @@ function ActionSelection() {
             </div>
           )}
 
-          {/* Game End Overlay */}
+          {/* Game End Overlay - covers left panel only, leaves history visible */}
           {shouldShowGameEnd && (
-            <div className="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
+            <div className="absolute top-0 bottom-0 left-0 bg-black bg-opacity-60 flex items-center justify-center z-50" style={{ right: 'calc(22% + 4px)', minWidth: 'calc(100% - 354px)' }}>
               <GameEndScreen
                 outcome={game.get("finalOutcome")}
                 endMessage={stage.get("endMessage")}
