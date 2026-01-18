@@ -4,9 +4,7 @@ import { BattleField } from "../components/BattleField";
 import { ActionMenu } from "../components/ActionMenu";
 import { ResultsPanel } from "../components/ResultsPanel";
 import { ActionHistory } from "../components/ActionHistory";
-import { ROLES, ROLE_LABELS, ROLE_ICONS } from "../constants";
-
-const ROLE_NAMES = ROLE_LABELS;
+import { ROLES, ROLE_ICONS, ROLE_NAMES, ROLE_LABELS } from "../constants";
 
 export function Tutorial2({ next }) {
   const [selectedRole, setSelectedRole] = useState(null);
@@ -16,12 +14,14 @@ export function Tutorial2({ next }) {
   const [showDamageAnimation, setShowDamageAnimation] = useState(false);
   const [round1Turn1Result, setRound1Turn1Result] = useState(null);
   const [round1Turn2Result, setRound1Turn2Result] = useState(null);
-  const [round2Turn1Result, setRound2Turn1Result] = useState(null);
-  const [round2Turn2Result, setRound2Turn2Result] = useState(null);
-  const [currentGameState, setCurrentGameState] = useState("initial"); // initial, round1-turn1, round1-turn2, role-selection, round2-turn1, round2-turn2, outcome
+  const [allStageResults, setAllStageResults] = useState([]); // Array of { stageNum, role, turns: [turn1, turn2] }
+  const [currentStageIndex, setCurrentStageIndex] = useState(0); // Which stage we're viewing (0-indexed, stage 2 = index 0)
+  const [currentTurnInStage, setCurrentTurnInStage] = useState(0); // 0 = role selection, 1 = turn 1, 2 = turn 2
+  const [currentGameState, setCurrentGameState] = useState("initial"); // initial, round1-turn1, round1-turn2, role-selection, stage-turn, outcome
   const [round1PlaybackStep, setRound1PlaybackStep] = useState(0); // 0: initial, 1: turn1 shown, 2: turn2 shown
   const [introTutorialComplete, setIntroTutorialComplete] = useState(false);
   const [roleSelectionTutorialComplete, setRoleSelectionTutorialComplete] = useState(false);
+  const [roleHistory, setRoleHistory] = useState([]); // Track roles chosen for each stage
 
   // Bot players: One Tank (blocks when enemy attacks), One MEDIC (heals when health < 100%)
   const actualBotRoles = [ROLES.TANK, ROLES.MEDIC];
@@ -408,9 +408,24 @@ export function Tutorial2({ next }) {
       { id: "tutorial-player", playerId: 2, stats: { STR: 2, DEF: 2, SUP: 2 } }
     ];
 
+    // Get current health from last completed stage
+    let currentEnemyHP, currentTeamHP;
+    if (allStageResults.length === 0) {
+      currentEnemyHP = round1Turn2Result.enemyHealth;
+      currentTeamHP = round1Turn2Result.teamHealth;
+    } else {
+      const lastStage = allStageResults[allStageResults.length - 1];
+      const lastTurn = lastStage.turns[lastStage.turns.length - 1];
+      currentEnemyHP = lastTurn.enemyHealth;
+      currentTeamHP = lastTurn.teamHealth;
+    }
+
+    // Next stage number
+    const nextStageNum = allStageResults.length + 2;
+
     const roundData = {
       roundNumber: 1,
-      stageNumber: 1,
+      stageNumber: nextStageNum,
       stage1Turns: [
         {
           turnNumber: 1,
@@ -439,11 +454,35 @@ export function Tutorial2({ next }) {
       ]
     };
 
+    // Add all completed stage turns to roundData
+    allStageResults.forEach((stageData) => {
+      const stageKey = `stage${stageData.stageNum}Turns`;
+      roundData[stageKey] = stageData.turns.map((result, idx) => ({
+        turnNumber: idx + 1,
+        enemyIntent: result.enemyIntent,
+        actions: result.actions,
+        damageToEnemy: result.damageToEnemy,
+        damageToTeam: result.damageToTeam,
+        healAmount: result.healAmount,
+        previousEnemyHealth: result.previousEnemyHealth,
+        previousTeamHealth: result.previousTeamHealth,
+        newEnemyHealth: result.enemyHealth,
+        newTeamHealth: result.teamHealth
+      }));
+    });
+
+    // Build player action history showing roles for completed stages
+    // Convert role number to string name (e.g., 0 -> "FIGHTER") for ActionHistory component
+    const playerActionHistory = allStageResults.map((stageData) => ({
+      stage: stageData.stageNum,
+      role: ROLE_NAMES[stageData.role]
+    }));
+
     return {
       game: {
-        enemyHealth: round1Turn2Result.enemyHealth,
+        enemyHealth: currentEnemyHP,
         maxEnemyHealth: 10,
-        teamHealth: round1Turn2Result.teamHealth,
+        teamHealth: currentTeamHP,
         maxTeamHealth: 10,
         treatment: {
           totalPlayers: 3,
@@ -458,9 +497,14 @@ export function Tutorial2({ next }) {
         stats: { STR: 2, DEF: 2, SUP: 2 },
         roleOrder: [ROLES.FIGHTER, ROLES.TANK, ROLES.MEDIC],
         stage: {},
-        round: {},
+        round: {
+          get: (key) => {
+            if (key === "playerId") return 2;
+            return undefined;
+          }
+        },
         get: (key) => {
-          if (key === "actionHistory") return [];
+          if (key === "actionHistory") return playerActionHistory;
           return undefined;
         }
       },
@@ -471,22 +515,27 @@ export function Tutorial2({ next }) {
       },
       stage: {
         name: "roleSelection",
-        stageType: "roleSelection"
+        stageType: "roleSelection",
+        stageNumber: nextStageNum
       }
     };
   };
 
-  const createMockDataForRound2 = (turn1Result, turn2Result, currentTurn) => {
+  const createMockDataForStage = (stageResults, stageIdx, turnInStage) => {
     const players = [
       { id: "bot-1", playerId: 0, stats: { STR: 2, DEF: 2, SUP: 2 } },
       { id: "bot-2", playerId: 1, stats: { STR: 2, DEF: 2, SUP: 2 } },
       { id: "tutorial-player", playerId: 2, stats: { STR: 2, DEF: 2, SUP: 2 } }
     ];
 
-    // Build round data with stage 1 (round 1) and stage 2 (round 2) turns
+    const currentStageData = stageResults[stageIdx];
+    const currentTurn = currentStageData.turns[turnInStage - 1];
+    const currentStageNum = currentStageData.stageNum;
+
+    // Build round data with stage 1 turns and all stage turns up to current
     const roundData = {
       roundNumber: 1,
-      stageNumber: 2, // We've completed stage 1, now on stage 2
+      stageNumber: currentStageNum,
       stage1Turns: [
         {
           turnNumber: 1,
@@ -512,45 +561,34 @@ export function Tutorial2({ next }) {
           newEnemyHealth: round1Turn2Result.enemyHealth,
           newTeamHealth: round1Turn2Result.teamHealth
         }
-      ],
-      stage2Turns: [
-        {
-          turnNumber: 1,
-          enemyIntent: turn1Result.enemyIntent,
-          actions: turn1Result.actions,
-          damageToEnemy: turn1Result.damageToEnemy,
-          damageToTeam: turn1Result.damageToTeam,
-          healAmount: turn1Result.healAmount,
-          previousEnemyHealth: round1Turn2Result.enemyHealth,
-          previousTeamHealth: round1Turn2Result.teamHealth,
-          newEnemyHealth: turn1Result.enemyHealth,
-          newTeamHealth: turn1Result.teamHealth
-        }
       ]
     };
 
-    if (turn2Result) {
-      roundData.stage2Turns.push({
-        turnNumber: 2,
-        enemyIntent: turn2Result.enemyIntent,
-        actions: turn2Result.actions,
-        damageToEnemy: turn2Result.damageToEnemy,
-        damageToTeam: turn2Result.damageToTeam,
-        healAmount: turn2Result.healAmount,
-        previousEnemyHealth: turn1Result.enemyHealth,
-        previousTeamHealth: turn1Result.teamHealth,
-        newEnemyHealth: turn2Result.enemyHealth,
-        newTeamHealth: turn2Result.teamHealth
-      });
+    // Add turns for each stage (stage 2, 3, 4, etc.)
+    for (let i = 0; i <= stageIdx; i++) {
+      const stageData = stageResults[i];
+      const stageKey = `stage${stageData.stageNum}Turns`;
+      const turnsToShow = i < stageIdx ? stageData.turns : stageData.turns.slice(0, turnInStage);
+      roundData[stageKey] = turnsToShow.map((result, idx) => ({
+        turnNumber: idx + 1,
+        enemyIntent: result.enemyIntent,
+        actions: result.actions,
+        damageToEnemy: result.damageToEnemy,
+        damageToTeam: result.damageToTeam,
+        healAmount: result.healAmount,
+        previousEnemyHealth: result.previousEnemyHealth,
+        previousTeamHealth: result.previousTeamHealth,
+        newEnemyHealth: result.enemyHealth,
+        newTeamHealth: result.teamHealth
+      }));
     }
 
-    // Build player action history showing role for stage 2
-    const playerActionHistory = [
-      {
-        stage: 2,
-        role: selectedRole
-      }
-    ];
+    // Build player action history showing roles for each stage
+    // Convert role number to string name (e.g., 0 -> "FIGHTER") for ActionHistory component
+    const playerActionHistory = stageResults.slice(0, stageIdx + 1).map((stageData) => ({
+      stage: stageData.stageNum,
+      role: ROLE_NAMES[stageData.role]
+    }));
 
     return {
       game: {
@@ -571,7 +609,12 @@ export function Tutorial2({ next }) {
         stats: { STR: 2, DEF: 2, SUP: 2 },
         roleOrder: [ROLES.FIGHTER, ROLES.TANK, ROLES.MEDIC],
         stage: {},
-        round: {},
+        round: {
+          get: (key) => {
+            if (key === "playerId") return 2;
+            return undefined;
+          }
+        },
         get: (key) => {
           if (key === "actionHistory") return playerActionHistory;
           return undefined;
@@ -583,9 +626,10 @@ export function Tutorial2({ next }) {
         get: (key) => roundData[key]
       },
       stage: {
-        name: `turn${currentTurn.turnNum}`,
+        name: `stage${currentStageNum}turn${turnInStage}`,
         stageType: "turn",
-        turnNumber: currentTurn.turnNum
+        stageNumber: currentStageNum,
+        turnNumber: turnInStage
       }
     };
   };
@@ -593,8 +637,8 @@ export function Tutorial2({ next }) {
   const buildAllPlayers = () => {
     if (!mockData) return [];
     return mockData.players.map((p, idx) => {
-      // In Round 2 and role selection, player (index 2) is real, otherwise all are bots
-      const isPlayerReal = (currentGameState === "role-selection" || currentGameState.startsWith("round2")) && idx === 2;
+      // Player at index 2 (tutorial-player) is real in role-selection and stage-turn states
+      const isPlayerReal = (currentGameState === "role-selection" || currentGameState === "stage-turn") && idx === 2;
       return {
         type: isPlayerReal ? "real" : "virtual",
         player: p,
@@ -611,69 +655,110 @@ export function Tutorial2({ next }) {
   const handleSubmit = () => {
     if (selectedRole === null) return;
 
-    // Simulate Round 2 with 2 turns based on selected role
-    let currentEnemyHP = round1Turn2Result.enemyHealth;
-    let currentTeamHP = round1Turn2Result.teamHealth;
+    // Get current stage number (stage 2 is index 0 in allStageResults)
+    const currentStageNum = allStageResults.length + 2; // Stage 2, 3, 4, 5...
 
-    // Round 2 Turn 1: Enemy attacks
-    const r2t1 = simulateTurn(1, selectedRole, currentEnemyHP, currentTeamHP, true);
-    setRound2Turn1Result(r2t1);
-
-    // Round 2 Turn 2: Enemy attacks (only if both are alive after turn 1)
-    let r2t2 = null;
-    if (r2t1.enemyHealth > 0 && r2t1.teamHealth > 0) {
-      r2t2 = simulateTurn(2, selectedRole, r2t1.enemyHealth, r2t1.teamHealth, true);
-      setRound2Turn2Result(r2t2);
-    }
-
-    // Determine outcome based on final state
-    const finalResult = r2t2 || r2t1;
-    let outcomeMessage, success;
-
-    // If both reach 0, team loses
-    if (finalResult.teamHealth <= 0) {
-      outcomeMessage = "Defeat! The enemy overwhelmed your team.";
-      success = false;
-    } else if (finalResult.enemyHealth <= 0) {
-      outcomeMessage = "Victory! Your team defeated the enemy!";
-      success = true;
+    // Get current health from last stage or from stage 1
+    let currentEnemyHP, currentTeamHP;
+    if (allStageResults.length === 0) {
+      currentEnemyHP = round1Turn2Result.enemyHealth;
+      currentTeamHP = round1Turn2Result.teamHealth;
     } else {
-      outcomeMessage = "The battle concluded after 2 rounds.";
-      success = false;
+      const lastStage = allStageResults[allStageResults.length - 1];
+      const lastTurn = lastStage.turns[lastStage.turns.length - 1];
+      currentEnemyHP = lastTurn.enemyHealth;
+      currentTeamHP = lastTurn.teamHealth;
     }
 
-    setOutcome({
-      type: success ? "WIN" : "LOSE",
-      message: outcomeMessage,
-      success,
-      enemyHealth: finalResult.enemyHealth,
-      teamHealth: finalResult.teamHealth
-    });
+    // Simulate 2 turns for this stage
+    const stageTurns = [];
+    for (let turnNum = 1; turnNum <= 2 && currentEnemyHP > 0 && currentTeamHP > 0; turnNum++) {
+      // Enemy always attacks in stages 2+
+      const turnResult = simulateTurn(turnNum, selectedRole, currentEnemyHP, currentTeamHP, true);
+      stageTurns.push(turnResult);
+      currentEnemyHP = turnResult.enemyHealth;
+      currentTeamHP = turnResult.teamHealth;
+    }
 
-    // Show round 2 turn 1
-    const newMockData = createMockDataForRound2(r2t1, null, r2t1);
+    // Add this stage's results
+    const newStageResult = {
+      stageNum: currentStageNum,
+      role: selectedRole,
+      turns: stageTurns
+    };
+    const updatedStageResults = [...allStageResults, newStageResult];
+    setAllStageResults(updatedStageResults);
+
+    // Track role history
+    setRoleHistory([...roleHistory, { stage: currentStageNum, role: selectedRole }]);
+
+    // Check if game has ended
+    const finalTurn = stageTurns[stageTurns.length - 1];
+    const gameEnded = finalTurn.enemyHealth <= 0 || finalTurn.teamHealth <= 0;
+    const maxStagesReached = currentStageNum >= 5;
+
+    if (gameEnded || maxStagesReached) {
+      // Determine outcome
+      let outcomeMessage, success;
+      if (finalTurn.teamHealth <= 0) {
+        outcomeMessage = "Defeat! The enemy overwhelmed your team.";
+        success = false;
+      } else if (finalTurn.enemyHealth <= 0) {
+        outcomeMessage = "Victory! Your team defeated the enemy!";
+        success = true;
+      } else {
+        outcomeMessage = "Time's up! The battle ended in a draw.";
+        success = false;
+      }
+
+      setOutcome({
+        type: success ? "WIN" : "LOSE",
+        message: outcomeMessage,
+        success,
+        enemyHealth: finalTurn.enemyHealth,
+        teamHealth: finalTurn.teamHealth,
+        totalTurns: 2 + updatedStageResults.reduce((sum, s) => sum + s.turns.length, 0),
+        totalStages: currentStageNum
+      });
+    }
+
+    // Show this stage's turn 1
+    setCurrentStageIndex(updatedStageResults.length - 1);
+    setCurrentTurnInStage(1);
+    const newMockData = createMockDataForStage(updatedStageResults, updatedStageResults.length - 1, 1);
     setMockData(newMockData);
-    setCurrentGameState("round2-turn1");
+    setCurrentGameState("stage-turn");
     setShowDamageAnimation(true);
     setTimeout(() => setShowDamageAnimation(false), 3000);
   };
 
-  const handleNextToRound2Turn2 = () => {
-    // If there's no turn 2 result (battle ended in turn 1), show outcome directly
-    if (!round2Turn2Result) {
-      setShowOutcome(true);
+  const handleNextStageTurn = () => {
+    const currentStage = allStageResults[currentStageIndex];
+    const nextTurnInStage = currentTurnInStage + 1;
+
+    // If we've shown both turns in this stage
+    if (nextTurnInStage > currentStage.turns.length) {
+      // Check if game has ended
+      if (outcome) {
+        setShowOutcome(true);
+        return;
+      }
+
+      // Otherwise, go to role selection for next stage
+      setSelectedRole(null);
+      setCurrentTurnInStage(0);
+      const newMockData = createMockDataForRoleSelection();
+      setMockData(newMockData);
+      setCurrentGameState("role-selection");
       return;
     }
 
-    const newMockData = createMockDataForRound2(round2Turn1Result, round2Turn2Result, round2Turn2Result);
+    // Show next turn in current stage
+    setCurrentTurnInStage(nextTurnInStage);
+    const newMockData = createMockDataForStage(allStageResults, currentStageIndex, nextTurnInStage);
     setMockData(newMockData);
-    setCurrentGameState("round2-turn2");
     setShowDamageAnimation(true);
     setTimeout(() => setShowDamageAnimation(false), 3000);
-  };
-
-  const handleShowOutcome = () => {
-    setShowOutcome(true);
   };
 
   const handlePlayAgain = () => {
@@ -682,8 +767,10 @@ export function Tutorial2({ next }) {
     setOutcome(null);
     setRound1Turn1Result(null);
     setRound1Turn2Result(null);
-    setRound2Turn1Result(null);
-    setRound2Turn2Result(null);
+    setAllStageResults([]);
+    setCurrentStageIndex(0);
+    setCurrentTurnInStage(0);
+    setRoleHistory([]);
     setIntroTutorialComplete(false);
     setRoleSelectionTutorialComplete(false);
     initializeRound1();
@@ -700,8 +787,17 @@ export function Tutorial2({ next }) {
   const isRound1Turn1 = currentGameState === "round1-turn1";
   const isRound1Turn2 = currentGameState === "round1-turn2";
   const isRoleSelection = currentGameState === "role-selection";
-  const isRound2Turn1 = currentGameState === "round2-turn1";
-  const isRound2Turn2 = currentGameState === "round2-turn2";
+  const isStageTurn = currentGameState === "stage-turn";
+
+  // Get current stage number for display
+  const getCurrentStageNum = () => {
+    if (isInitial || isRound1Turn1 || isRound1Turn2) return 1;
+    if (isRoleSelection) return allStageResults.length + 2; // Next stage to play
+    if (isStageTurn && allStageResults.length > 0) {
+      return allStageResults[currentStageIndex].stageNum;
+    }
+    return 1;
+  };
 
   // Get current turn result for display
   let currentTurnResult = null;
@@ -709,10 +805,9 @@ export function Tutorial2({ next }) {
     currentTurnResult = round1Turn1Result;
   } else if (isRound1Turn2 && round1Turn2Result) {
     currentTurnResult = round1Turn2Result;
-  } else if (isRound2Turn1 && round2Turn1Result) {
-    currentTurnResult = round2Turn1Result;
-  } else if (isRound2Turn2 && round2Turn2Result) {
-    currentTurnResult = round2Turn2Result;
+  } else if (isStageTurn && allStageResults.length > 0 && currentTurnInStage > 0) {
+    const currentStage = allStageResults[currentStageIndex];
+    currentTurnResult = currentStage.turns[currentTurnInStage - 1];
   }
 
   const content = (
@@ -726,7 +821,7 @@ export function Tutorial2({ next }) {
                 {/* Stage Header */}
                 <div className="bg-gray-800 text-white text-center flex-shrink-0 rounded-tl-lg flex items-center justify-center" style={{ height: '40px' }}>
                   <h1 className="text-lg font-bold">
-                    Tutorial 2 - Stage {isInitial || isRound1Turn1 || isRound1Turn2 ? "1" : "2"}/2
+                    Tutorial 2 - Stage {getCurrentStageNum()}{isStageTurn ? ` (Turn ${currentTurnInStage})` : ""}
                   </h1>
                 </div>
 
@@ -820,47 +915,35 @@ export function Tutorial2({ next }) {
                       </div>
                     )}
 
-                    {/* Round 2 Turn 1 Results */}
-                    {isRound2Turn1 && (
+                    {/* Stage Turn Results */}
+                    {isStageTurn && allStageResults.length > 0 && currentTurnInStage > 0 && (
                       <div className="w-full">
                         <ResultsPanel
-                          roundNumber={2}
-                          turnNumber={1}
-                          actions={round2Turn1Result.actions}
+                          roundNumber={1}
+                          stageNumber={allStageResults[currentStageIndex].stageNum}
+                          turnNumber={currentTurnInStage}
+                          actions={allStageResults[currentStageIndex].turns[currentTurnInStage - 1].actions}
                           allPlayers={allPlayers}
                           currentPlayerId="tutorial-player"
-                          enemyIntent={round2Turn1Result.enemyIntent}
+                          enemyIntent={allStageResults[currentStageIndex].turns[currentTurnInStage - 1].enemyIntent}
                           countdown={null}
                         />
                         <div className="mt-4 text-center">
                           <button
-                            onClick={handleNextToRound2Turn2}
-                            className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg text-lg shadow-lg transition-colors"
+                            onClick={handleNextStageTurn}
+                            className={`${
+                              currentTurnInStage < allStageResults[currentStageIndex].turns.length
+                                ? 'bg-blue-600 hover:bg-blue-700'
+                                : outcome
+                                  ? 'bg-green-600 hover:bg-green-700'
+                                  : 'bg-purple-600 hover:bg-purple-700'
+                            } text-white font-bold py-3 px-6 rounded-lg text-lg shadow-lg transition-colors`}
                           >
-                            {round2Turn2Result ? "Continue to Turn 2 →" : "See Results →"}
-                          </button>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Round 2 Turn 2 Results */}
-                    {isRound2Turn2 && (
-                      <div className="w-full">
-                        <ResultsPanel
-                          roundNumber={2}
-                          turnNumber={2}
-                          actions={round2Turn2Result.actions}
-                          allPlayers={allPlayers}
-                          currentPlayerId="tutorial-player"
-                          enemyIntent={round2Turn2Result.enemyIntent}
-                          countdown={null}
-                        />
-                        <div className="mt-4 text-center">
-                          <button
-                            onClick={handleShowOutcome}
-                            className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg text-lg shadow-lg transition-colors"
-                          >
-                            See Results →
+                            {currentTurnInStage < allStageResults[currentStageIndex].turns.length
+                              ? `Continue to Turn ${currentTurnInStage + 1} →`
+                              : outcome
+                                ? "See Results →"
+                                : `Choose Role for Stage ${allStageResults[currentStageIndex].stageNum + 1} →`}
                           </button>
                         </div>
                       </div>
@@ -892,24 +975,91 @@ export function Tutorial2({ next }) {
                       <p className="text-xl text-gray-700">{outcome.message}</p>
                     </div>
 
-                    {/* Final Stats */}
+                    {/* Explanation based on role choice */}
                     <div className="bg-white rounded-lg p-6 mb-6 border-2 border-gray-300">
-                      <h3 className="text-lg font-bold text-gray-800 mb-4 text-center">Final Battle Statistics</h3>
+                      <h3 className="text-lg font-bold text-gray-800 mb-4 text-center">What Happened</h3>
+
+                      {selectedRole === ROLES.FIGHTER && (
+                        <div className="text-gray-700 space-y-3">
+                          <p>
+                            <span className="font-semibold">You chose Fighter 🤺</span> — With you attacking alongside the Tank and Medic, your team maximized damage output in Stage 2.
+                          </p>
+                          <p>
+                            The Tank blocked to reduce incoming damage (6 → 4), and the Medic healed when needed:
+                          </p>
+                          <ul className="list-disc list-inside ml-2 space-y-1 text-sm">
+                            <li>Stage 1: Bots played alone. Tank blocked and Medic attacked (team took 4 damage, dealt 2)</li>
+                            <li>Stage 2: With you attacking, the team dealt 4 damage per turn while staying protected</li>
+                          </ul>
+                          <p className={`font-semibold ${outcome.success ? 'text-green-600' : 'text-red-600'}`}>
+                            {outcome.success
+                              ? "Your additional damage output helped defeat the enemy!"
+                              : "The team needed more defense or healing to survive."}
+                          </p>
+                        </div>
+                      )}
+
+                      {selectedRole === ROLES.TANK && (
+                        <div className="text-gray-700 space-y-3">
+                          <p>
+                            <span className="font-semibold">You chose Tank 🛡️</span> — With two Tanks blocking, your team had maximum damage reduction.
+                          </p>
+                          <p>
+                            However, blocking is not additive — only the highest DEF applies (still 2):
+                          </p>
+                          <ul className="list-disc list-inside ml-2 space-y-1 text-sm">
+                            <li>Stage 1: P1 (Tank) blocked, P2 (Medic) attacked (dealt 2 damage, took 4)</li>
+                            <li>Stage 2: Two tanks blocking doesn't stack! Team only dealt 2 damage per turn from Medic</li>
+                          </ul>
+                          <p className={`font-semibold ${outcome.success ? 'text-green-600' : 'text-red-600'}`}>
+                            {outcome.success
+                              ? "The team survived, but damage output was limited."
+                              : "With a Tank already on the team, adding another didn't help — the team lacked damage to win!"}
+                          </p>
+                        </div>
+                      )}
+
+                      {selectedRole === ROLES.MEDIC && (
+                        <div className="text-gray-700 space-y-3">
+                          <p>
+                            <span className="font-semibold">You chose Medic 💚</span> — With two Medics, your team had strong healing potential.
+                          </p>
+                          <p>
+                            Healing is additive — both Medics can heal 2 HP each for 4 total healing per turn:
+                          </p>
+                          <ul className="list-disc list-inside ml-2 space-y-1 text-sm">
+                            <li>Stage 1: Tank blocked (6 → 4 damage), Medic attacked while at full HP</li>
+                            <li>Stage 2: When damaged, both Medics heal for 4 total, but deal less damage</li>
+                          </ul>
+                          <p className={`font-semibold ${outcome.success ? 'text-green-600' : 'text-red-600'}`}>
+                            {outcome.success
+                              ? "Your healing helped keep the team alive to secure victory!"
+                              : "With a Medic already on the team, the extra healing couldn't compensate for low damage output."}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Final Stats */}
+                    <div className="bg-gray-100 rounded-lg p-4 mb-6 border border-gray-300">
+                      <div className="text-center text-sm text-gray-600 mb-3">
+                        Battle ended after {outcome.totalTurns || (2 + allStageResults.reduce((sum, s) => sum + s.turns.length, 0))} turns ({outcome.totalStages || (allStageResults.length + 1)} stages)
+                      </div>
                       <div className="grid grid-cols-2 gap-4 mb-4">
                         <div className="text-center">
-                          <div className="text-sm text-gray-600 mb-2">Team Health</div>
+                          <div className="text-sm text-gray-600 mb-1">Team Health</div>
                           <div className="flex items-center justify-center gap-2">
-                            <div className="text-3xl">❤️</div>
-                            <div className={`text-2xl font-bold ${outcome.teamHealth === 0 ? 'text-gray-400 line-through' : 'text-green-600'}`}>
+                            <div className="text-2xl">❤️</div>
+                            <div className={`text-xl font-bold ${outcome.teamHealth === 0 ? 'text-gray-400 line-through' : 'text-green-600'}`}>
                               {outcome.teamHealth} / 10
                             </div>
                           </div>
                         </div>
                         <div className="text-center">
-                          <div className="text-sm text-gray-600 mb-2">Enemy Health</div>
+                          <div className="text-sm text-gray-600 mb-1">Enemy Health</div>
                           <div className="flex items-center justify-center gap-2">
-                            <div className="text-3xl">👹</div>
-                            <div className={`text-2xl font-bold ${outcome.enemyHealth === 0 ? 'text-gray-400 line-through' : 'text-red-600'}`}>
+                            <div className="text-2xl">👹</div>
+                            <div className={`text-xl font-bold ${outcome.enemyHealth === 0 ? 'text-gray-400 line-through' : 'text-red-600'}`}>
                               {outcome.enemyHealth} / 10
                             </div>
                           </div>
@@ -919,9 +1069,9 @@ export function Tutorial2({ next }) {
                       {/* Reveal actual roles */}
                       <div className="pt-4 border-t border-gray-300">
                         <p className="text-sm text-gray-700 mb-3 text-center font-semibold">
-                          Actual Roles (in the real game, you'll need to infer these from action patterns):
+                          Teammate Roles (in the real game, you'll need to infer these from action patterns):
                         </p>
-                        <div className="flex gap-3 justify-center">
+                        <div className="flex gap-3 justify-center mb-4">
                           <div className="text-center bg-gray-100 rounded p-2">
                             <div className="text-2xl mb-1">{ROLE_ICONS.TANK}</div>
                             <div className="text-xs text-gray-600">P1: Tank</div>
@@ -929,16 +1079,24 @@ export function Tutorial2({ next }) {
                           </div>
                           <div className="text-center bg-gray-100 rounded p-2">
                             <div className="text-2xl mb-1">{ROLE_ICONS.MEDIC}</div>
-                            <div className="text-xs text-gray-600">P2: MEDIC</div>
+                            <div className="text-xs text-gray-600">P2: Medic</div>
                             <div className="text-xs text-gray-500">(Heals when damaged)</div>
                           </div>
-                          {selectedRole !== null && (
-                            <div className="text-center bg-blue-100 border-2 border-blue-400 rounded p-2">
-                              <div className="text-2xl mb-1">{Object.values(ROLE_ICONS)[selectedRole]}</div>
-                              <div className="text-xs text-gray-600">You: {ROLE_NAMES[selectedRole]}</div>
-                            </div>
-                          )}
                         </div>
+                        {roleHistory.length > 0 && (
+                          <div className="mt-3">
+                            <p className="text-sm text-gray-700 mb-2 text-center font-semibold">Your Role Choices:</p>
+                            <div className="flex gap-2 justify-center flex-wrap">
+                              {roleHistory.map((rh, idx) => (
+                                <div key={idx} className="text-center bg-blue-100 border-2 border-blue-400 rounded p-2">
+                                  <div className="text-xl mb-1">{ROLE_ICONS[ROLE_NAMES[rh.role]]}</div>
+                                  <div className="text-xs text-gray-600">Stage {rh.stage}</div>
+                                  <div className="text-xs text-gray-500">{ROLE_LABELS[rh.role]}</div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
 
