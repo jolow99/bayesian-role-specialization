@@ -552,7 +552,32 @@ function resolveBothTurns(game, round, stage, stageNumber) {
     console.log(`After Stage ${stageNumber}, Turn ${turnNumber}: Enemy HP=${turnResult.newEnemyHealth}, Team HP=${turnResult.newTeamHealth}`);
 
     // Check if round ends after this turn
-    if (turnResult.newEnemyHealth <= 0) {
+    // Team losing takes priority - if both hit 0 HP in same turn, team loses
+    if (turnResult.newTeamHealth <= 0) {
+      // Round lost!
+      round.set("outcome", "LOSE");
+      round.set("roundEndMessage", "Defeat! Your team was defeated.");
+      console.log(`Round ${roundNumber} lost after stage ${stageNumber}, turn ${turnNumber}!`);
+
+      // No points for losing
+      const totalTurnsTaken = (stageNumber - 1) * TURNS_PER_STAGE + turnNumber;
+      const roundOutcomes = game.get("roundOutcomes");
+      const outcomeRecord = { roundNumber, outcome: "LOSE", pointsEarned: 0, turnsTaken: totalTurnsTaken };
+      roundOutcomes.push(outcomeRecord);
+      game.set("roundOutcomes", roundOutcomes);
+
+      // Also store on each player for consistent client access
+      game.players.forEach(p => {
+        const playerOutcomes = p.get("roundOutcomes") || [];
+        playerOutcomes.push(outcomeRecord);
+        p.set("roundOutcomes", playerOutcomes);
+      });
+
+      // Store turn results on round (indexed by stage) for client access
+      round.set(`stage${stageNumber}Turns`, turns);
+      addRoundEndStage(round);
+      return;
+    } else if (turnResult.newEnemyHealth <= 0) {
       // Round won!
       round.set("outcome", "WIN");
       round.set("roundEndMessage", "Victory! You defeated the enemy!");
@@ -571,30 +596,6 @@ function resolveBothTurns(game, round, stage, stageNumber) {
       // Record outcome on game level and each player
       const roundOutcomes = game.get("roundOutcomes");
       const outcomeRecord = { roundNumber, outcome: "WIN", pointsEarned, turnsTaken: totalTurnsTaken };
-      roundOutcomes.push(outcomeRecord);
-      game.set("roundOutcomes", roundOutcomes);
-
-      // Also store on each player for consistent client access
-      game.players.forEach(p => {
-        const playerOutcomes = p.get("roundOutcomes") || [];
-        playerOutcomes.push(outcomeRecord);
-        p.set("roundOutcomes", playerOutcomes);
-      });
-
-      // Store turn results on round (indexed by stage) for client access
-      round.set(`stage${stageNumber}Turns`, turns);
-      addRoundEndStage(round);
-      return;
-    } else if (turnResult.newTeamHealth <= 0) {
-      // Round lost!
-      round.set("outcome", "LOSE");
-      round.set("roundEndMessage", "Defeat! Your team was defeated.");
-      console.log(`Round ${roundNumber} lost after stage ${stageNumber}, turn ${turnNumber}!`);
-
-      // No points for losing
-      const totalTurnsTaken = (stageNumber - 1) * TURNS_PER_STAGE + turnNumber;
-      const roundOutcomes = game.get("roundOutcomes");
-      const outcomeRecord = { roundNumber, outcome: "LOSE", pointsEarned: 0, turnsTaken: totalTurnsTaken };
       roundOutcomes.push(outcomeRecord);
       game.set("roundOutcomes", roundOutcomes);
 
@@ -774,7 +775,18 @@ function resolveBothTurnsPerPlayer(game, round, _stage, stageNumber) {
       console.log(`Player ${playerId} - After Stage ${stageNumber}, Turn ${turnNumber}: Enemy HP=${turnResult.newEnemyHealth}, Team HP=${turnResult.newTeamHealth}`);
 
       // Check if this player's round ends
-      if (turnResult.newEnemyHealth <= 0) {
+      // Team losing takes priority - if both hit 0 HP in same turn, team loses
+      if (turnResult.newTeamHealth <= 0) {
+        player.round.set("outcome", "LOSE");
+        player.round.set("roundEndMessage", "Defeat! Your team was defeated.");
+        console.log(`Player ${playerId} lost round ${roundNumber} after stage ${stageNumber}, turn ${turnNumber}!`);
+
+        const totalTurnsTaken = (stageNumber - 1) * TURNS_PER_STAGE + turnNumber;
+        player.round.set("pointsEarned", 0);
+        player.round.set("turnsTaken", totalTurnsTaken);
+
+        break;
+      } else if (turnResult.newEnemyHealth <= 0) {
         player.round.set("outcome", "WIN");
         player.round.set("roundEndMessage", "Victory! You defeated the enemy!");
         console.log(`Player ${playerId} won round ${roundNumber} after stage ${stageNumber}, turn ${turnNumber}!`);
@@ -783,16 +795,6 @@ function resolveBothTurnsPerPlayer(game, round, _stage, stageNumber) {
         const totalTurnsTaken = (stageNumber - 1) * TURNS_PER_STAGE + turnNumber;
         const pointsEarned = Math.max(0, Math.round(100 - (100 * totalTurnsTaken / maxTurnsPerRound)));
         player.round.set("pointsEarned", pointsEarned);
-        player.round.set("turnsTaken", totalTurnsTaken);
-
-        break;
-      } else if (turnResult.newTeamHealth <= 0) {
-        player.round.set("outcome", "LOSE");
-        player.round.set("roundEndMessage", "Defeat! Your team was defeated.");
-        console.log(`Player ${playerId} lost round ${roundNumber} after stage ${stageNumber}, turn ${turnNumber}!`);
-
-        const totalTurnsTaken = (stageNumber - 1) * TURNS_PER_STAGE + turnNumber;
-        player.round.set("pointsEarned", 0);
         player.round.set("turnsTaken", totalTurnsTaken);
 
         break;
