@@ -266,20 +266,15 @@ function ActionSelection() {
 
   const handleSubmit = useCallback(() => {
     if (!submitted && selectedRole !== null) {
-      // Add random delay (1-10 seconds) to prevent humans from detecting bots by response time
-      const randomDelay = Math.floor(Math.random() * 9000) + 1000; // 1000-10000ms
-      console.log(`Adding ${randomDelay}ms delay before submitting role to mask bot response times`);
-
-      // Store the selected role immediately on stage (not round)
+      // Store the selected role on stage (not round)
       player.stage.set("selectedRole", selectedRole);
 
       // Set local state to immediately show waiting screen
       setLocalSubmitted(true);
 
-      // Delay the submit to mask bot response times
-      setTimeout(() => {
-        player.stage.set("submit", true);
-      }, randomDelay);
+      // Submit immediately - realism comes from waiting for other real humans
+      // who are also playing with bots in their own sessions
+      player.stage.set("submit", true);
     }
   }, [submitted, selectedRole, player]);
 
@@ -302,6 +297,16 @@ function ActionSelection() {
   virtualBots.forEach(bot => {
     allPlayers[bot.playerId] = { type: "virtual", bot, playerId: bot.playerId };
   });
+
+  // Track submission status for other real players (excluding current player)
+  const otherPlayersStatus = useMemo(() => {
+    return players
+      .filter(p => p.id !== player.id)
+      .map(p => ({
+        odId: p.id,
+        submitted: p.stage.get("submit") || false
+      }));
+  }, [players, player.id]);
 
   // Determine which UI to show based on state
   // Note: roundEnd and gameEnd are now overlays, so we show the underlying UI beneath them
@@ -367,8 +372,21 @@ function ActionSelection() {
                   <div className="text-center">
                     <div className="text-4xl mb-3">⏳</div>
                     <div className="text-lg font-bold text-gray-700 mb-2">Waiting for other players...</div>
-                    <div className="text-gray-500 text-sm">
+                    <div className="text-gray-500 text-sm mb-4">
                       {selectedRole !== null && `Your selected role: ${ROLE_LABELS[selectedRole]}`}
+                    </div>
+                    {/* Show other players' submission status */}
+                    <div className="flex justify-center gap-4 mt-2">
+                      {otherPlayersStatus.map((p, idx) => (
+                        <div key={p.odId} className="flex items-center gap-2">
+                          <span className="text-sm text-gray-600">Player {idx + 1}:</span>
+                          {p.submitted ? (
+                            <span className="text-green-600 font-semibold">✓ Ready</span>
+                          ) : (
+                            <span className="text-orange-500 font-semibold animate-pulse">⏳ Choosing...</span>
+                          )}
+                        </div>
+                      ))}
                     </div>
                   </div>
                 )}
@@ -401,6 +419,7 @@ function ActionSelection() {
                       roundsRemaining={0}
                       submitted={submitted}
                       roleOrder={roleOrder}
+                      otherPlayersStatus={otherPlayersStatus}
                     />
                   </div>
                 )}

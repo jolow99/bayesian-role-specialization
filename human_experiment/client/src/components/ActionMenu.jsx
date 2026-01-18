@@ -11,7 +11,8 @@ export const ActionMenu = React.memo(function ActionMenu({
   currentRole,
   roundsRemaining,
   submitted,
-  roleOrder = [ROLES.FIGHTER, ROLES.TANK, ROLES.MEDIC] // Default order if not provided
+  roleOrder = [ROLES.FIGHTER, ROLES.TANK, ROLES.MEDIC], // Default order if not provided
+  otherPlayersStatus = []
 }) {
   const orderedRoleNames = roleOrder.map(roleId => ROLE_NAMES[roleId]);
   return (
@@ -22,7 +23,24 @@ export const ActionMenu = React.memo(function ActionMenu({
             ? "Your role is locked for this round"
             : "What role will you play?"}
         </span>
-        <StatsInfo />
+        <div className="flex items-center gap-4">
+          {/* Show other players' submission status */}
+          {otherPlayersStatus.length > 0 && (
+            <div className="flex items-center gap-3 text-xs">
+              {otherPlayersStatus.map((p, idx) => (
+                <div key={p.odId} className="flex items-center gap-1">
+                  <span className="text-gray-300">P{idx + 1}:</span>
+                  {p.submitted ? (
+                    <span className="text-green-400 font-semibold">✓</span>
+                  ) : (
+                    <span className="text-orange-400 animate-pulse">...</span>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+          <StatsInfo />
+        </div>
       </div>
       <div className="bg-gray-100 rounded-b-lg border-2 border-gray-800 border-t-0 p-4">
         <div className="grid grid-cols-3 gap-3 mb-3">
