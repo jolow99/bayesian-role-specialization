@@ -93,7 +93,8 @@ export function ActionHistory({ currentStageView = null, currentTurnView = 0 }) 
     <div className="space-y-3">
       {stageHistory.map((stageEntry, idx) => {
         // Find player's role for this stage from their action history
-        const playerStageData = playerActionHistory.find(h => h.stage === stageEntry.stage);
+        // Must match both round AND stage since actionHistory accumulates across all rounds
+        const playerStageData = playerActionHistory.find(h => h.round === currentRound && h.stage === stageEntry.stage);
         const playerRole = playerStageData?.role; // This is a string like "FIGHTER"
         const displayRole = playerRole ? roleNameMap[playerRole] : null;
 
