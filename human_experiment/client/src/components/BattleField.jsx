@@ -17,7 +17,7 @@ export const BattleField = React.memo(function BattleField({
   healAmount,
   actions = [],
   allPlayers = [],
-  currentPlayerId,
+  currentPlayerGameId,
   previousEnemyHealth,
   previousTeamHealth,
   bossDamage,
@@ -80,8 +80,8 @@ export const BattleField = React.memo(function BattleField({
             .map((entry, playerId) => ({ entry, playerId }))
             .filter(({ entry }) => entry !== null)
             .sort((a, b) => {
-              const aIsYou = a.entry.type === "real" && a.entry.player?.id === currentPlayerId;
-              const bIsYou = b.entry.type === "real" && b.entry.player?.id === currentPlayerId;
+              const aIsYou = a.playerId === currentPlayerGameId;
+              const bIsYou = b.playerId === currentPlayerGameId;
               // Put YOU in the middle by sorting to index 1
               if (aIsYou && !bIsYou) return -1; // a (YOU) comes before b
               if (!aIsYou && bIsYou) return 1;  // b (YOU) comes before a
@@ -89,7 +89,7 @@ export const BattleField = React.memo(function BattleField({
               return a.playerId - b.playerId;
             })
             .map(({ entry, playerId }, sortedIdx) => {
-              const isCurrentPlayer = entry.type === "real" && entry.player?.id === currentPlayerId;
+              const isCurrentPlayer = playerId === currentPlayerGameId;
               // Handle both tutorial mode (direct stats) and game mode (stats via .get())
               const stats = entry.type === "real"
                 ? (entry.player.round?.get ? entry.player.round.get("stats") : entry.player.stats)

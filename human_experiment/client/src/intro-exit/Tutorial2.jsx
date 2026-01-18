@@ -840,7 +840,7 @@ export function Tutorial2({ next }) {
                     healAmount={currentTurnResult?.healAmount || 0}
                     actions={currentTurnResult?.actions || []}
                     allPlayers={allPlayers}
-                    currentPlayerId="tutorial-player"
+                    currentPlayerGameId={2}
                     previousEnemyHealth={currentTurnResult?.previousEnemyHealth || mockData.game.enemyHealth}
                     previousTeamHealth={currentTurnResult?.previousTeamHealth || mockData.game.teamHealth}
                     bossDamage={6}
@@ -859,7 +859,7 @@ export function Tutorial2({ next }) {
                           turnNumber={1}
                           actions={round1Turn1Result.actions}
                           allPlayers={allPlayers}
-                          currentPlayerId="tutorial-player"
+                          currentPlayerGameId={2}
                           enemyIntent={round1Turn1Result.enemyIntent}
                           countdown={null}
                         />
@@ -882,7 +882,7 @@ export function Tutorial2({ next }) {
                           turnNumber={2}
                           actions={round1Turn2Result.actions}
                           allPlayers={allPlayers}
-                          currentPlayerId="tutorial-player"
+                          currentPlayerGameId={2}
                           enemyIntent={round1Turn2Result.enemyIntent}
                           countdown={null}
                         />
@@ -924,7 +924,7 @@ export function Tutorial2({ next }) {
                           turnNumber={currentTurnInStage}
                           actions={allStageResults[currentStageIndex].turns[currentTurnInStage - 1].actions}
                           allPlayers={allPlayers}
-                          currentPlayerId="tutorial-player"
+                          currentPlayerGameId={2}
                           enemyIntent={allStageResults[currentStageIndex].turns[currentTurnInStage - 1].enemyIntent}
                           countdown={null}
                         />

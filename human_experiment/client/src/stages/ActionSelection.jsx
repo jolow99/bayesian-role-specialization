@@ -88,25 +88,37 @@ function ActionSelection() {
     return null;
   }
 
+  // Check if this is a bot round (each player has independent state)
+  const playerVirtualBots = player.round.get("virtualBots");
+  const isBotRound = playerVirtualBots && playerVirtualBots.length > 0;
+
   // Get turns data (computed server-side after role selection)
-  // Check for turns from the most recent completed stage
+  // In bot rounds, read from player-specific state; in human rounds, from shared round state
   const currentRoundStageNumber = round.get("stageNumber") || 0;
   const stageToView = Math.max(lastViewedStage + 1, currentRoundStageNumber);
-  const turns = round.get(`stage${stageToView}Turns`) || EMPTY_ARRAY;
+  const turns = isBotRound
+    ? (player.round.get(`stage${stageToView}Turns`) || EMPTY_ARRAY)
+    : (round.get(`stage${stageToView}Turns`) || EMPTY_ARRAY);
   const hasTurns = turns.length > 0;
 
-  console.log(`[Turns Data] currentRoundStageNumber: ${currentRoundStageNumber}, lastViewedStage: ${lastViewedStage}, stageToView: ${stageToView}, hasTurns: ${hasTurns}`);
+  console.log(`[Turns Data] isBotRound: ${isBotRound}, currentRoundStageNumber: ${currentRoundStageNumber}, lastViewedStage: ${lastViewedStage}, stageToView: ${stageToView}, hasTurns: ${hasTurns}`);
 
   // Read health - if we're viewing a specific turn, show health after that turn
+  // In bot rounds, use per-player health; in human rounds, use shared round health
   let enemyHealth, teamHealth;
   if (hasTurns && currentTurnView > 0 && currentTurnView <= turns.length) {
     const turn = turns[currentTurnView - 1];
     enemyHealth = turn.newEnemyHealth;
     teamHealth = turn.newTeamHealth;
   } else {
-    // Default to round health or config defaults
-    enemyHealth = round.get("enemyHealth") ?? roundConfig?.maxEnemyHealth;
-    teamHealth = round.get("teamHealth") ?? roundConfig?.maxTeamHealth;
+    // Default to round/player health or config defaults
+    if (isBotRound) {
+      enemyHealth = player.round.get("enemyHealth") ?? roundConfig?.maxEnemyHealth;
+      teamHealth = player.round.get("teamHealth") ?? roundConfig?.maxTeamHealth;
+    } else {
+      enemyHealth = round.get("enemyHealth") ?? roundConfig?.maxEnemyHealth;
+      teamHealth = round.get("teamHealth") ?? roundConfig?.maxTeamHealth;
+    }
   }
 
   // Determine which turn's data to show based on currentTurnView
@@ -140,8 +152,8 @@ function ActionSelection() {
   const isGameEndStage = stageType === "gameEnd";
   const isTurnStage = hasTurns && currentTurnView > 0;
 
-  // Check if round has ended
-  const roundOutcome = round.get("outcome");
+  // Check if round has ended - in bot rounds, use per-player outcome
+  const roundOutcome = isBotRound ? player.round.get("outcome") : round.get("outcome");
   const shouldShowRoundEnd = (isRoundEndStage || (roundOutcome && !isGameEndStage)) && allowRoundEnd;
 
   // Check if game has ended
@@ -278,35 +290,67 @@ function ActionSelection() {
     }
   }, [submitted, selectedRole, player]);
 
-  // Get virtual bots from round state (stored per-round)
-  const virtualBots = round.get("virtualBots") || EMPTY_ARRAY;
+  // Get virtual bots from player-specific round state (each player has their own bot positions)
+  // Falls back to round-level virtualBots for backward compatibility
+  const virtualBots = player.round.get("virtualBots") || round.get("virtualBots") || EMPTY_ARRAY;
   const totalPlayers = treatment?.totalPlayers;
+  const hasBots = virtualBots.length > 0;
 
   // Build unified player array (real + virtual)
   const allPlayers = new Array(totalPlayers).fill(null);
 
-  // Add real players
-  players.forEach(p => {
-    const playerId = p.round.get("playerId");
-    if (playerId !== null && playerId !== undefined) {
-      allPlayers[playerId] = { type: "real", player: p, playerId };
-    }
-  });
+  // In bot rounds, current player is at their position, bots fill the rest
+  // In human rounds, all real players are at their positions
+  if (hasBots) {
+    // Bot round: current player + virtual bots
+    const currentPlayerId = player.get("gamePlayerId");
+    allPlayers[currentPlayerId] = { type: "real", player, playerId: currentPlayerId };
 
-  // Add virtual bots
-  virtualBots.forEach(bot => {
-    allPlayers[bot.playerId] = { type: "virtual", bot, playerId: bot.playerId };
-  });
+    virtualBots.forEach(bot => {
+      allPlayers[bot.playerId] = { type: "virtual", bot, playerId: bot.playerId };
+    });
+  } else {
+    // Human round: add all real players using their permanent gamePlayerId
+    players.forEach(p => {
+      const playerId = p.get("gamePlayerId"); // Use permanent game-level ID
+      if (playerId !== null && playerId !== undefined) {
+        allPlayers[playerId] = { type: "real", player: p, playerId };
+      }
+    });
+  }
 
-  // Track submission status for other real players (excluding current player)
+  // Get current player's permanent game ID (0, 1, or 2)
+  const currentPlayerGameId = player.get("gamePlayerId");
+
+  // Track submission status for other players (excluding current player)
+  // In bot rounds: show bots at their positions, but use real human submission status
+  // In human rounds: show other real players
   const otherPlayersStatus = useMemo(() => {
-    return players
-      .filter(p => p.id !== player.id)
-      .map(p => ({
-        odId: p.id,
-        submitted: p.stage.get("submit") || false
-      }));
-  }, [players, player.id]);
+    if (hasBots) {
+      // Bot round: show virtual bots, but their "submitted" status comes from real humans
+      // We map bot positions to the other human players' submission status
+      const otherHumans = players.filter(p => p.id !== player.id);
+
+      return virtualBots.map((bot, idx) => ({
+        odId: `bot-${bot.playerId}`,
+        playerId: bot.playerId,
+        isBot: true,
+        // Use corresponding human's submission status (or true if no more humans)
+        submitted: otherHumans[idx]?.stage.get("submit") || otherHumans.length === 0
+      })).sort((a, b) => (a.playerId ?? 0) - (b.playerId ?? 0));
+    } else {
+      // Human round: show other real players
+      return players
+        .filter(p => p.id !== player.id)
+        .map(p => ({
+          odId: p.id,
+          playerId: p.get("gamePlayerId"), // Permanent game position (0, 1, or 2)
+          isBot: false,
+          submitted: p.stage.get("submit") || false
+        }))
+        .sort((a, b) => (a.playerId ?? 0) - (b.playerId ?? 0)); // Sort by playerId for consistent order
+    }
+  }, [players, player.id, hasBots, virtualBots]);
 
   // Determine which UI to show based on state
   // Note: roundEnd and gameEnd are now overlays, so we show the underlying UI beneath them
@@ -356,7 +400,7 @@ function ActionSelection() {
                 healAmount={healAmount}
                 actions={actions}
                 allPlayers={allPlayers}
-                currentPlayerId={player.id}
+                currentPlayerGameId={currentPlayerGameId}
                 previousEnemyHealth={previousEnemyHealth}
                 previousTeamHealth={previousTeamHealth}
                 bossDamage={roundConfig?.bossDamage}
@@ -377,9 +421,9 @@ function ActionSelection() {
                     </div>
                     {/* Show other players' submission status */}
                     <div className="flex justify-center gap-4 mt-2">
-                      {otherPlayersStatus.map((p, idx) => (
+                      {otherPlayersStatus.map((p) => (
                         <div key={p.odId} className="flex items-center gap-2">
-                          <span className="text-sm text-gray-600">Player {idx + 1}:</span>
+                          <span className="text-sm text-gray-600">P{(p.playerId ?? 0) + 1}:</span>
                           {p.submitted ? (
                             <span className="text-green-600 font-semibold">✓ Ready</span>
                           ) : (
@@ -400,7 +444,7 @@ function ActionSelection() {
                       turnNumber={currentTurnView}
                       actions={actions}
                       allPlayers={allPlayers}
-                      currentPlayerId={player.id}
+                      currentPlayerGameId={currentPlayerGameId}
                       enemyIntent={enemyIntent}
                       countdown={countdown}
                     />

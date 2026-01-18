@@ -9,7 +9,7 @@ export const ResultsPanel = React.memo(function ResultsPanel({
   turnNumber,
   actions = [],
   allPlayers = [],
-  currentPlayerId,
+  currentPlayerGameId,
   enemyIntent,
   countdown
 }) {
@@ -32,7 +32,7 @@ export const ResultsPanel = React.memo(function ResultsPanel({
             {actions.map((action, playerId) => {
               const entry = allPlayers[playerId];
               if (!entry) return null;
-              const isCurrentPlayer = entry.type === "real" && entry.player?.id === currentPlayerId;
+              const isCurrentPlayer = playerId === currentPlayerGameId;
 
               return (
                 <div key={playerId} className="flex flex-col items-center">

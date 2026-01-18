@@ -417,7 +417,7 @@ export function Tutorial1({ next }) {
                   healAmount={currentRoundResult?.healAmount || 0}
                   actions={currentRoundResult?.actions || []}
                   allPlayers={allPlayers}
-                  currentPlayerId="tutorial-player"
+                  currentPlayerGameId={2}
                   previousEnemyHealth={currentRoundResult?.previousEnemyHealth || mockData.game.enemyHealth}
                   previousTeamHealth={currentRoundResult?.previousTeamHealth || mockData.game.teamHealth}
                   bossDamage={3}
@@ -471,7 +471,7 @@ export function Tutorial1({ next }) {
                         turnNumber={1}
                         actions={currentRoundResult.actions}
                         allPlayers={allPlayers}
-                        currentPlayerId="tutorial-player"
+                        currentPlayerGameId={2}
                         enemyIntent={currentRoundResult.enemyIntent}
                         countdown={null}
                       />

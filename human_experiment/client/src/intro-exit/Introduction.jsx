@@ -273,7 +273,7 @@ export function Introduction({ next }) {
                     healAmount={0}
                     actions={[]}
                     allPlayers={allPlayers}
-                    currentPlayerId="tutorial-player"
+                    currentPlayerGameId={2}
                     previousEnemyHealth={mockData.game.enemyHealth}
                     previousTeamHealth={mockData.game.teamHealth}
                     bossDamage={3}

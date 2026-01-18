@@ -27,9 +27,9 @@ export const ActionMenu = React.memo(function ActionMenu({
           {/* Show other players' submission status */}
           {otherPlayersStatus.length > 0 && (
             <div className="flex items-center gap-3 text-xs">
-              {otherPlayersStatus.map((p, idx) => (
+              {otherPlayersStatus.map((p) => (
                 <div key={p.odId} className="flex items-center gap-1">
-                  <span className="text-gray-300">P{idx + 1}:</span>
+                  <span className="text-gray-300">P{(p.playerId ?? 0) + 1}:</span>
                   {p.submitted ? (
                     <span className="text-green-400 font-semibold">✓</span>
                   ) : (

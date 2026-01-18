@@ -17,10 +17,14 @@ export function ActionHistory({ currentStageView = null, currentTurnView = 0 }) 
   const currentRound = round?.get("roundNumber");
   const currentRoundStageNumber = round?.get("stageNumber") || 0;
 
+  // Check if this is a bot round (player has per-player virtual bots)
+  const playerVirtualBots = player?.round?.get ? player.round.get("virtualBots") : null;
+  const isBotRound = playerVirtualBots && playerVirtualBots.length > 0;
+
   const actionIcons = ACTION_ICONS;
   const roleNames = ROLE_LABELS;
 
-  // Build stage history from per-stage turn data stored on the round
+  // Build stage history from per-stage turn data stored on the round (or player.round for bot rounds)
   // This is synchronized with the frontend's turn-by-turn display
   const stageHistory = useMemo(() => {
     if (!round || !currentRound) return [];
@@ -29,7 +33,10 @@ export function ActionHistory({ currentStageView = null, currentTurnView = 0 }) 
 
     // Iterate through stages up to currentRoundStageNumber (which tracks completed stages)
     for (let stageNum = 1; stageNum <= currentRoundStageNumber; stageNum++) {
-      const stageTurns = round.get(`stage${stageNum}Turns`);
+      // In bot rounds, read from player-specific state; in human rounds, from shared round state
+      const stageTurns = isBotRound && player?.round?.get
+        ? player.round.get(`stage${stageNum}Turns`)
+        : round.get(`stage${stageNum}Turns`);
 
       if (stageTurns && stageTurns.length > 0) {
         // Filter turns based on current viewing state
@@ -66,13 +73,13 @@ export function ActionHistory({ currentStageView = null, currentTurnView = 0 }) 
     }
 
     return stages;
-  }, [round, currentRound, currentRoundStageNumber, currentStageView, currentTurnView]);
+  }, [round, player, currentRound, currentRoundStageNumber, currentStageView, currentTurnView, isBotRound]);
 
   // Get player's action history to find their role for each stage
   const playerActionHistory = player.get("actionHistory") || [];
 
-  // Get current player's playerId (their slot position: 0, 1, or 2)
-  const currentPlayerPlayerId = player.round?.get ? player.round.get("playerId") : player.playerId;
+  // Get current player's permanent gamePlayerId (their slot position: 0, 1, or 2)
+  const currentPlayerPlayerId = player?.get ? player.get("gamePlayerId") : player.playerId;
 
   // Map role names (stored as "FIGHTER", "TANK", "MEDIC") to display names
   const roleNameMap = {
