@@ -163,7 +163,8 @@ function ActionSelection() {
   const shouldShowRoundEnd = (isRoundEndStage || (roundOutcome && !isGameEndStage)) && allowRoundEnd;
 
   // Check if game has ended
-  const totalPoints = game.get("totalPoints");
+  // Use player-specific totalPoints (each player tracks their own cumulative score)
+  const totalPoints = player.get("totalPoints") || 0;
   const shouldShowGameEnd = isGameEndStage;
 
   // Debug logging

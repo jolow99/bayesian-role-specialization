@@ -566,11 +566,14 @@ function resolveBothTurns(game, round, stage, stageNumber) {
       roundOutcomes.push(outcomeRecord);
       game.set("roundOutcomes", roundOutcomes);
 
-      // Also store on each player for consistent client access
+      // Also store on each player for consistent client access and update their total points
       game.players.forEach(p => {
         const playerOutcomes = p.get("roundOutcomes") || [];
         playerOutcomes.push(outcomeRecord);
         p.set("roundOutcomes", playerOutcomes);
+
+        // Update player's own cumulative total points (0 for losses)
+        // No change needed since pointsEarned is 0
       });
 
       // Store turn results on round (indexed by stage) for client access
@@ -599,11 +602,15 @@ function resolveBothTurns(game, round, stage, stageNumber) {
       roundOutcomes.push(outcomeRecord);
       game.set("roundOutcomes", roundOutcomes);
 
-      // Also store on each player for consistent client access
+      // Also store on each player for consistent client access and update their total points
       game.players.forEach(p => {
         const playerOutcomes = p.get("roundOutcomes") || [];
         playerOutcomes.push(outcomeRecord);
         p.set("roundOutcomes", playerOutcomes);
+
+        // Update player's own cumulative total points
+        const currentPlayerTotal = p.get("totalPoints") || 0;
+        p.set("totalPoints", currentPlayerTotal + pointsEarned);
       });
 
       // Store turn results on round (indexed by stage) for client access
@@ -632,6 +639,7 @@ function resolveBothTurns(game, round, stage, stageNumber) {
     game.set("roundOutcomes", roundOutcomes);
 
     // Also store on each player for consistent client access
+    // (no points update needed since pointsEarned is 0 for timeout)
     game.players.forEach(p => {
       const playerOutcomes = p.get("roundOutcomes") || [];
       playerOutcomes.push(outcomeRecord);
@@ -862,6 +870,7 @@ function resolveBothTurnsPerPlayer(game, round, _stage, stageNumber) {
     game.set("roundOutcomes", roundOutcomes);
 
     // Store player-specific outcomes with their individual turnsTaken and outcome
+    // Also update each player's cumulative total points
     game.players.forEach(p => {
       const playerOutcome = p.round.get("outcome");
       const playerPoints = p.round.get("pointsEarned") || 0;
@@ -874,6 +883,10 @@ function resolveBothTurnsPerPlayer(game, round, _stage, stageNumber) {
         turnsTaken: playerTurns
       });
       p.set("roundOutcomes", playerOutcomes);
+
+      // Update player's own cumulative total points
+      const currentPlayerTotal = p.get("totalPoints") || 0;
+      p.set("totalPoints", currentPlayerTotal + playerPoints);
     });
 
     round.set("roundEndMessage", roundOutcome === "WIN" ? "Victory!" : "Defeat!");
@@ -897,7 +910,7 @@ function resolveBothTurnsPerPlayer(game, round, _stage, stageNumber) {
     roundOutcomes.push({ roundNumber, outcome: "TIMEOUT", pointsEarned: 0 });
     game.set("roundOutcomes", roundOutcomes);
 
-    // Store player-specific outcomes
+    // Store player-specific outcomes and update cumulative points
     game.players.forEach(p => {
       const playerOutcome = p.round.get("outcome");
       const playerPoints = p.round.get("pointsEarned") || 0;
@@ -910,6 +923,10 @@ function resolveBothTurnsPerPlayer(game, round, _stage, stageNumber) {
         turnsTaken: playerTurns
       });
       p.set("roundOutcomes", playerOutcomes);
+
+      // Update player's own cumulative total points
+      const currentPlayerTotal = p.get("totalPoints") || 0;
+      p.set("totalPoints", currentPlayerTotal + playerPoints);
     });
 
     addRoundEndStage(round);
@@ -1107,15 +1124,16 @@ Empirica.onRoundEnded(({ round }) => {
 
 Empirica.onGameEnded(({ game }) => {
   // Calculate final scores/metrics
-  const totalPoints = game.get("totalPoints");
   const roundOutcomes = game.get("roundOutcomes");
   const finalOutcome = game.get("finalOutcome");
 
-  console.log(`Game ended. Total points: ${totalPoints}`);
+  console.log(`Game ended.`);
   console.log(`Round outcomes:`, roundOutcomes);
 
   game.players.forEach(player => {
+    const playerTotalPoints = player.get("totalPoints") || 0;
     player.set("finalOutcome", finalOutcome);
-    player.set("totalPoints", totalPoints);
+    // Don't overwrite player's individual totalPoints - they already have their own cumulative score
+    console.log(`Player ${player.get("gamePlayerId")} final points: ${playerTotalPoints}`);
   });
 });
