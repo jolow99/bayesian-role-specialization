@@ -25,7 +25,6 @@ function ActionSelection() {
 
   const [selectedRole, setSelectedRole] = useState(null);
   const [showDamageAnimation, setShowDamageAnimation] = useState(false);
-  const [countdown, setCountdown] = useState(null);
   const [localSubmitted, setLocalSubmitted] = useState(false); // Local state to immediately show waiting screen
   const [currentTurnView, setCurrentTurnView] = useState(0); // 0 = role selection/waiting, 1 = turn 1 results, 2 = turn 2 results
   const [lastViewedStage, setLastViewedStage] = useState(0); // Track which stage's turns we've viewed
@@ -128,14 +127,13 @@ function ActionSelection() {
   }
 
   // Determine which turn's data to show based on currentTurnView
-  let enemyIntent, actions, damageToEnemy, damageToTeam, healAmount, previousEnemyHealth, previousTeamHealth, roles;
+  let enemyIntent, actions, damageToEnemy, damageToTeam, healAmount, previousEnemyHealth, previousTeamHealth;
 
   if (hasTurns && currentTurnView > 0 && currentTurnView <= turns.length) {
     // Show data for the current turn view
     const turn = turns[currentTurnView - 1];
     enemyIntent = turn.enemyIntent;
     actions = turn.actions || EMPTY_ARRAY;
-    roles = turn.roles || EMPTY_ARRAY;
     damageToEnemy = turn.damageToEnemy || 0;
     damageToTeam = turn.damageToTeam || 0;
     healAmount = turn.healAmount || 0;
@@ -145,7 +143,6 @@ function ActionSelection() {
     // Role selection or waiting - no turn data yet
     enemyIntent = null;
     actions = EMPTY_ARRAY;
-    roles = EMPTY_ARRAY;
     damageToEnemy = 0;
     damageToTeam = 0;
     healAmount = 0;
@@ -249,44 +246,7 @@ function ActionSelection() {
     }
   }, [hasTurns, currentTurnView, isRoundEndStage, isGameEndStage]);
 
-  // Auto-advance from turn 1 to turn 2 after delay
-  useEffect(() => {
-    if (currentTurnView === 1 && turns.length >= 2) {
-      console.log(`[Turn Auto-Advance] Scheduling advance to turn 2 in 3 seconds`);
-      const timer = setTimeout(() => {
-        console.log(`[Turn Auto-Advance] Advancing to turn 2`);
-        setCurrentTurnView(2);
-      }, 3000); // 3 seconds to view turn 1 results
-      return () => clearTimeout(timer);
-    }
-  }, [currentTurnView, turns.length]);
 
-  // After viewing all turns, mark stage as viewed and reset to role selection OR show round end
-  useEffect(() => {
-    if (currentTurnView === turns.length && turns.length > 0) {
-      // Use roundOutcome which already handles bot rounds (player.round.get("outcome"))
-      // vs human rounds (round.get("outcome"))
-      if (roundOutcome) {
-        // Round has ended (win/loss/timeout), transition to round end screen after delay
-        console.log(`[Turn Auto-Advance] All turns viewed, round ended with outcome: ${roundOutcome}, showing round end in 3 seconds`);
-        const timer = setTimeout(() => {
-          console.log(`[Turn Auto-Advance] Enabling round end screen`);
-          setAllowRoundEnd(true);
-        }, 3000); // 3 seconds to view final turn before showing victory/defeat
-        return () => clearTimeout(timer);
-      } else {
-        // Round continues, transition to next stage's role selection
-        console.log(`[Turn Auto-Advance] All turns viewed, scheduling transition to next stage in 3 seconds`);
-        const timer = setTimeout(() => {
-          console.log(`[Turn Auto-Advance] Marking stage ${stageToView} as viewed, resetting to role selection`);
-          setLastViewedStage(stageToView);
-          setCurrentTurnView(0);
-          setLocalSubmitted(false);
-        }, 3000); // 3 seconds to view final turn
-        return () => clearTimeout(timer);
-      }
-    }
-  }, [currentTurnView, turns.length, stageToView, roundOutcome]);
 
   // Trigger damage animation during turn stages
   useEffect(() => {
@@ -297,29 +257,26 @@ function ActionSelection() {
     }
   }, [isTurnStage, currentTurnView]);
 
-  // Countdown timer for the last 3 seconds of turn display
-  useEffect(() => {
-    if (isTurnStage) {
-      // Start countdown at 5 seconds (showing countdown for last 3 seconds)
-      const countdownStart = setTimeout(() => {
-        setCountdown(3);
-      }, 5000);
 
-      return () => clearTimeout(countdownStart);
-    } else {
-      setCountdown(null);
+  // Handle manual advancement through turns
+  const handleNextTurn = useCallback(() => {
+    if (currentTurnView < turns.length) {
+      // Advance to next turn
+      console.log(`[Turn Advance] User clicked next, advancing from turn ${currentTurnView} to ${currentTurnView + 1}`);
+      setCurrentTurnView(currentTurnView + 1);
+    } else if (currentTurnView === turns.length && turns.length > 0) {
+      // All turns viewed - either show round end or go to next stage
+      if (roundOutcome) {
+        console.log(`[Turn Advance] All turns viewed, round ended with outcome: ${roundOutcome}, showing round end`);
+        setAllowRoundEnd(true);
+      } else {
+        console.log(`[Turn Advance] All turns viewed, marking stage ${stageToView} as viewed, resetting to role selection`);
+        setLastViewedStage(stageToView);
+        setCurrentTurnView(0);
+        setLocalSubmitted(false);
+      }
     }
-  }, [isTurnStage, currentTurnView]);
-
-  // Update countdown every second
-  useEffect(() => {
-    if (countdown !== null && countdown > 0) {
-      const timer = setTimeout(() => {
-        setCountdown(countdown - 1);
-      }, 1000);
-      return () => clearTimeout(timer);
-    }
-  }, [countdown]);
+  }, [currentTurnView, turns.length, roundOutcome, stageToView]);
 
   const handleRoleSelect = useCallback((role) => {
     if (!submitted && !hasTurns) {
@@ -490,14 +447,27 @@ function ActionSelection() {
                 {currentUI === 'turnResults' && (
                   <div className="w-full">
                     <ResultsPanel
-                      roundNumber={roundNumber}
                       stageNumber={stageToView}
                       turnNumber={currentTurnView}
                       actions={actions}
                       allPlayers={allPlayers}
                       currentPlayerGameId={currentPlayerGameId}
                       enemyIntent={enemyIntent}
-                      countdown={countdown}
+                      onNextTurn={handleNextTurn}
+                      nextButtonLabel={
+                        currentTurnView < turns.length
+                          ? "Next Turn"
+                          : roundOutcome
+                            ? "Continue"
+                            : "Next Stage"
+                      }
+                      previousTeamHealth={previousTeamHealth}
+                      newTeamHealth={teamHealth}
+                      previousEnemyHealth={previousEnemyHealth}
+                      newEnemyHealth={enemyHealth}
+                      damageToTeam={damageToTeam}
+                      damageToEnemy={damageToEnemy}
+                      healAmount={healAmount}
                     />
                   </div>
                 )}

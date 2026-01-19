@@ -61,7 +61,10 @@ export function ActionHistory({ currentStageView = null, currentTurnView = 0 }) 
             actions: turn.actions.map((action, idx) => ({ playerId: idx, action })),
             enemyHealth: turn.newEnemyHealth,
             teamHealth: turn.newTeamHealth,
-            enemyIntent: turn.enemyIntent
+            enemyIntent: turn.enemyIntent,
+            // Calculate health changes for display
+            teamHealthChange: turn.newTeamHealth - turn.previousTeamHealth,
+            enemyHealthChange: turn.newEnemyHealth - turn.previousEnemyHealth
           }));
 
           stages.push({
@@ -128,39 +131,63 @@ export function ActionHistory({ currentStageView = null, currentTurnView = 0 }) 
                   className="bg-white rounded border border-gray-200 p-2"
                   data-tutorial-id={`battle-history-s${stageEntry.stage}t${turn.turn}`}
                 >
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="text-xs text-gray-600 font-semibold">
-                      Turn {turn.turn}
-                      {turn.enemyIntent && (
-                        <span className={`ml-2 ${turn.enemyIntent === 'WILL_ATTACK' ? 'text-red-600' : 'text-gray-500'}`}>
-                          ({turn.enemyIntent === 'WILL_ATTACK' ? 'Enemy Attacked' : 'Enemy Rested'})
-                        </span>
-                      )}
-                    </div>
-                    <div className="flex gap-3 text-xs">
-                      <span className="text-green-600 font-semibold">
-                        👥 {turn.teamHealth}HP
-                      </span>
-                      <span className="text-red-600 font-semibold">
-                        👹 {turn.enemyHealth}HP
-                      </span>
-                    </div>
+                  {/* Turn header */}
+                  <div className="text-xs text-gray-600 font-semibold text-center mb-2 border-b border-gray-100 pb-1">
+                    Turn {turn.turn}
                   </div>
-                  <div className="flex gap-2 justify-center">
-                    {turn.actions && turn.actions.map((playerAction, pidx) => {
-                      const isCurrentPlayer = pidx === currentPlayerPlayerId;
-                      return (
-                        <div
-                          key={pidx}
-                          className="flex flex-col items-center bg-gray-50 rounded border border-gray-300 px-2 py-1"
-                        >
-                          <span className="text-2xl">{actionIcons[playerAction.action]}</span>
-                          <span className={`text-xs ${isCurrentPlayer ? 'text-blue-600 font-bold' : 'text-gray-600'}`}>
-                            {isCurrentPlayer ? "YOU" : `P${pidx + 1}`}
+
+                  {/* Two-column layout: Team (left) | Enemy (right) */}
+                  <div className="flex gap-2">
+                    {/* Left: Team side */}
+                    <div className="flex-1 bg-green-50 rounded p-1.5 border border-green-200">
+                      {/* Team HP with change */}
+                      <div className="text-xs font-semibold text-green-700 mb-1 flex items-center justify-center gap-1">
+                        <span>👥</span>
+                        <span>{turn.teamHealth}HP</span>
+                        {turn.teamHealthChange !== 0 && (
+                          <span className={turn.teamHealthChange > 0 ? 'text-green-600' : 'text-red-500'}>
+                            ({turn.teamHealthChange > 0 ? '+' : ''}{turn.teamHealthChange})
                           </span>
-                        </div>
-                      );
-                    })}
+                        )}
+                      </div>
+                      {/* Team actions */}
+                      <div className="flex gap-1 justify-center">
+                        {turn.actions && turn.actions.map((playerAction, pidx) => {
+                          const isCurrentPlayer = pidx === currentPlayerPlayerId;
+                          return (
+                            <div
+                              key={pidx}
+                              className="flex flex-col items-center"
+                            >
+                              <span className="text-lg">{actionIcons[playerAction.action]}</span>
+                              <span className={`text-xs ${isCurrentPlayer ? 'text-blue-600 font-bold' : 'text-gray-500'}`}>
+                                {isCurrentPlayer ? "YOU" : `P${pidx + 1}`}
+                              </span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Right: Enemy side */}
+                    <div className="flex-1 bg-red-50 rounded p-1.5 border border-red-200">
+                      {/* Enemy HP with change */}
+                      <div className="text-xs font-semibold text-red-700 mb-1 flex items-center justify-center gap-1">
+                        <span>👹</span>
+                        <span>{turn.enemyHealth}HP</span>
+                        {turn.enemyHealthChange !== 0 && (
+                          <span className="text-red-500">
+                            ({turn.enemyHealthChange})
+                          </span>
+                        )}
+                      </div>
+                      {/* Enemy action */}
+                      <div className="flex flex-col items-center justify-center">
+                        <span className="text-2xl">
+                          {turn.enemyIntent === 'WILL_ATTACK' ? '⚔️' : '😴'}
+                        </span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               ))}
