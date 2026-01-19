@@ -467,24 +467,22 @@ export function Tutorial1({ next }) {
                   {isTurnStage && (
                     <div className="w-full">
                       <ResultsPanel
-                        roundNumber={currentRoundResult.roundNum}
+                        stageNumber={currentRound}
                         turnNumber={1}
                         actions={currentRoundResult.actions}
                         allPlayers={allPlayers}
                         currentPlayerGameId={2}
                         enemyIntent={currentRoundResult.enemyIntent}
-                        countdown={null}
+                        previousTeamHealth={currentRoundResult.previousTeamHealth}
+                        newTeamHealth={currentRoundResult.teamHealth}
+                        previousEnemyHealth={currentRoundResult.previousEnemyHealth}
+                        newEnemyHealth={currentRoundResult.enemyHealth}
+                        damageToTeam={currentRoundResult.damageToTeam}
+                        damageToEnemy={currentRoundResult.damageToEnemy}
+                        healAmount={currentRoundResult.healAmount}
+                        onNextTurn={handleNextRound}
+                        nextButtonLabel={currentRound < roundResults.length ? `Continue to Round ${currentRound + 1}` : "See Results"}
                       />
-
-                      {/* Continue button */}
-                      <div className="mt-4 text-center">
-                        <button
-                          onClick={handleNextRound}
-                          className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg text-lg shadow-lg transition-colors"
-                        >
-                          {currentRound < roundResults.length ? `Continue to Round ${currentRound + 1}` : "See Results"}
-                        </button>
-                      </div>
                     </div>
                   )}
                 </div>

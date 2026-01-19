@@ -18,7 +18,6 @@ export function Tutorial2({ next }) {
   const [currentStageIndex, setCurrentStageIndex] = useState(0); // Which stage we're viewing (0-indexed, stage 2 = index 0)
   const [currentTurnInStage, setCurrentTurnInStage] = useState(0); // 0 = role selection, 1 = turn 1, 2 = turn 2
   const [currentGameState, setCurrentGameState] = useState("initial"); // initial, round1-turn1, round1-turn2, role-selection, stage-turn, outcome
-  const [round1PlaybackStep, setRound1PlaybackStep] = useState(0); // 0: initial, 1: turn1 shown, 2: turn2 shown
   const [introTutorialComplete, setIntroTutorialComplete] = useState(false);
   const [roleSelectionTutorialComplete, setRoleSelectionTutorialComplete] = useState(false);
   const [roleHistory, setRoleHistory] = useState([]); // Track roles chosen for each stage
@@ -88,7 +87,6 @@ export function Tutorial2({ next }) {
       const turn1MockData = createMockDataForRound1Turn1(round1Turn1Result);
       setMockData(turn1MockData);
       setCurrentGameState("round1-turn1");
-      setRound1PlaybackStep(1);
       setShowDamageAnimation(true);
       setTimeout(() => setShowDamageAnimation(false), 2000);
     }
@@ -207,7 +205,6 @@ export function Tutorial2({ next }) {
     const initialMockData = createMockDataForInitial();
     setMockData(initialMockData);
     setCurrentGameState("initial");
-    setRound1PlaybackStep(0);
   };
 
   const createMockDataForInitial = () => {
@@ -318,7 +315,6 @@ export function Tutorial2({ next }) {
     const newMockData = createMockDataForRound1Complete(round1Turn1Result, round1Turn2Result);
     setMockData(newMockData);
     setCurrentGameState("round1-turn2");
-    setRound1PlaybackStep(2);
     setShowDamageAnimation(true);
     setTimeout(() => setShowDamageAnimation(false), 2000);
   };
@@ -855,22 +851,22 @@ export function Tutorial2({ next }) {
                     {isRound1Turn1 && round1Turn1Result && (
                       <div className="w-full">
                         <ResultsPanel
-                          roundNumber={1}
+                          stageNumber={1}
                           turnNumber={1}
                           actions={round1Turn1Result.actions}
                           allPlayers={allPlayers}
                           currentPlayerGameId={2}
                           enemyIntent={round1Turn1Result.enemyIntent}
-                          countdown={null}
+                          previousTeamHealth={10}
+                          newTeamHealth={round1Turn1Result.teamHealth}
+                          previousEnemyHealth={10}
+                          newEnemyHealth={round1Turn1Result.enemyHealth}
+                          damageToTeam={round1Turn1Result.damageToTeam}
+                          damageToEnemy={round1Turn1Result.damageToEnemy}
+                          healAmount={round1Turn1Result.healAmount}
+                          onNextTurn={showRound1Turn2}
+                          nextButtonLabel="Continue to Turn 2"
                         />
-                        <div className="mt-4 text-center">
-                          <button
-                            onClick={showRound1Turn2}
-                            className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg text-lg shadow-lg transition-colors"
-                          >
-                            Continue to Turn 2 →
-                          </button>
-                        </div>
                       </div>
                     )}
 
@@ -878,22 +874,22 @@ export function Tutorial2({ next }) {
                     {isRound1Turn2 && round1Turn2Result && (
                       <div className="w-full">
                         <ResultsPanel
-                          roundNumber={1}
+                          stageNumber={1}
                           turnNumber={2}
                           actions={round1Turn2Result.actions}
                           allPlayers={allPlayers}
                           currentPlayerGameId={2}
                           enemyIntent={round1Turn2Result.enemyIntent}
-                          countdown={null}
+                          previousTeamHealth={round1Turn1Result.teamHealth}
+                          newTeamHealth={round1Turn2Result.teamHealth}
+                          previousEnemyHealth={round1Turn1Result.enemyHealth}
+                          newEnemyHealth={round1Turn2Result.enemyHealth}
+                          damageToTeam={round1Turn2Result.damageToTeam}
+                          damageToEnemy={round1Turn2Result.damageToEnemy}
+                          healAmount={round1Turn2Result.healAmount}
+                          onNextTurn={completeRound1}
+                          nextButtonLabel="Proceed to Role Selection"
                         />
-                        <div className="mt-4 text-center">
-                          <button
-                            onClick={completeRound1}
-                            className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg text-lg shadow-lg transition-colors"
-                          >
-                            Proceed to Role Selection →
-                          </button>
-                        </div>
                       </div>
                     )}
 
@@ -916,38 +912,36 @@ export function Tutorial2({ next }) {
                     )}
 
                     {/* Stage Turn Results */}
-                    {isStageTurn && allStageResults.length > 0 && currentTurnInStage > 0 && (
-                      <div className="w-full">
-                        <ResultsPanel
-                          roundNumber={1}
-                          stageNumber={allStageResults[currentStageIndex].stageNum}
-                          turnNumber={currentTurnInStage}
-                          actions={allStageResults[currentStageIndex].turns[currentTurnInStage - 1].actions}
-                          allPlayers={allPlayers}
-                          currentPlayerGameId={2}
-                          enemyIntent={allStageResults[currentStageIndex].turns[currentTurnInStage - 1].enemyIntent}
-                          countdown={null}
-                        />
-                        <div className="mt-4 text-center">
-                          <button
-                            onClick={handleNextStageTurn}
-                            className={`${
-                              currentTurnInStage < allStageResults[currentStageIndex].turns.length
-                                ? 'bg-blue-600 hover:bg-blue-700'
-                                : outcome
-                                  ? 'bg-green-600 hover:bg-green-700'
-                                  : 'bg-purple-600 hover:bg-purple-700'
-                            } text-white font-bold py-3 px-6 rounded-lg text-lg shadow-lg transition-colors`}
-                          >
-                            {currentTurnInStage < allStageResults[currentStageIndex].turns.length
-                              ? `Continue to Turn ${currentTurnInStage + 1} →`
-                              : outcome
-                                ? "See Results →"
-                                : `Choose Role for Stage ${allStageResults[currentStageIndex].stageNum + 1} →`}
-                          </button>
+                    {isStageTurn && allStageResults.length > 0 && currentTurnInStage > 0 && (() => {
+                      const currentStage = allStageResults[currentStageIndex];
+                      const currentTurn = currentStage.turns[currentTurnInStage - 1];
+                      const nextButtonLabel = currentTurnInStage < currentStage.turns.length
+                        ? `Continue to Turn ${currentTurnInStage + 1}`
+                        : outcome
+                          ? "See Results"
+                          : `Choose Role for Stage ${currentStage.stageNum + 1}`;
+                      return (
+                        <div className="w-full">
+                          <ResultsPanel
+                            stageNumber={currentStage.stageNum}
+                            turnNumber={currentTurnInStage}
+                            actions={currentTurn.actions}
+                            allPlayers={allPlayers}
+                            currentPlayerGameId={2}
+                            enemyIntent={currentTurn.enemyIntent}
+                            previousTeamHealth={currentTurn.previousTeamHealth}
+                            newTeamHealth={currentTurn.teamHealth}
+                            previousEnemyHealth={currentTurn.previousEnemyHealth}
+                            newEnemyHealth={currentTurn.enemyHealth}
+                            damageToTeam={currentTurn.damageToTeam}
+                            damageToEnemy={currentTurn.damageToEnemy}
+                            healAmount={currentTurn.healAmount}
+                            onNextTurn={handleNextStageTurn}
+                            nextButtonLabel={nextButtonLabel}
+                          />
                         </div>
-                      </div>
-                    )}
+                      );
+                    })()}
                   </div>
                 </div>
               </div>
