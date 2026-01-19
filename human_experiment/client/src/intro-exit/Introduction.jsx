@@ -56,6 +56,12 @@ const createMockDataWithHistory = () => {
         maxRounds: 5,
         maxEnemyHealth: 10,
         maxTeamHealth: 10
+      },
+      get: (key) => {
+        if (key === "round1Config") {
+          return { maxTeamHealth: 10, maxEnemyHealth: 10 };
+        }
+        return undefined;
       }
     },
     player: {
@@ -191,16 +197,14 @@ export function Introduction({ next }) {
         <div>
           <h4 className="text-lg font-bold text-gray-900 mb-2">Reading Turn Details</h4>
           <p className="text-sm text-gray-700 mb-2">
-            Each turn entry shows:
+            Each turn entry has two sides:
           </p>
           <ul className="text-sm text-gray-700 space-y-1 ml-4 mb-2">
-            <li>• <strong>Turn number</strong> and whether the <strong>enemy attacked or rested</strong></li>
-            <li>• <strong>Health status</strong> after the turn (👥 Team, 👹 Enemy)</li>
-            <li>• <strong>Action icons</strong> for each player (⚔️ Attack, 🛡️ Block, 💚 Heal)</li>
-            <li>• <strong>"YOU"</strong> label marks your own actions</li>
+            <li>• <strong>Left (green)</strong>: Your team's health and each player's action (⚔️ Attack, 🛡️ Block, 💚 Heal)</li>
+            <li>• <strong>Right (red)</strong>: The enemy's health and whether they attacked (⚔️) or rested (😴)</li>
           </ul>
           <p className="text-sm text-gray-700 italic">
-            In this example: P1 attacked, P2 blocked, and YOU healed. The enemy attacked but only dealt 1 damage thanks to P2's block!
+            In this example: P1 attacked, P2 blocked, and P3 healed. The enemy attacked but dealt no damage thanks to P2's block and P3's heal!
           </p>
         </div>
       )

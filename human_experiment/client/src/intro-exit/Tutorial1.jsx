@@ -253,6 +253,12 @@ export function Tutorial1({ next }) {
           maxRounds: 2,
           maxEnemyHealth: 8,
           maxTeamHealth: 6
+        },
+        get: (key) => {
+          if (key === "round1Config") {
+            return { maxTeamHealth: 6, maxEnemyHealth: 8 };
+          }
+          return undefined;
         }
       },
       player: {
@@ -330,6 +336,12 @@ export function Tutorial1({ next }) {
           maxRounds: 2,
           maxEnemyHealth: 8,
           maxTeamHealth: 6
+        },
+        get: (key) => {
+          if (key === "round1Config") {
+            return { maxTeamHealth: 6, maxEnemyHealth: 8 };
+          }
+          return undefined;
         }
       },
       player: {

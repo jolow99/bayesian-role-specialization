@@ -229,6 +229,12 @@ export function Tutorial2({ next }) {
           maxRounds: 2,
           maxEnemyHealth: 10,
           maxTeamHealth: 10
+        },
+        get: (key) => {
+          if (key === "round1Config") {
+            return { maxTeamHealth: 10, maxEnemyHealth: 10 };
+          }
+          return undefined;
         }
       },
       player: {
@@ -286,6 +292,12 @@ export function Tutorial2({ next }) {
           maxRounds: 2,
           maxEnemyHealth: 10,
           maxTeamHealth: 10
+        },
+        get: (key) => {
+          if (key === "round1Config") {
+            return { maxTeamHealth: 10, maxEnemyHealth: 10 };
+          }
+          return undefined;
         }
       },
       player: {
@@ -374,6 +386,12 @@ export function Tutorial2({ next }) {
           maxRounds: 2,
           maxEnemyHealth: 10,
           maxTeamHealth: 10
+        },
+        get: (key) => {
+          if (key === "round1Config") {
+            return { maxTeamHealth: 10, maxEnemyHealth: 10 };
+          }
+          return undefined;
         }
       },
       player: {
@@ -485,6 +503,12 @@ export function Tutorial2({ next }) {
           maxRounds: 2,
           maxEnemyHealth: 10,
           maxTeamHealth: 10
+        },
+        get: (key) => {
+          if (key === "round1Config") {
+            return { maxTeamHealth: 10, maxEnemyHealth: 10 };
+          }
+          return undefined;
         }
       },
       player: {
@@ -597,6 +621,12 @@ export function Tutorial2({ next }) {
           maxRounds: 2,
           maxEnemyHealth: 10,
           maxTeamHealth: 10
+        },
+        get: (key) => {
+          if (key === "round1Config") {
+            return { maxTeamHealth: 10, maxEnemyHealth: 10 };
+          }
+          return undefined;
         }
       },
       player: {
