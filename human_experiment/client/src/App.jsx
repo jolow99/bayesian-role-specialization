@@ -3,6 +3,7 @@ import { EmpiricaContext } from "@empirica/core/player/classic/react";
 import { EmpiricaMenu, EmpiricaParticipant } from "@empirica/core/player/react";
 import React from "react";
 import { Game } from "./Game";
+import { Consent } from "./intro-exit/Consent";
 import { ExitSurvey } from "./intro-exit/ExitSurvey";
 import { Introduction } from "./intro-exit/Introduction";
 import { Tutorial1 } from "./intro-exit/Tutorial1";
@@ -36,6 +37,7 @@ export default function App() {
         <EmpiricaMenu position="bottom-left" />
         <div className="h-full overflow-auto">
           <EmpiricaContext
+            consent={Consent}
             introSteps={introSteps}
             exitSteps={exitSteps}
             loading={SkeletonLoader}
