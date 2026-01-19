@@ -75,20 +75,12 @@ export const BattleField = React.memo(function BattleField({
       {/* Team Side (Bottom Left) */}
       <div className="absolute bottom-4 left-12 flex flex-col items-center" data-tutorial-id="team-section">
         <div className="flex items-end justify-center gap-4 mb-3">
-          {/* Sort players: left teammate, YOU (center), right teammate */}
+          {/* Display players in P1, P2, P3 order */}
           {allPlayers
             .map((entry, playerId) => ({ entry, playerId }))
             .filter(({ entry }) => entry !== null)
-            .sort((a, b) => {
-              const aIsYou = a.playerId === currentPlayerGameId;
-              const bIsYou = b.playerId === currentPlayerGameId;
-              // Put YOU in the middle by sorting to index 1
-              if (aIsYou && !bIsYou) return -1; // a (YOU) comes before b
-              if (!aIsYou && bIsYou) return 1;  // b (YOU) comes before a
-              // For non-YOU players, maintain their relative order
-              return a.playerId - b.playerId;
-            })
-            .map(({ entry, playerId }, sortedIdx) => {
+            .sort((a, b) => a.playerId - b.playerId)
+            .map(({ entry, playerId }) => {
               const isCurrentPlayer = playerId === currentPlayerGameId;
               // Handle both tutorial mode (direct stats) and game mode (stats via .get())
               const stats = entry.type === "real"
@@ -96,20 +88,10 @@ export const BattleField = React.memo(function BattleField({
                 : entry.bot.stats;
               const size = isCurrentPlayer ? "text-6xl" : "text-4xl";
 
-              // Determine order: left, center (YOU), right
-              let orderClass = '';
-              if (isCurrentPlayer) {
-                orderClass = 'order-2';
-              } else if (sortedIdx === 0) {
-                orderClass = 'order-1';
-              } else {
-                orderClass = 'order-3';
-              }
-
               const maxStat = 6; // Stats sum to 6
 
               return (
-                <div key={playerId} className={`flex flex-col items-center ${orderClass}`}>
+                <div key={playerId} className="flex flex-col items-center">
                   {/* Stats above player with bars */}
                   <div className="bg-white/90 rounded px-2 py-1 mb-1 border border-gray-400" style={{ width: '100px' }} data-tutorial-id="player-stats">
                     <div className="space-y-1">
@@ -152,7 +134,7 @@ export const BattleField = React.memo(function BattleField({
                   <div className={size}>👤</div>
                   {/* Player label */}
                   <div className={`text-xs font-bold text-gray-700 mt-1 ${isCurrentPlayer ? 'text-sm' : ''}`}>
-                    {isCurrentPlayer ? "YOU" : `P${playerId + 1}`}
+                    {isCurrentPlayer ? `P${playerId + 1} (You)` : `P${playerId + 1}`}
                   </div>
                 </div>
               );
