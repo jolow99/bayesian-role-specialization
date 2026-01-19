@@ -17,6 +17,11 @@ export function ActionHistory({ currentStageView = null, currentTurnView = 0 }) 
   const currentRound = round?.get("roundNumber");
   const currentRoundStageNumber = round?.get("stageNumber") || 0;
 
+  // Get round config for max health values
+  const roundConfig = currentRound ? game?.get(`round${currentRound}Config`) : null;
+  const maxTeamHealth = roundConfig?.maxTeamHealth;
+  const maxEnemyHealth = roundConfig?.maxEnemyHealth;
+
   // Check if this is a bot round (player has per-player virtual bots)
   const playerVirtualBots = player?.round?.get ? player.round.get("virtualBots") : null;
   const isBotRound = playerVirtualBots && playerVirtualBots.length > 0;
@@ -101,6 +106,31 @@ export function ActionHistory({ currentStageView = null, currentTurnView = 0 }) 
 
   return (
     <div className="space-y-3">
+      {/* Starting state - shows initial health before any stages */}
+      {maxTeamHealth && maxEnemyHealth && (
+        <div className="bg-gray-50 rounded-lg border border-gray-300 p-3">
+          <div className="mb-2">
+            <span className="font-bold text-sm text-gray-800">Starting State</span>
+          </div>
+          <div className="flex gap-2">
+            {/* Team starting health */}
+            <div className="flex-1 bg-green-50 rounded p-1.5 border border-green-200">
+              <div className="text-xs font-semibold text-green-700 flex items-center justify-center gap-1">
+                <span>👥</span>
+                <span>{maxTeamHealth}HP</span>
+              </div>
+            </div>
+            {/* Enemy starting health */}
+            <div className="flex-1 bg-red-50 rounded p-1.5 border border-red-200">
+              <div className="text-xs font-semibold text-red-700 flex items-center justify-center gap-1">
+                <span>👹</span>
+                <span>{maxEnemyHealth}HP</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {stageHistory.map((stageEntry, idx) => {
         // Find player's role for this stage from their action history
         // Must match both round AND stage since actionHistory accumulates across all rounds
