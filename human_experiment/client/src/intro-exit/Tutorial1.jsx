@@ -511,9 +511,9 @@ export function Tutorial1({ next }) {
               </div>
             </div>
 
-            {/* Outcome Overlay */}
+            {/* Outcome Overlay - covers left panel only, leaves history visible */}
             {showOutcome && outcome && (
-              <div className="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
+              <div className="absolute top-0 bottom-0 left-0 bg-black bg-opacity-60 flex items-center justify-center z-50" style={{ right: 'calc(22% + 4px)', minWidth: 'calc(100% - 354px)' }}>
                 <div className={`${outcome.success ? 'bg-green-50 border-green-400' : 'bg-red-50 border-red-400'} border-4 rounded-xl p-8 max-w-2xl w-full shadow-2xl mx-4`}>
                   {/* Icon and Title */}
                   <div className="text-center mb-6">

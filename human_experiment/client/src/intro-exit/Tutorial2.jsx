@@ -986,9 +986,9 @@ export function Tutorial2({ next }) {
                 </div>
               </div>
 
-              {/* Outcome Overlay */}
+              {/* Outcome Overlay - covers left panel only, leaves history visible */}
               {showOutcome && outcome && (
-                <div className="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
+                <div className="absolute top-0 bottom-0 left-0 bg-black bg-opacity-60 flex items-center justify-center z-50" style={{ right: 'calc(22% + 4px)', minWidth: 'calc(100% - 354px)' }}>
                   <div className={`${outcome.success ? 'bg-green-50 border-green-400' : 'bg-red-50 border-red-400'} border-4 rounded-xl p-8 max-w-2xl w-full shadow-2xl mx-4`}>
                     {/* Icon and Title */}
                     <div className="text-center mb-6">
@@ -1006,19 +1006,12 @@ export function Tutorial2({ next }) {
                       {selectedRole === ROLES.FIGHTER && (
                         <div className="text-gray-700 space-y-3">
                           <p>
-                            <span className="font-semibold">You chose Fighter 🤺</span> — With you attacking alongside the Tank and Medic, your team maximized damage output in Stage 2.
+                            <span className="font-semibold">You chose Fighter 🤺</span> — Your attacks added to the team's damage output.
                           </p>
-                          <p>
-                            The Tank blocked to reduce incoming damage (6 → 4), and the Medic healed when needed:
-                          </p>
-                          <ul className="list-disc list-inside ml-2 space-y-1 text-sm">
-                            <li>Stage 1: Bots played alone. Tank blocked and Medic attacked (team took 4 damage, dealt 2)</li>
-                            <li>Stage 2: With you attacking, the team dealt 4 damage per turn while staying protected</li>
-                          </ul>
                           <p className={`font-semibold ${outcome.success ? 'text-green-600' : 'text-red-600'}`}>
                             {outcome.success
-                              ? "Your additional damage output helped defeat the enemy!"
-                              : "The team needed more defense or healing to survive."}
+                              ? "Your additional damage helped defeat the enemy!"
+                              : "The team needed more protection to survive."}
                           </p>
                         </div>
                       )}
@@ -1026,19 +1019,15 @@ export function Tutorial2({ next }) {
                       {selectedRole === ROLES.TANK && (
                         <div className="text-gray-700 space-y-3">
                           <p>
-                            <span className="font-semibold">You chose Tank 🛡️</span> — With two Tanks blocking, your team had maximum damage reduction.
+                            <span className="font-semibold">You primarily chose Tank 🛡️</span> — You blocked to reduce incoming damage.
                           </p>
                           <p>
-                            However, blocking is not additive — only the highest DEF applies (still 2):
+                            <span className="font-semibold text-amber-600">Remember:</span> Blocking doesn't stack — only the highest DEF applies. With a Tank already on the team, your block didn't add extra protection.
                           </p>
-                          <ul className="list-disc list-inside ml-2 space-y-1 text-sm">
-                            <li>Stage 1: P1 (Tank) blocked, P2 (Medic) attacked (dealt 2 damage, took 4)</li>
-                            <li>Stage 2: Two tanks blocking doesn't stack! Team only dealt 2 damage per turn from Medic</li>
-                          </ul>
                           <p className={`font-semibold ${outcome.success ? 'text-green-600' : 'text-red-600'}`}>
                             {outcome.success
-                              ? "The team survived, but damage output was limited."
-                              : "With a Tank already on the team, adding another didn't help — the team lacked damage to win!"}
+                              ? "The team managed to win despite the redundant defense."
+                              : "The team lacked damage output to defeat the enemy in time."}
                           </p>
                         </div>
                       )}
@@ -1046,19 +1035,15 @@ export function Tutorial2({ next }) {
                       {selectedRole === ROLES.MEDIC && (
                         <div className="text-gray-700 space-y-3">
                           <p>
-                            <span className="font-semibold">You chose Medic 💚</span> — With two Medics, your team had strong healing potential.
+                            <span className="font-semibold">You chose Medic 💚</span> — You healed the team when damaged.
                           </p>
                           <p>
-                            Healing is additive — both Medics can heal 2 HP each for 4 total healing per turn:
+                            <span className="font-semibold text-green-600">Good news:</span> Healing does stack — multiple Medics can heal together for greater effect.
                           </p>
-                          <ul className="list-disc list-inside ml-2 space-y-1 text-sm">
-                            <li>Stage 1: Tank blocked (6 → 4 damage), Medic attacked while at full HP</li>
-                            <li>Stage 2: When damaged, both Medics heal for 4 total, but deal less damage</li>
-                          </ul>
                           <p className={`font-semibold ${outcome.success ? 'text-green-600' : 'text-red-600'}`}>
                             {outcome.success
-                              ? "Your healing helped keep the team alive to secure victory!"
-                              : "With a Medic already on the team, the extra healing couldn't compensate for low damage output."}
+                              ? "Your healing kept the team alive to secure victory!"
+                              : "The team needed more damage output to defeat the enemy."}
                           </p>
                         </div>
                       )}
@@ -1130,14 +1115,16 @@ export function Tutorial2({ next }) {
                         onClick={handlePlayAgain}
                         className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg text-lg shadow-lg transition-colors"
                       >
-                        Play Again
+                        {outcome.success ? 'Play Again' : 'Try Again'}
                       </button>
-                      <button
-                        onClick={handleStartMainGame}
-                        className={`${outcome.success ? 'bg-green-600 hover:bg-green-700' : 'bg-gray-600 hover:bg-gray-700'} text-white font-bold py-3 px-6 rounded-lg text-lg shadow-lg transition-colors`}
-                      >
-                        Start Main Game →
-                      </button>
+                      {outcome.success && (
+                        <button
+                          onClick={handleStartMainGame}
+                          className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg text-lg shadow-lg transition-colors"
+                        >
+                          Start Main Game →
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>
