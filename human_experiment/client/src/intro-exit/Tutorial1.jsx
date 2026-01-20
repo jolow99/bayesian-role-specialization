@@ -4,7 +4,7 @@ import { BattleField } from "../components/BattleField";
 import { ActionMenu } from "../components/ActionMenu";
 import { ResultsPanel } from "../components/ResultsPanel";
 import { ActionHistory } from "../components/ActionHistory";
-import { ROLES } from "../constants";
+import { ROLES, ROLE_NAMES } from "../constants";
 
 export function Tutorial1({ next }) {
   const [selectedRole, setSelectedRole] = useState(null);
@@ -158,13 +158,13 @@ export function Tutorial1({ next }) {
   const handleSubmit = () => {
     if (selectedRole === null) return;
 
-    // Simulate 2 rounds
+    // Simulate 2 turns in stage 1
     const results = [];
     let currentEnemyHP = 8;
     let currentTeamHP = 6;
 
-    for (let i = 1; i <= 2; i++) {
-      const result = simulateRound(i, selectedRole, currentEnemyHP, currentTeamHP);
+    for (let turn = 1; turn <= 2; turn++) {
+      const result = simulateRound(turn, selectedRole, currentEnemyHP, currentTeamHP);
       results.push(result);
       currentEnemyHP = result.enemyHealth;
       currentTeamHP = result.teamHealth;
@@ -198,10 +198,10 @@ export function Tutorial1({ next }) {
       teamHealth: currentTeamHP
     });
 
-    // Show first round
-    const firstRound = results[0];
-    const firstRoundMockData = createMockDataForRound(firstRound, [firstRound]);
-    setMockData(firstRoundMockData);
+    // Show first turn
+    const firstTurn = results[0];
+    const firstTurnMockData = createMockDataForTurn(firstTurn, [firstTurn], selectedRole);
+    setMockData(firstTurnMockData);
     setCurrentRound(1);
   };
 
@@ -216,13 +216,14 @@ export function Tutorial1({ next }) {
 
   const handleNextRound = () => {
     if (currentRound < roundResults.length) {
-      const nextRoundResult = roundResults[currentRound];
-      // Pass all results up to and including the next round for history
-      const nextRoundMockData = createMockDataForRound(
-        nextRoundResult,
-        roundResults.slice(0, currentRound + 1)
+      const nextTurnResult = roundResults[currentRound];
+      // Pass all results up to and including the next turn for history
+      const nextTurnMockData = createMockDataForTurn(
+        nextTurnResult,
+        roundResults.slice(0, currentRound + 1),
+        selectedRole
       );
-      setMockData(nextRoundMockData);
+      setMockData(nextTurnMockData);
       setCurrentRound(currentRound + 1);
     } else {
       // Show outcome overlay
@@ -266,10 +267,12 @@ export function Tutorial1({ next }) {
         playerId: 2,
         stats: { STR: 2, DEF: 2, SUP: 2 },
         roleOrder: [ROLES.FIGHTER, ROLES.TANK, ROLES.MEDIC],
+        actionHistory: [],
         stage: {},
         round: {},
         get: (key) => {
           if (key === "actionHistory") return [];
+          if (key === "gamePlayerId") return 2;
           return undefined;
         }
       },
@@ -285,51 +288,52 @@ export function Tutorial1({ next }) {
     };
   };
 
-  const createMockDataForRound = (roundResult, previousResults) => {
+  const createMockDataForTurn = (turnResult, previousTurns, playerSelectedRole) => {
     const players = [
       { id: "bot-1", playerId: 0, stats: { STR: 2, DEF: 2, SUP: 2 } },
       { id: "bot-2", playerId: 1, stats: { STR: 2, DEF: 2, SUP: 2 } },
       { id: "tutorial-player", playerId: 2, stats: { STR: 2, DEF: 2, SUP: 2 } }
     ];
 
-    // Build stage turns data from all previous results
-    // In Tutorial1, each round is treated as a stage with 1 turn
-    const playerActionHistory = [];
+    // Build stage turns data from all previous turns
+    // In Tutorial1, we have 1 stage with 2 turns
+    // Convert role number to string name (e.g., 0 -> "FIGHTER") for ActionHistory component
+    const playerActionHistory = [{
+      round: 1,
+      stage: 1,
+      role: ROLE_NAMES[playerSelectedRole]
+    }];
+
     const roundData = {
       roundNumber: 1,
-      stageNumber: previousResults.length, // Track how many stages completed
+      stageNumber: 1,
     };
 
-    previousResults.forEach((result, idx) => {
-      const stageNumber = idx + 1;
+    // All turns belong to stage 1
+    const stage1Turns = previousTurns.map((result, idx) => ({
+      turnNumber: idx + 1,
+      enemyIntent: result.enemyIntent,
+      actions: result.actions,
+      roles: result.roles,
+      damageToEnemy: result.damageToEnemy,
+      damageToTeam: result.damageToTeam,
+      healAmount: result.healAmount,
+      previousEnemyHealth: result.previousEnemyHealth,
+      previousTeamHealth: result.previousTeamHealth,
+      newEnemyHealth: result.enemyHealth,
+      newTeamHealth: result.teamHealth
+    }));
 
-      // Add player's role to action history (using stage instead of round)
-      playerActionHistory.push({
-        stage: stageNumber,
-        role: result.playerRole
-      });
+    roundData.stage1Turns = stage1Turns;
 
-      // Store turns for this stage in the new format
-      roundData[`stage${stageNumber}Turns`] = [{
-        turnNumber: 1,
-        enemyIntent: result.enemyIntent,
-        actions: result.actions,
-        roles: result.roles,
-        damageToEnemy: result.damageToEnemy,
-        damageToTeam: result.damageToTeam,
-        healAmount: result.healAmount,
-        previousEnemyHealth: result.previousEnemyHealth,
-        previousTeamHealth: result.previousTeamHealth,
-        newEnemyHealth: result.enemyHealth,
-        newTeamHealth: result.teamHealth
-      }];
-    });
+    // Current turn number is the length of previousTurns
+    const currentTurnNumber = previousTurns.length;
 
     return {
       game: {
-        enemyHealth: roundResult.enemyHealth,
+        enemyHealth: turnResult.enemyHealth,
         maxEnemyHealth: 8,
-        teamHealth: roundResult.teamHealth,
+        teamHealth: turnResult.teamHealth,
         maxTeamHealth: 6,
         treatment: {
           totalPlayers: 3,
@@ -349,10 +353,12 @@ export function Tutorial1({ next }) {
         playerId: 2,
         stats: { STR: 2, DEF: 2, SUP: 2 },
         roleOrder: [ROLES.FIGHTER, ROLES.TANK, ROLES.MEDIC],
+        actionHistory: playerActionHistory,
         stage: {},
         round: {},
         get: (key) => {
           if (key === "actionHistory") return playerActionHistory;
+          if (key === "gamePlayerId") return 2;
           return undefined;
         }
       },
@@ -362,9 +368,9 @@ export function Tutorial1({ next }) {
         get: (key) => roundData[key]
       },
       stage: {
-        name: `turn1`,
+        name: `turn${currentTurnNumber}`,
         stageType: "turn",
-        turnNumber: 1
+        turnNumber: currentTurnNumber
       }
     };
   };
@@ -410,7 +416,7 @@ export function Tutorial1({ next }) {
             <div className="flex-1 flex flex-col min-w-0">
               {/* Round Header */}
               <div className="bg-gray-800 text-white text-center flex-shrink-0 rounded-tl-lg flex items-center justify-center" style={{ height: '40px' }}>
-                <h1 className="text-lg font-bold">Tutorial 1 - Round {currentRound > 0 ? currentRound : 1}/2</h1>
+                <h1 className="text-lg font-bold">Tutorial 1</h1>
               </div>
 
 
@@ -479,8 +485,8 @@ export function Tutorial1({ next }) {
                   {isTurnStage && (
                     <div className="w-full">
                       <ResultsPanel
-                        stageNumber={currentRound}
-                        turnNumber={1}
+                        stageNumber={1}
+                        turnNumber={currentRound}
                         actions={currentRoundResult.actions}
                         allPlayers={allPlayers}
                         currentPlayerGameId={2}
@@ -493,7 +499,7 @@ export function Tutorial1({ next }) {
                         damageToEnemy={currentRoundResult.damageToEnemy}
                         healAmount={currentRoundResult.healAmount}
                         onNextTurn={handleNextRound}
-                        nextButtonLabel={currentRound < roundResults.length ? `Continue to Round ${currentRound + 1}` : "See Results"}
+                        nextButtonLabel={currentRound < roundResults.length ? `Continue to Turn ${currentRound + 1}` : "See Results"}
                       />
                     </div>
                   )}

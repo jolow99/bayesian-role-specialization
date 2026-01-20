@@ -72,7 +72,8 @@ const createMockDataWithHistory = () => {
       stage: {},
       round: {},
       get: (key) => {
-        if (key === "actionHistory") return [{ stage: 1, role: "MEDIC" }];
+        if (key === "actionHistory") return [{ round: 1, stage: 1, role: "MEDIC" }];
+        if (key === "gamePlayerId") return 2;
         return undefined;
       }
     },

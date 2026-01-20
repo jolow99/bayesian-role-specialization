@@ -243,7 +243,12 @@ export function Tutorial2({ next }) {
         stats: { STR: 2, DEF: 2, SUP: 2 },
         roleOrder: [ROLES.FIGHTER, ROLES.TANK, ROLES.MEDIC],
         stage: {},
-        round: {}
+        round: {},
+        get: (key) => {
+          if (key === "actionHistory") return [];
+          if (key === "gamePlayerId") return 2;
+          return undefined;
+        }
       },
       players: players,
       round: {
@@ -306,7 +311,12 @@ export function Tutorial2({ next }) {
         stats: { STR: 2, DEF: 2, SUP: 2 },
         roleOrder: [ROLES.FIGHTER, ROLES.TANK, ROLES.MEDIC],
         stage: {},
-        round: {}
+        round: {},
+        get: (key) => {
+          if (key === "actionHistory") return [];
+          if (key === "gamePlayerId") return 2;
+          return undefined;
+        }
       },
       players: players,
       round: {
@@ -400,7 +410,12 @@ export function Tutorial2({ next }) {
         stats: { STR: 2, DEF: 2, SUP: 2 },
         roleOrder: [ROLES.FIGHTER, ROLES.TANK, ROLES.MEDIC],
         stage: {},
-        round: {}
+        round: {},
+        get: (key) => {
+          if (key === "actionHistory") return [];
+          if (key === "gamePlayerId") return 2;
+          return undefined;
+        }
       },
       players: players,
       round: {
@@ -488,6 +503,7 @@ export function Tutorial2({ next }) {
     // Build player action history showing roles for completed stages
     // Convert role number to string name (e.g., 0 -> "FIGHTER") for ActionHistory component
     const playerActionHistory = allStageResults.map((stageData) => ({
+      round: 1,
       stage: stageData.stageNum,
       role: ROLE_NAMES[stageData.role]
     }));
@@ -525,6 +541,7 @@ export function Tutorial2({ next }) {
         },
         get: (key) => {
           if (key === "actionHistory") return playerActionHistory;
+          if (key === "gamePlayerId") return 2;
           return undefined;
         }
       },
@@ -606,6 +623,7 @@ export function Tutorial2({ next }) {
     // Build player action history showing roles for each stage
     // Convert role number to string name (e.g., 0 -> "FIGHTER") for ActionHistory component
     const playerActionHistory = stageResults.slice(0, stageIdx + 1).map((stageData) => ({
+      round: 1,
       stage: stageData.stageNum,
       role: ROLE_NAMES[stageData.role]
     }));
@@ -643,6 +661,7 @@ export function Tutorial2({ next }) {
         },
         get: (key) => {
           if (key === "actionHistory") return playerActionHistory;
+          if (key === "gamePlayerId") return 2;
           return undefined;
         }
       },
