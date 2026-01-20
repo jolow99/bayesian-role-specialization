@@ -19,6 +19,7 @@ export const ResultsPanel = React.memo(function ResultsPanel({
   newEnemyHealth,
   damageToTeam = 0,
   damageToEnemy = 0,
+  damageBlocked = 0,
   healAmount = 0
 }) {
   // Calculate health changes
@@ -52,8 +53,13 @@ export const ResultsPanel = React.memo(function ResultsPanel({
             </div>
             {/* Breakdown of changes */}
             <div className="flex justify-center gap-3 mt-1 text-xs">
-              {damageToTeam > 0 && (
-                <span className="text-red-500">-{damageToTeam} dmg</span>
+              {(damageToTeam > 0 || damageBlocked > 0) && (
+                <span>
+                  <span className="text-red-500">-{damageToTeam} dmg</span>
+                  {damageBlocked > 0 && (
+                    <span className="text-blue-500"> ({damageBlocked} blocked)</span>
+                  )}
+                </span>
               )}
               {healAmount > 0 && (
                 <span className="text-green-500">+{healAmount} heal</span>

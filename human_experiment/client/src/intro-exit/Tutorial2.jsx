@@ -156,9 +156,11 @@ export function Tutorial2({ next }) {
     });
 
     let damageToTeam = 0;
+    let damageBlocked = 0;
     if (enemyAttacks) {
       const mitigatedDamage = bossDamage - maxDefense;
       damageToTeam = Math.max(0, mitigatedDamage);
+      damageBlocked = Math.min(maxDefense, bossDamage);
     }
 
     // Calculate healing using real game logic (additive SUP)
@@ -185,6 +187,7 @@ export function Tutorial2({ next }) {
       roles,
       damageToEnemy: Math.round(damageToEnemy),
       damageToTeam: Math.round(damageToTeam),
+      damageBlocked: Math.round(damageBlocked),
       healAmount: Math.round(healAmount),
       enemyHealth: Math.round(newEnemyHP),
       teamHealth: Math.round(newTeamHP),
@@ -278,6 +281,7 @@ export function Tutorial2({ next }) {
         actions: turn1Result.actions,
         damageToEnemy: turn1Result.damageToEnemy,
         damageToTeam: turn1Result.damageToTeam,
+        damageBlocked: turn1Result.damageBlocked,
         healAmount: turn1Result.healAmount,
         previousEnemyHealth: 10,
         previousTeamHealth: 10,
@@ -364,6 +368,7 @@ export function Tutorial2({ next }) {
           actions: turn1Result.actions,
           damageToEnemy: turn1Result.damageToEnemy,
           damageToTeam: turn1Result.damageToTeam,
+          damageBlocked: turn1Result.damageBlocked,
           healAmount: turn1Result.healAmount,
           previousEnemyHealth: 10,
           previousTeamHealth: 10,
@@ -376,6 +381,7 @@ export function Tutorial2({ next }) {
           actions: turn2Result.actions,
           damageToEnemy: turn2Result.damageToEnemy,
           damageToTeam: turn2Result.damageToTeam,
+          damageBlocked: turn2Result.damageBlocked,
           healAmount: turn2Result.healAmount,
           previousEnemyHealth: turn1Result.enemyHealth,
           previousTeamHealth: turn1Result.teamHealth,
@@ -462,6 +468,7 @@ export function Tutorial2({ next }) {
           actions: round1Turn1Result.actions,
           damageToEnemy: round1Turn1Result.damageToEnemy,
           damageToTeam: round1Turn1Result.damageToTeam,
+          damageBlocked: round1Turn1Result.damageBlocked,
           healAmount: round1Turn1Result.healAmount,
           previousEnemyHealth: 10,
           previousTeamHealth: 10,
@@ -474,6 +481,7 @@ export function Tutorial2({ next }) {
           actions: round1Turn2Result.actions,
           damageToEnemy: round1Turn2Result.damageToEnemy,
           damageToTeam: round1Turn2Result.damageToTeam,
+          damageBlocked: round1Turn2Result.damageBlocked,
           healAmount: round1Turn2Result.healAmount,
           previousEnemyHealth: round1Turn1Result.enemyHealth,
           previousTeamHealth: round1Turn1Result.teamHealth,
@@ -492,6 +500,7 @@ export function Tutorial2({ next }) {
         actions: result.actions,
         damageToEnemy: result.damageToEnemy,
         damageToTeam: result.damageToTeam,
+        damageBlocked: result.damageBlocked,
         healAmount: result.healAmount,
         previousEnemyHealth: result.previousEnemyHealth,
         previousTeamHealth: result.previousTeamHealth,
@@ -580,6 +589,7 @@ export function Tutorial2({ next }) {
           actions: round1Turn1Result.actions,
           damageToEnemy: round1Turn1Result.damageToEnemy,
           damageToTeam: round1Turn1Result.damageToTeam,
+          damageBlocked: round1Turn1Result.damageBlocked,
           healAmount: round1Turn1Result.healAmount,
           previousEnemyHealth: 10,
           previousTeamHealth: 10,
@@ -592,6 +602,7 @@ export function Tutorial2({ next }) {
           actions: round1Turn2Result.actions,
           damageToEnemy: round1Turn2Result.damageToEnemy,
           damageToTeam: round1Turn2Result.damageToTeam,
+          damageBlocked: round1Turn2Result.damageBlocked,
           healAmount: round1Turn2Result.healAmount,
           previousEnemyHealth: round1Turn1Result.enemyHealth,
           previousTeamHealth: round1Turn1Result.teamHealth,
@@ -612,6 +623,7 @@ export function Tutorial2({ next }) {
         actions: result.actions,
         damageToEnemy: result.damageToEnemy,
         damageToTeam: result.damageToTeam,
+        damageBlocked: result.damageBlocked,
         healAmount: result.healAmount,
         previousEnemyHealth: result.previousEnemyHealth,
         previousTeamHealth: result.previousTeamHealth,
@@ -912,6 +924,7 @@ export function Tutorial2({ next }) {
                           newEnemyHealth={round1Turn1Result.enemyHealth}
                           damageToTeam={round1Turn1Result.damageToTeam}
                           damageToEnemy={round1Turn1Result.damageToEnemy}
+                          damageBlocked={round1Turn1Result.damageBlocked}
                           healAmount={round1Turn1Result.healAmount}
                           onNextTurn={showRound1Turn2}
                           nextButtonLabel="Continue to Turn 2"
@@ -935,6 +948,7 @@ export function Tutorial2({ next }) {
                           newEnemyHealth={round1Turn2Result.enemyHealth}
                           damageToTeam={round1Turn2Result.damageToTeam}
                           damageToEnemy={round1Turn2Result.damageToEnemy}
+                          damageBlocked={round1Turn2Result.damageBlocked}
                           healAmount={round1Turn2Result.healAmount}
                           onNextTurn={completeRound1}
                           nextButtonLabel="Proceed to Role Selection"
@@ -984,6 +998,7 @@ export function Tutorial2({ next }) {
                             newEnemyHealth={currentTurn.enemyHealth}
                             damageToTeam={currentTurn.damageToTeam}
                             damageToEnemy={currentTurn.damageToEnemy}
+                            damageBlocked={currentTurn.damageBlocked}
                             healAmount={currentTurn.healAmount}
                             onNextTurn={handleNextStageTurn}
                             nextButtonLabel={nextButtonLabel}

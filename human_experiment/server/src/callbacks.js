@@ -1010,9 +1010,11 @@ function resolveTurnActionsForPlayer(_player, roundConfig, _stageNumber, _turnNu
 
   // Update team health
   let damageToTeam = 0;
+  let damageBlocked = 0;
   if (enemyIntent === "WILL_ATTACK") {
     const mitigatedDamage = bossDamage - maxDefense;
     damageToTeam = Math.max(0, mitigatedDamage);
+    damageBlocked = Math.min(maxDefense, bossDamage);
   }
 
   const healAmount = totalHeal;
@@ -1023,6 +1025,7 @@ function resolveTurnActionsForPlayer(_player, roundConfig, _stageNumber, _turnNu
     previousTeamHealth: Math.round(currentTeamHealth),
     damageToEnemy: Math.round(damageToEnemy),
     damageToTeam: Math.round(damageToTeam),
+    damageBlocked: Math.round(damageBlocked),
     healAmount: Math.round(healAmount),
     newEnemyHealth: Math.round(newEnemyHealth),
     newTeamHealth: Math.round(newTeamHealth)
@@ -1082,9 +1085,10 @@ function resolveTurnActions(game, round, stageNumber, turnNumber, actions, stats
 
   // Update team health (damage from enemy minus defense, plus healing)
   let damageToTeam = 0;
+  let damageBlocked = 0;
   if (enemyIntent === "WILL_ATTACK") {
-    const mitigatedDamage = bossDamage - maxDefense;
-    damageToTeam = Math.max(0, mitigatedDamage);
+    damageToTeam = Math.max(0, bossDamage - maxDefense);
+    damageBlocked = Math.min(maxDefense, bossDamage);
   }
 
   const healAmount = totalHeal;
@@ -1138,6 +1142,7 @@ function resolveTurnActions(game, round, stageNumber, turnNumber, actions, stats
     previousTeamHealth: Math.round(currentTeamHealth),
     damageToEnemy: Math.round(damageToEnemy),
     damageToTeam: Math.round(damageToTeam),
+    damageBlocked: Math.round(damageBlocked),
     healAmount: Math.round(healAmount),
     newEnemyHealth: Math.round(newEnemyHealth),
     newTeamHealth: Math.round(newTeamHealth)

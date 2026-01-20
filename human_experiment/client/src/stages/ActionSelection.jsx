@@ -127,7 +127,7 @@ function ActionSelection() {
   }
 
   // Determine which turn's data to show based on currentTurnView
-  let enemyIntent, actions, damageToEnemy, damageToTeam, healAmount, previousEnemyHealth, previousTeamHealth;
+  let enemyIntent, actions, damageToEnemy, damageToTeam, damageBlocked, healAmount, previousEnemyHealth, previousTeamHealth;
 
   if (hasTurns && currentTurnView > 0 && currentTurnView <= turns.length) {
     // Show data for the current turn view
@@ -136,6 +136,7 @@ function ActionSelection() {
     actions = turn.actions || EMPTY_ARRAY;
     damageToEnemy = turn.damageToEnemy || 0;
     damageToTeam = turn.damageToTeam || 0;
+    damageBlocked = turn.damageBlocked || 0;
     healAmount = turn.healAmount || 0;
     previousEnemyHealth = turn.previousEnemyHealth || enemyHealth;
     previousTeamHealth = turn.previousTeamHealth || teamHealth;
@@ -145,6 +146,7 @@ function ActionSelection() {
     actions = EMPTY_ARRAY;
     damageToEnemy = 0;
     damageToTeam = 0;
+    damageBlocked = 0;
     healAmount = 0;
     previousEnemyHealth = enemyHealth;
     previousTeamHealth = teamHealth;
@@ -467,6 +469,7 @@ function ActionSelection() {
                       newEnemyHealth={enemyHealth}
                       damageToTeam={damageToTeam}
                       damageToEnemy={damageToEnemy}
+                      damageBlocked={damageBlocked}
                       healAmount={healAmount}
                     />
                   </div>

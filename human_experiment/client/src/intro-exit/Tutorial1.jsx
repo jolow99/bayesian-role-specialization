@@ -118,9 +118,11 @@ export function Tutorial1({ next }) {
 
     // Damage to team calculation
     let damageToTeam = bossDamage;
+    let damageBlocked = 0;
 
     // If there's a tank, reduce damage by highest DEF (each has DEF=2)
     if (tanks.length > 0) {
+      damageBlocked = Math.min(2, bossDamage); // DEF is 2
       damageToTeam = Math.max(0, bossDamage - 2); // Highest DEF is 2, so 3 - 2 = 1
     }
 
@@ -147,6 +149,7 @@ export function Tutorial1({ next }) {
       roles,
       damageToEnemy,
       damageToTeam,
+      damageBlocked,
       healAmount,
       enemyHealth: newEnemyHP,
       teamHealth: newTeamHP,
@@ -317,6 +320,7 @@ export function Tutorial1({ next }) {
       roles: result.roles,
       damageToEnemy: result.damageToEnemy,
       damageToTeam: result.damageToTeam,
+      damageBlocked: result.damageBlocked,
       healAmount: result.healAmount,
       previousEnemyHealth: result.previousEnemyHealth,
       previousTeamHealth: result.previousTeamHealth,
@@ -497,6 +501,7 @@ export function Tutorial1({ next }) {
                         newEnemyHealth={currentRoundResult.enemyHealth}
                         damageToTeam={currentRoundResult.damageToTeam}
                         damageToEnemy={currentRoundResult.damageToEnemy}
+                        damageBlocked={currentRoundResult.damageBlocked}
                         healAmount={currentRoundResult.healAmount}
                         onNextTurn={handleNextRound}
                         nextButtonLabel={currentRound < roundResults.length ? `Continue to Turn ${currentRound + 1}` : "See Results"}
