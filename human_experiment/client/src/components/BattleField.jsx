@@ -74,7 +74,7 @@ export const BattleField = React.memo(function BattleField({
 
       {/* Team Side (Bottom Left) */}
       <div className="absolute bottom-4 left-12 flex flex-col items-center" data-tutorial-id="team-section">
-        <div className="flex items-end justify-center gap-4 mb-3">
+        <div className="flex items-end justify-center gap-4 mb-3" data-tutorial-id="player-stats">
           {/* Display players in P1, P2, P3 order */}
           {allPlayers
             .map((entry, playerId) => ({ entry, playerId }))
@@ -93,7 +93,7 @@ export const BattleField = React.memo(function BattleField({
               return (
                 <div key={playerId} className="flex flex-col items-center">
                   {/* Stats above player with bars */}
-                  <div className="bg-white/90 rounded px-2 py-1 mb-1 border border-gray-400" style={{ width: '100px' }} data-tutorial-id="player-stats">
+                  <div className="bg-white/90 rounded px-2 py-1 mb-1 border border-gray-400" style={{ width: '100px' }}>
                     <div className="space-y-1">
                       {/* STR */}
                       <div className="flex items-center gap-1">

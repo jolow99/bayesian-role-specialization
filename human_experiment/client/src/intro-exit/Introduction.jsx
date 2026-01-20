@@ -176,6 +176,31 @@ export function Introduction({ next }) {
       )
     },
     {
+      targetId: "boss-stats",
+      tooltipPosition: "left",
+      content: (
+        <div>
+          <h4 className="text-lg font-bold text-gray-900 mb-2">Boss Stats</h4>
+          <p className="text-sm text-gray-700 mb-3">
+            The enemy stats affects how much damage it does to your team:
+          </p>
+          <div className="space-y-2 mb-3">
+            <div>
+              <div className="font-semibold text-red-600 mb-1">⚔️ STR (Strength)</div>
+              <div className="text-sm text-gray-700">The damage the boss deals to your team when it attacks.</div>
+            </div>
+            <div>
+              <div className="font-semibold text-orange-600 mb-1">ATK% (Attack Probability)</div>
+              <div className="text-sm text-gray-700">The chance the boss attacks each turn. For example, if it's 50%, the enemy generally attacks every 2 turns.</div>
+            </div>
+          </div>
+          <p className="text-sm text-gray-700 italic">
+            Keep an eye on these stats to plan your team's strategy!
+          </p>
+        </div>
+      )
+    },
+    {
       targetId: "battle-history",
       tooltipPosition: "left",
       content: (
@@ -191,7 +216,7 @@ export function Introduction({ next }) {
       )
     },
     {
-      targetId: "battle-history-s1t1",
+      targetId: ["battle-history-s1t1", "player-stats"],
       tooltipPosition: "left",
       content: (
         <div>
@@ -204,7 +229,7 @@ export function Introduction({ next }) {
             <li>• <strong>Right (red)</strong>: The enemy's health and whether they attacked (⚔️) or rested (😴)</li>
           </ul>
           <p className="text-sm text-gray-700 italic">
-            In this example: P1 attacked, P2 blocked, and P3 healed. The enemy attacked but dealt no damage thanks to P2's block and P3's heal!
+            In this example: P1 (with 3 STR) attacked dealing 3 damage, P2 (with 3 DEF) blocked defending up to 3 damage, and P3 (with 3 SUP) healed restoring 3 HP. The enemy attacked but dealt no damage thanks to P2's block and P3's heal!
           </p>
         </div>
       )
