@@ -45,8 +45,8 @@ treatments:
           {roundNumber: 4, maxEnemyHealth: 20, maxTeamHealth: 10, bossDamage: 2, statProfile: "balanced", playerDeviateProbability: 0.05, enemyAttackProbability: 0.8, botPlayers: []},
           {roundNumber: 5, maxEnemyHealth: 20, maxTeamHealth: 10, bossDamage: 4, statProfile: "imbalanced-allunique", playerDeviateProbability: 0.05, enemyAttackProbability: 0.8, botPlayers: []},
           {roundNumber: 6, maxEnemyHealth: 20, maxTeamHealth: 10, bossDamage: 2, statProfile: "imbalanced-allunique", playerDeviateProbability: 0.05, enemyAttackProbability: 0.8, botPlayers: []},
-          {roundNumber: 7, maxEnemyHealth: 20, maxTeamHealth: 10, bossDamage: 4, statProfile: "imbalanced-oneunique", playerDeviateProbability: 0.05, enemyAttackProbability: 0.8, botPlayers: []},
-          {roundNumber: 8, maxEnemyHealth: 20, maxTeamHealth: 10, bossDamage: 2, statProfile: "imbalanced-oneunique", playerDeviateProbability: 0.05, enemyAttackProbability: 0.8, botPlayers: []}
+          {roundNumber: 7, maxEnemyHealth: 20, maxTeamHealth: 10, bossDamage: 4, statProfile: "imbalanced-oneunique-str", playerDeviateProbability: 0.05, enemyAttackProbability: 0.8, botPlayers: []},
+          {roundNumber: 8, maxEnemyHealth: 20, maxTeamHealth: 10, bossDamage: 2, statProfile: "imbalanced-oneunique-def", playerDeviateProbability: 0.05, enemyAttackProbability: 0.8, botPlayers: []}
         ]
 
     - name: Production-Prolific
@@ -65,6 +65,6 @@ treatments:
           {roundNumber: 4, maxEnemyHealth: 20, maxTeamHealth: 10, bossDamage: 2, statProfile: "balanced", playerDeviateProbability: 0.05, enemyAttackProbability: 0.8, botPlayers: []},
           {roundNumber: 5, maxEnemyHealth: 20, maxTeamHealth: 10, bossDamage: 4, statProfile: "imbalanced-allunique", playerDeviateProbability: 0.05, enemyAttackProbability: 0.8, botPlayers: []},
           {roundNumber: 6, maxEnemyHealth: 20, maxTeamHealth: 10, bossDamage: 2, statProfile: "imbalanced-allunique", playerDeviateProbability: 0.05, enemyAttackProbability: 0.8, botPlayers: []},
-          {roundNumber: 7, maxEnemyHealth: 20, maxTeamHealth: 10, bossDamage: 4, statProfile: "imbalanced-oneunique", playerDeviateProbability: 0.05, enemyAttackProbability: 0.8, botPlayers: []},
-          {roundNumber: 8, maxEnemyHealth: 20, maxTeamHealth: 10, bossDamage: 2, statProfile: "imbalanced-oneunique", playerDeviateProbability: 0.05, enemyAttackProbability: 0.8, botPlayers: []}
+          {roundNumber: 7, maxEnemyHealth: 20, maxTeamHealth: 10, bossDamage: 4, statProfile: "imbalanced-oneunique-str", playerDeviateProbability: 0.05, enemyAttackProbability: 0.8, botPlayers: []},
+          {roundNumber: 8, maxEnemyHealth: 20, maxTeamHealth: 10, bossDamage: 2, statProfile: "imbalanced-oneunique-def", playerDeviateProbability: 0.05, enemyAttackProbability: 0.8, botPlayers: []}
         ]

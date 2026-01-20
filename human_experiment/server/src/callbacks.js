@@ -61,12 +61,30 @@ function generatePlayerStats(playerId, seed, mode) {
     ];
     return permutations[playerId % 3];
 
-  } else if (mode === "imbalanced-oneunique") {
-    // Two players same, one different
+  } else if (mode === "imbalanced-oneunique-str") {
+    // One player has high STR; others are balanced
     const profiles = [
-      { STR: 1, DEF: 1, SUP: 4 }, // P0: Strong SUP
-      { STR: 1, DEF: 1, SUP: 4 }, // P1: Strong SUP
-      { STR: 1, DEF: 4, SUP: 1 }, // P2: Strong DEF (unique)
+      { STR: 4, DEF: 1, SUP: 1 }, // P0: Strong STR (unique)
+      { STR: 2, DEF: 2, SUP: 2 }, // P1: Balanced
+      { STR: 2, DEF: 2, SUP: 2 }, // P2: Balanced
+    ];
+    return profiles[playerId % 3];
+
+  } else if (mode === "imbalanced-oneunique-def") {
+    // One player has high DEF; others are balanced
+    const profiles = [
+      { STR: 1, DEF: 4, SUP: 1 }, // P0: Strong DEF (unique)
+      { STR: 2, DEF: 2, SUP: 2 }, // P1: Balanced
+      { STR: 2, DEF: 2, SUP: 2 }, // P2: Balanced
+    ];
+    return profiles[playerId % 3];
+
+  } else if (mode === "imbalanced-oneunique-sup") {
+    // One player has high SUP/HEAL; others are balanced
+    const profiles = [
+      { STR: 1, DEF: 1, SUP: 4 }, // P0: Strong SUP (unique)
+      { STR: 2, DEF: 2, SUP: 2 }, // P1: Balanced
+      { STR: 2, DEF: 2, SUP: 2 }, // P2: Balanced
     ];
     return profiles[playerId % 3];
 
