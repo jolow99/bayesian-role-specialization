@@ -150,10 +150,8 @@ Empirica.onGameStart(({ game }) => {
   const {
     totalPlayers,
     roundConfigs,
+    gameSeed,
   } = treatment;
-
-  // Generate random seed for this game (not from treatment)
-  const gameSeed = Math.floor(Math.random() * 10000);
 
   console.log(`\n===== GAME START =====`);
   console.log(`Game starting with ${game.players.length} human players, target totalPlayers: ${totalPlayers}`);
@@ -366,9 +364,14 @@ Empirica.onRoundStart(({ round }) => {
 
   // Pre-generate enemy intents for all possible turns in this round
   // Each stage has 2 turns, so we need up to maxStagesPerRound * 2 intents
+  // Use seeded RNG for reproducibility across experiments
+  // First turn always attacks to ensure consistent initial experience
+  const enemyIntentRng = seededRandom(gameSeed + roundNumber * 100);
   const enemyIntents = [];
   for (let i = 0; i < maxStagesPerRound * 2; i++) {
-    const intent = Math.random() < enemyAttackProbability ? "WILL_ATTACK" : "WILL_NOT_ATTACK";
+    const intent = i === 0
+      ? "WILL_ATTACK"
+      : (enemyIntentRng() < enemyAttackProbability ? "WILL_ATTACK" : "WILL_NOT_ATTACK");
     enemyIntents.push(intent);
   }
 

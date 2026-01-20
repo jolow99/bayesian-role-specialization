@@ -24,6 +24,10 @@ factors:
       desc: Configuration for each round (array of 8 configs with per-round settings)
       values:
         - value: []
+    - name: gameSeed
+      desc: Fixed seed for reproducible randomness (enemy intents, player stats, etc.)
+      values:
+        - value: 42
 treatments:
     - name: Development-Mixed
       desc: Development treatment - 2 rounds with bots, 6 rounds with humans
@@ -33,6 +37,7 @@ treatments:
         playerCount: 1
         totalPlayers: 3
         showTutorial: true
+        gameSeed: 42
         roundConfigs: [
           {roundNumber: 1, maxEnemyHealth: 31, maxTeamHealth: 10, bossDamage: 2, statProfile: "balanced", playerDeviateProbability: 0.00, enemyAttackProbability: 1.0, botPlayers: [{strategy: {type: "fixed", role: 0}},{strategy: {type: "fixed", role: 0}}]},
           {roundNumber: 2, maxEnemyHealth: 8, maxTeamHealth: 10, bossDamage: 4, statProfile: "balanced", playerDeviateProbability: 0.00, enemyAttackProbability: 1.0, botPlayers: [{strategy: {type: "fixed", role: 1}},{strategy: {type: "fixed", role: 1}}]},
@@ -51,7 +56,8 @@ treatments:
         maxStagesPerRound: 5
         playerCount: 3
         totalPlayers: 3
-        showTutorial: false
+        showTutorial: true
+        gameSeed: 42
         roundConfigs: [
           {roundNumber: 1, maxEnemyHealth: 20, maxTeamHealth: 10, bossDamage: 4, statProfile: "balanced", playerDeviateProbability: 0.05, enemyAttackProbability: 0.8, botPlayers: []},
           {roundNumber: 2, maxEnemyHealth: 31, maxTeamHealth: 10, bossDamage: 2, statProfile: "balanced", playerDeviateProbability: 0.00, enemyAttackProbability: 1.0, botPlayers: [{strategy: {type: "fixed", role: 0}},{strategy: {type: "fixed", role: 0}}]},
