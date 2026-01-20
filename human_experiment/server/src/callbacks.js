@@ -3,6 +3,44 @@ import { ACTIONS, ACTION_NAMES, ROLES, ROLE_NAMES } from "./constants.js";
 
 export const Empirica = new ClassicListenersCollector();
 
+// Track lobby player counts and broadcast to waiting players
+Empirica.on("player", "introDone", (ctx, { player }) => {
+  const game = player.currentGame;
+  if (!game || game.hasStarted) {
+    return;
+  }
+
+  // Update lobby count for this game
+  updateLobbyCount(ctx, game);
+});
+
+function updateLobbyCount(ctx, game) {
+  if (!game || game.hasStarted) {
+    return;
+  }
+
+  // Get all players in this game who have completed intro
+  const allPlayers = Array.from(ctx.scopesByKind("player").values());
+  const lobbyPlayers = allPlayers.filter(p => {
+    const playerGame = p.currentGame;
+    return playerGame &&
+           playerGame.id === game.id &&
+           p.get("introDone") === true &&
+           !game.hasStarted;
+  });
+
+  const connectedCount = lobbyPlayers.length;
+  const requiredCount = game.get("treatment")?.playerCount || 3;
+
+  console.log(`Lobby update for game ${game.id}: ${connectedCount}/${requiredCount} players ready`);
+
+  // Broadcast count to all waiting players in this game's lobby
+  lobbyPlayers.forEach(p => {
+    p.set("lobbyPlayersConnected", connectedCount);
+    p.set("lobbyPlayersRequired", requiredCount);
+  });
+}
+
 // Game configuration constants
 const TURNS_PER_STAGE = 2; // Each stage (role commitment) lasts for 2 turns
 

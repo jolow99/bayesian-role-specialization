@@ -5,7 +5,9 @@ import React from "react";
 import { Game } from "./Game";
 import { Consent } from "./intro-exit/Consent";
 import { ExitSurvey } from "./intro-exit/ExitSurvey";
+import { Finished } from "./intro-exit/Finished";
 import { Introduction } from "./intro-exit/Introduction";
+import { Lobby } from "./intro-exit/Lobby";
 import { Tutorial1 } from "./intro-exit/Tutorial1";
 import { Tutorial2 } from "./intro-exit/Tutorial2";
 import { SkeletonLoader } from "./components/SkeletonLoader";
@@ -38,6 +40,8 @@ export default function App() {
         <div className="h-full overflow-auto">
           <EmpiricaContext
             consent={Consent}
+            lobby={Lobby}
+            finished={Finished}
             introSteps={introSteps}
             exitSteps={exitSteps}
             loading={SkeletonLoader}
