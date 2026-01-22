@@ -290,6 +290,7 @@ function ActionSelection() {
     if (!submitted && selectedRole !== null) {
       // Store the selected role on stage (not round)
       player.stage.set("selectedRole", selectedRole);
+      player.stage.set("roleSubmittedAt", Date.now()); // Track when role was submitted
 
       // Set local state to immediately show waiting screen
       setLocalSubmitted(true);

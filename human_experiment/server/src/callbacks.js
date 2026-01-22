@@ -5,6 +5,22 @@ export const Empirica = new ClassicListenersCollector();
 
 // Track lobby player counts and broadcast to waiting players
 Empirica.on("player", "introDone", (ctx, { player }) => {
+  // Record when player finished intro/tutorial and entered lobby
+  const introDoneAt = player.get("introDoneAt");
+  if (!introDoneAt) {
+    const now = Date.now();
+    player.set("introDoneAt", now);
+    player.set("lobbyEnteredAt", now);
+
+    // Calculate tutorial duration if we have consentedAt timestamp
+    const consentedAt = player.get("consentedAt");
+    if (consentedAt) {
+      player.set("tutorialDurationMs", now - consentedAt);
+    }
+
+    console.log(`Player ${player.id} entered lobby at ${new Date(now).toISOString()}`);
+  }
+
   const game = player.currentGame;
   if (!game || game.hasStarted) {
     return;
@@ -171,6 +187,8 @@ Empirica.onGameStart(({ game }) => {
     gameSeed,
   } = treatment;
 
+  const gameStartTime = Date.now();
+
   console.log(`\n===== GAME START =====`);
   console.log(`Game starting with ${game.players.length} human players, target totalPlayers: ${totalPlayers}`);
   console.log(`Game will have ${roundConfigs.length} rounds with different configurations`);
@@ -179,6 +197,7 @@ Empirica.onGameStart(({ game }) => {
   game.set("gameSeed", gameSeed);
   game.set("totalPoints", 0); // Points accumulate across all rounds
   game.set("roundOutcomes", []); // Track win/loss for each round
+  game.set("gameStartedAt", gameStartTime); // Timestamp when game started
 
   console.log(`Game seed: ${gameSeed}`);
   console.log(`==============================\n`);
@@ -192,6 +211,14 @@ Empirica.onGameStart(({ game }) => {
     player.set("roundOutcomes", []); // Player-specific round outcomes (for accurate bot round display)
     player.set("isBot", false);
     player.set("gamePlayerId", idx); // Permanent player ID (0, 1, or 2)
+    player.set("gameStartedAt", gameStartTime); // When this player's game started
+
+    // Calculate lobby wait time
+    const lobbyEnteredAt = player.get("lobbyEnteredAt");
+    if (lobbyEnteredAt) {
+      player.set("lobbyWaitDurationMs", gameStartTime - lobbyEnteredAt);
+    }
+
     console.log(`Player ${idx} (id: ${player.id}) assigned permanent gamePlayerId: ${idx}`);
   });
 
@@ -297,6 +324,10 @@ Empirica.onRoundStart(({ round }) => {
     return;
   }
   round.set("roundInitialized", true);
+
+  // Track round start timestamp
+  const roundStartTime = Date.now();
+  round.set("roundStartedAt", roundStartTime);
 
   // Set player-round properties now that round is started
   // Retrieve from game-level storage for immediate persistence
@@ -405,6 +436,10 @@ Empirica.onStageStart(({ stage }) => {
 
   console.log(`>>> STAGE START: Round ${roundNumber}, Stage ${stageNumber}`);
 
+  // Track stage start timestamp
+  const stageStartTime = Date.now();
+  stage.set("stageStartedAt", stageStartTime);
+
   // Bots auto-select roles at stage start
   // Update shared virtualBots on round
   const virtualBots = round.get("virtualBots") || [];
@@ -447,6 +482,14 @@ Empirica.onStageEnded(({ stage }) => {
   const stageType = stage.get("stageType");
 
   console.log(`<<< STAGE END: Round ${roundNumber}, Stage ${stageNumber}`);
+
+  // Track stage end timestamp and duration
+  const stageEndTime = Date.now();
+  stage.set("stageEndedAt", stageEndTime);
+  const stageStartedAt = stage.get("stageStartedAt");
+  if (stageStartedAt) {
+    stage.set("stageDurationMs", stageEndTime - stageStartedAt);
+  }
 
   // Handle special stage types (roundEnd, gameEnd)
   if (stageType === "roundEnd") {
@@ -534,15 +577,17 @@ function resolveBothTurns(game, round, stage, stageNumber) {
   // Collect player roles and log to history
   game.players.forEach(player => {
     const submittedRole = player.stage.get("selectedRole");
+    const roleSubmittedAt = player.stage.get("roleSubmittedAt");
     const playerId = player.round.get("playerId");
 
     if (submittedRole !== null && submittedRole !== undefined) {
-      // Log to role history
+      // Log to role history with timestamp
       const roleHistory = player.get("roleHistory") || [];
       roleHistory.push({
         round: roundNumber,
         stage: stageNumber,
-        role: ROLE_NAMES[submittedRole]
+        role: ROLE_NAMES[submittedRole],
+        submittedAt: roleSubmittedAt || Date.now()
       });
       player.set("roleHistory", roleHistory);
 
@@ -762,12 +807,14 @@ function resolveBothTurnsPerPlayer(game, round, _stage, stageNumber) {
 
     // Get player's selected role
     const submittedRole = player.stage.get("selectedRole");
+    const roleSubmittedAt = player.stage.get("roleSubmittedAt");
     if (submittedRole !== null && submittedRole !== undefined) {
       const roleHistory = player.get("roleHistory") || [];
       roleHistory.push({
         round: roundNumber,
         stage: stageNumber,
-        role: ROLE_NAMES[submittedRole]
+        role: ROLE_NAMES[submittedRole],
+        submittedAt: roleSubmittedAt || Date.now()
       });
       player.set("roleHistory", roleHistory);
       console.log(`Player ${playerId} selected role: ${ROLE_NAMES[submittedRole]} for stage ${stageNumber}`);
@@ -1177,6 +1224,14 @@ Empirica.onRoundEnded(({ round }) => {
 
   console.log(`!!! onRoundEnded called: Round ${roundNumber}, Outcome: ${outcome || "ongoing"}`);
 
+  // Track round end timestamp and duration
+  const roundEndTime = Date.now();
+  round.set("roundEndedAt", roundEndTime);
+  const roundStartedAt = round.get("roundStartedAt");
+  if (roundStartedAt) {
+    round.set("roundDurationMs", roundEndTime - roundStartedAt);
+  }
+
   // Clean up round-specific player data
   game.players.forEach((player) => {
     player.round.set("stats", null);
@@ -1191,12 +1246,28 @@ Empirica.onGameEnded(({ game }) => {
   const roundOutcomes = game.get("roundOutcomes");
   const finalOutcome = game.get("finalOutcome");
 
+  // Track game end timestamp and total duration
+  const gameEndTime = Date.now();
+  game.set("gameEndedAt", gameEndTime);
+  const gameStartedAt = game.get("gameStartedAt");
+  if (gameStartedAt) {
+    game.set("gameDurationMs", gameEndTime - gameStartedAt);
+  }
+
   console.log(`Game ended.`);
   console.log(`Round outcomes:`, roundOutcomes);
 
   game.players.forEach(player => {
     const playerTotalPoints = player.get("totalPoints") || 0;
     player.set("finalOutcome", finalOutcome);
+    player.set("gameEndedAt", gameEndTime);
+
+    // Calculate total experiment duration for this player (from consent to game end)
+    const consentedAt = player.get("consentedAt");
+    if (consentedAt) {
+      player.set("totalExperimentDurationMs", gameEndTime - consentedAt);
+    }
+
     // Don't overwrite player's individual totalPoints - they already have their own cumulative score
     console.log(`Player ${player.get("gamePlayerId")} final points: ${playerTotalPoints}`);
   });
