@@ -36,61 +36,61 @@ factors:
 
 treatments:
     - name: Treatment1
-      desc: Treatment 1 - balanced to imbalanced progression
+      desc: Treatment 1
       factors:
         maxRounds: 8
         maxStagesPerRound: 5
         playerCount: 3
         totalPlayers: 3
-        showTutorial: false
+        showTutorial: true
         gameSeed: 348989437
-        humanRoundIds: [1, 2, 3, 4, 5, 6]
-        botRoundIds: [[1, 2], [3, 4], [5, 6]]
+        humanRoundIds: [1, 4, 7, 10, 13, 2]
+        botRoundIds: [[1, 7], [2,11], [6, 12]]
 
     - name: Treatment2
-      desc: Treatment 2 - different config mix
+      desc: Treatment 2 
       factors:
         maxRounds: 8
         maxStagesPerRound: 5
         playerCount: 3
         totalPlayers: 3
-        showTutorial: false
+        showTutorial: true
         gameSeed: 348989437
-        humanRoundIds: [3, 4, 5, 6, 7, 8]
-        botRoundIds: [[7, 8], [9, 10], [11, 12]]
+        humanRoundIds: [2, 5, 8, 11, 14, 6]
+        botRoundIds: [[3, 9], [4, 13], [8, 14]]
 
     - name: Treatment3
-      desc: Treatment 3 - advanced configs
+      desc: Treatment 3 
       factors:
         maxRounds: 8
         maxStagesPerRound: 5
         playerCount: 3
         totalPlayers: 3
-        showTutorial: 41
+        showTutorial: true
         gameSeed: 348989437
-        humanRoundIds: [7, 8, 9, 10, 11, 12]
-        botRoundIds: [[13, 14], [1, 3], [2, 4]]
+        humanRoundIds: [3, 6, 9, 12, 15, 7]
+        botRoundIds: [[5, 6], [1, 15], [10, 11]]
 
     - name: Treatment4
-      desc: Treatment 4 - mixed difficulty
+      desc: Treatment 4 
       factors:
         maxRounds: 8
         maxStagesPerRound: 5
         playerCount: 3
         totalPlayers: 3
-        showTutorial: false
+        showTutorial: true
         gameSeed: 348989437
-        humanRoundIds: [1, 5, 9, 11, 13, 15]
-        botRoundIds: [[5, 6], [7, 8], [9, 10]]
+        humanRoundIds: [4, 7, 10, 13, 1, 10]
+        botRoundIds: [[2, 8], [3, 12], [7, 13]]
 
     - name: Treatment5
-      desc: Treatment 5 - endgame configs
+      desc: Treatment 5 
       factors:
         maxRounds: 8
         maxStagesPerRound: 5
         playerCount: 3
         totalPlayers: 3
-        showTutorial: false
+        showTutorial: true
         gameSeed: 348989437
-        humanRoundIds: [11, 12, 13, 14, 15, 1]
-        botRoundIds: [[11, 12], [13, 14], [15, 1]]
+        humanRoundIds: [5, 8, 11, 14, 2, 13]
+        botRoundIds: [[4, 10], [5, 14], [9, 15]]
