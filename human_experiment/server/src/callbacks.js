@@ -3,6 +3,7 @@ import { ACTIONS, ACTION_NAMES, ROLES, ROLE_NAMES } from "./constants.js";
 import { readFileSync } from "fs";
 import { join } from "path";
 
+
 // Load round config pools from JSON file
 // Use __dirname which is available in bundled Node.js environments (esbuild --platform=node)
 const roundConfigPools = JSON.parse(
@@ -100,7 +101,6 @@ const TURNS_PER_STAGE = 2; // Each stage (role commitment) lasts for 2 turns
 // Helper function to generate player stats
 // Stats now sum to 6
 function generatePlayerStats(playerId, seed, mode) {
-  const rng = seededRandom(seed + playerId);
 
   if (mode === "balanced") {
     return { STR: 2, DEF: 2, SUP: 2 };
@@ -259,12 +259,14 @@ Empirica.onGameStart(({ game }) => {
     });
   }
 
-  // Shuffle round order using seeded RNG
-  const shuffleRng = seededRandom(gameSeed);
+  // Shuffle round order using Math.random instead of seeded RNG
+  // const shuffleRng = seededRandom(gameSeed);  
+  const shuffleRng = Math.random;
   const shuffledRoundOrder = shuffleArray(roundSlots, shuffleRng);
 
   // Store shuffled order on game for reference
   game.set("shuffledRoundOrder", shuffledRoundOrder);
+  console.log(`Before Shuffle:`, roundSlots)
   console.log(`Shuffled round order:`, shuffledRoundOrder.map((r, i) =>
     `Round ${i+1}: ${r.type}${r.type === "human" ? ` (config ${r.humanConfigId})` : ` (slot ${r.botSlotIndex})`}`
   ));
@@ -1191,6 +1193,7 @@ function addRoundEndStage(round) {
     name: "Round Over",
     duration: 600 // 10 minutes max - wait for player to click continue
   });
+  roundEndStage.set("stageNumber", "end");
   roundEndStage.set("stageType", "roundEnd");
   roundEndStage.set("endMessage", message);
 }
@@ -1337,8 +1340,17 @@ Empirica.onGameEnded(({ game }) => {
   console.log(`Game ended.`);
   console.log(`Round outcomes:`, roundOutcomes);
 
+  // Check if game completed all rounds (vs early termination)
+  const treatment = game.get("treatment");
+  const maxRounds = treatment?.maxRounds || 0;
+  const completedAllRounds = roundOutcomes && roundOutcomes.length >= maxRounds;
+
   game.players.forEach(player => {
     const playerTotalPoints = player.get("totalPoints") || 0;
+    // Only mark as "finished" if all rounds were completed (not early termination)
+    if (completedAllRounds) {
+      player.set("game_complete", true);
+    }
     player.set("finalOutcome", finalOutcome);
     player.set("gameEndedAt", gameEndTime);
 

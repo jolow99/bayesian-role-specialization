@@ -35,30 +35,6 @@ factors:
         - value: [[1, 2], [3, 4], [5, 6]]
 
 treatments:
-    - name: Development
-      desc: Development treatment for testing
-      factors:
-        maxRounds: 8
-        maxStagesPerRound: 5
-        playerCount: 1
-        totalPlayers: 3
-        showTutorial: true
-        gameSeed: 42
-        humanRoundIds: [1, 2, 3, 4, 5, 6]
-        botRoundIds: [[1, 2], [3, 4], [5, 6]]
-
-    - name: Test Treatment
-      desc: Test Treatment with 3 players
-      factors:
-        maxRounds: 8
-        maxStagesPerRound: 5
-        playerCount: 3
-        totalPlayers: 3
-        showTutorial: true
-        gameSeed: 42
-        humanRoundIds: [1, 3, 5, 7, 9, 11]
-        botRoundIds: [[1, 2], [3, 4], [5, 6]]
-
     - name: Treatment1
       desc: Treatment 1 - balanced to imbalanced progression
       factors:
@@ -66,8 +42,8 @@ treatments:
         maxStagesPerRound: 5
         playerCount: 3
         totalPlayers: 3
-        showTutorial: true
-        gameSeed: 42
+        showTutorial: false
+        gameSeed: 348989437
         humanRoundIds: [1, 2, 3, 4, 5, 6]
         botRoundIds: [[1, 2], [3, 4], [5, 6]]
 
@@ -78,8 +54,8 @@ treatments:
         maxStagesPerRound: 5
         playerCount: 3
         totalPlayers: 3
-        showTutorial: true
-        gameSeed: 42
+        showTutorial: false
+        gameSeed: 348989437
         humanRoundIds: [3, 4, 5, 6, 7, 8]
         botRoundIds: [[7, 8], [9, 10], [11, 12]]
 
@@ -90,8 +66,8 @@ treatments:
         maxStagesPerRound: 5
         playerCount: 3
         totalPlayers: 3
-        showTutorial: 42
-        gameSeed: 42
+        showTutorial: 41
+        gameSeed: 348989437
         humanRoundIds: [7, 8, 9, 10, 11, 12]
         botRoundIds: [[13, 14], [1, 3], [2, 4]]
 
@@ -102,8 +78,8 @@ treatments:
         maxStagesPerRound: 5
         playerCount: 3
         totalPlayers: 3
-        showTutorial: true
-        gameSeed: 42
+        showTutorial: false
+        gameSeed: 348989437
         humanRoundIds: [1, 5, 9, 11, 13, 15]
         botRoundIds: [[5, 6], [7, 8], [9, 10]]
 
@@ -114,7 +90,7 @@ treatments:
         maxStagesPerRound: 5
         playerCount: 3
         totalPlayers: 3
-        showTutorial: true
-        gameSeed: 42
+        showTutorial: false
+        gameSeed: 348989437
         humanRoundIds: [11, 12, 13, 14, 15, 1]
         botRoundIds: [[11, 12], [13, 14], [15, 1]]

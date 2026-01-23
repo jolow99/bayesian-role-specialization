@@ -10,8 +10,8 @@ export function Finished() {
   const [countdown, setCountdown] = useState(5);
 
   // Detect if player never got into a game (lobby timeout)
-  const ended = player?.get("ended");
-  const isLobbyTimeout = !game || ended !== "finished";
+  const isGameComplete = player?.get("game_complete");
+  const isLobbyTimeout = !game || !isGameComplete;
 
   useEffect(() => {
     // Only auto-redirect for successful completions
