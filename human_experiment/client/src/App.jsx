@@ -8,6 +8,7 @@ import { ExitSurvey } from "./intro-exit/ExitSurvey";
 import { Finished } from "./intro-exit/Finished";
 import { Introduction } from "./intro-exit/Introduction";
 import { Lobby } from "./intro-exit/Lobby";
+import { PlayerCreate } from "./intro-exit/PlayerCreate";
 import { Tutorial1 } from "./intro-exit/Tutorial1";
 import { Tutorial2 } from "./intro-exit/Tutorial2";
 import { SkeletonLoader } from "./components/SkeletonLoader";
@@ -30,6 +31,13 @@ export default function App() {
   }
 
   function exitSteps({ game, player }) {
+    // Skip survey if player never got into a game (lobby timeout)
+    // player.get("ended") will be something other than "finished" for lobby timeout
+    const ended = player?.get("ended");
+    if (!game || ended !== "finished") {
+      // Lobby timed out or game never started - skip survey, go straight to Finished
+      return [];
+    }
     return [ExitSurvey];
   }
 
@@ -39,6 +47,7 @@ export default function App() {
         <EmpiricaMenu position="bottom-left" />
         <div className="h-full overflow-auto">
           <EmpiricaContext
+            playerCreate={PlayerCreate}
             consent={Consent}
             lobby={Lobby}
             finished={Finished}

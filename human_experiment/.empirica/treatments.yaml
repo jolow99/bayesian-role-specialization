@@ -49,6 +49,20 @@ treatments:
           {roundNumber: 8, maxEnemyHealth: 20, maxTeamHealth: 10, bossDamage: 2, statProfile: "imbalanced-oneunique-def", playerDeviateProbability: 0.05, enemyAttackProbability: 0.8, botPlayers: []}
         ]
 
+    - name: Test Treatment
+      desc: Test Treatment with 2 rounds
+      factors:
+        maxRounds: 8
+        maxStagesPerRound: 5
+        playerCount: 3
+        totalPlayers: 3
+        showTutorial: true
+        gameSeed: 42
+        roundConfigs: [
+          {roundNumber: 1, maxEnemyHealth: 20, maxTeamHealth: 10, bossDamage: 4, statProfile: "balanced", playerDeviateProbability: 0.00, enemyAttackProbability: 1.0, botPlayers: []},
+          {roundNumber: 2, maxEnemyHealth: 20, maxTeamHealth: 10, bossDamage: 4, statProfile: "imbalanced-oneunique-str", playerDeviateProbability: 0.00, enemyAttackProbability: 1.0, botPlayers: []}
+        ]
+
     - name: Treatment1
       desc: Treatment 1
       factors:
