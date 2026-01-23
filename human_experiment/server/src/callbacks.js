@@ -1,7 +1,44 @@
 import { ClassicListenersCollector } from "@empirica/core/admin/classic";
 import { ACTIONS, ACTION_NAMES, ROLES, ROLE_NAMES } from "./constants.js";
+import { readFileSync } from "fs";
+import { join } from "path";
+
+// Load round config pools from JSON file
+// Use __dirname which is available in bundled Node.js environments (esbuild --platform=node)
+const roundConfigPools = JSON.parse(
+  readFileSync(join(__dirname, "roundConfigPools.json"), "utf-8")
+);
 
 export const Empirica = new ClassicListenersCollector();
+
+// Helper function to get config from pool by ID
+function getHumanConfig(configId) {
+  const config = roundConfigPools.humanConfigs.find(c => c.id === configId);
+  if (!config) {
+    console.error(`Human config with ID ${configId} not found!`);
+    return null;
+  }
+  return { ...config, botPlayers: [] }; // Human configs have no bots
+}
+
+function getBotConfig(configId) {
+  const config = roundConfigPools.botConfigs.find(c => c.id === configId);
+  if (!config) {
+    console.error(`Bot config with ID ${configId} not found!`);
+    return null;
+  }
+  return config;
+}
+
+// Fisher-Yates shuffle with seeded RNG
+function shuffleArray(array, rng) {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+}
 
 // Track lobby player counts and broadcast to waiting players
 Empirica.on("player", "introDone", (ctx, { player }) => {
@@ -183,21 +220,54 @@ Empirica.onGameStart(({ game }) => {
   const treatment = game.get("treatment");
   const {
     totalPlayers,
-    roundConfigs,
     gameSeed,
+    humanRoundIds,
+    botRoundIds,
   } = treatment;
 
   const gameStartTime = Date.now();
 
   console.log(`\n===== GAME START =====`);
   console.log(`Game starting with ${game.players.length} human players, target totalPlayers: ${totalPlayers}`);
-  console.log(`Game will have ${roundConfigs.length} rounds with different configurations`);
+  console.log(`Human round IDs: ${humanRoundIds}`);
+  console.log(`Bot round IDs per player: ${JSON.stringify(botRoundIds)}`);
 
   // Store game-level state
   game.set("gameSeed", gameSeed);
   game.set("totalPoints", 0); // Points accumulate across all rounds
   game.set("roundOutcomes", []); // Track win/loss for each round
   game.set("gameStartedAt", gameStartTime); // Timestamp when game started
+
+  // Build shuffled round order using seeded RNG
+  // Create round slots: 6 human + 2 bot = 8 rounds
+  const roundSlots = [];
+
+  // Add 6 human round slots
+  humanRoundIds.forEach((configId, idx) => {
+    roundSlots.push({
+      type: "human",
+      humanConfigId: configId,
+      originalIndex: idx
+    });
+  });
+
+  // Add 2 bot round slots (bot config varies per player, so we just mark the slot index)
+  for (let botSlot = 0; botSlot < 2; botSlot++) {
+    roundSlots.push({
+      type: "bot",
+      botSlotIndex: botSlot // 0 or 1, used to look up per-player bot config
+    });
+  }
+
+  // Shuffle round order using seeded RNG
+  const shuffleRng = seededRandom(gameSeed);
+  const shuffledRoundOrder = shuffleArray(roundSlots, shuffleRng);
+
+  // Store shuffled order on game for reference
+  game.set("shuffledRoundOrder", shuffledRoundOrder);
+  console.log(`Shuffled round order:`, shuffledRoundOrder.map((r, i) =>
+    `Round ${i+1}: ${r.type}${r.type === "human" ? ` (config ${r.humanConfigId})` : ` (slot ${r.botSlotIndex})`}`
+  ));
 
   console.log(`Game seed: ${gameSeed}`);
   console.log(`==============================\n`);
@@ -212,6 +282,11 @@ Empirica.onGameStart(({ game }) => {
     player.set("isBot", false);
     player.set("gamePlayerId", idx); // Permanent player ID (0, 1, or 2)
     player.set("gameStartedAt", gameStartTime); // When this player's game started
+
+    // Store this player's bot config IDs (from the per-player array)
+    const playerBotConfigIds = botRoundIds[idx] || botRoundIds[0]; // Fallback to first player's if missing
+    player.set("botConfigIds", playerBotConfigIds);
+    console.log(`Player ${idx} bot config IDs: ${playerBotConfigIds}`);
 
     // Calculate lobby wait time
     const lobbyEnteredAt = player.get("lobbyEnteredAt");
@@ -229,9 +304,34 @@ Empirica.onGameStart(({ game }) => {
 function addGameRound(game, roundNumber) {
   console.log(`!!! addGameRound called for round ${roundNumber}`);
 
-  const treatment = game.get("treatment");
-  const roundConfigs = treatment.roundConfigs;
-  const roundConfig = roundConfigs[roundNumber - 1]; // 0-indexed array
+  const shuffledRoundOrder = game.get("shuffledRoundOrder");
+  const roundSlot = shuffledRoundOrder[roundNumber - 1]; // 0-indexed array
+
+  if (!roundSlot) {
+    console.error(`No round slot found for round ${roundNumber}`);
+    return;
+  }
+
+  const gameSeed = game.get("gameSeed");
+
+  // Determine the round config based on slot type
+  let roundConfig;
+  let isBotRound = false;
+
+  if (roundSlot.type === "human") {
+    // Human round - all players share the same config
+    roundConfig = getHumanConfig(roundSlot.humanConfigId);
+    console.log(`Round ${roundNumber}: Human round using config ID ${roundSlot.humanConfigId}`);
+  } else {
+    // Bot round - each player has their own config, but we need a "base" config for round-level properties
+    // Use first player's bot config as the base (for round health, etc.)
+    const firstPlayer = game.players[0];
+    const firstPlayerBotConfigIds = firstPlayer?.get("botConfigIds") || [1, 2];
+    const botConfigId = firstPlayerBotConfigIds[roundSlot.botSlotIndex];
+    roundConfig = getBotConfig(botConfigId);
+    isBotRound = true;
+    console.log(`Round ${roundNumber}: Bot round (slot ${roundSlot.botSlotIndex}), base config ID ${botConfigId}`);
+  }
 
   if (!roundConfig) {
     console.error(`No config found for round ${roundNumber}`);
@@ -245,19 +345,15 @@ function addGameRound(game, roundNumber) {
 
   console.log(`!!! Created round ${roundNumber} with config:`, roundConfig);
 
-  // Store round number (minimal data that must be set here)
+  // Store round number and type
   round.set("roundNumber", roundNumber);
   round.set("stageNumber", 0); // Current stage within this round (0 means not started)
+  round.set("isBotRound", isBotRound);
+  round.set("roundSlot", roundSlot);
 
   // Store round config on both game (for server callbacks) and round (for client access)
   game.set(`round${roundNumber}Config`, roundConfig);
   round.set("roundConfig", roundConfig);
-
-  // Note: virtualBots will be initialized in onRoundStart for proper persistence
-  const botConfigs = roundConfig.botPlayers || [];
-  const gameSeed = game.get("gameSeed");
-
-  console.log(`Round ${roundNumber}: Will configure ${botConfigs.length} virtual bots in onRoundStart`);
 
   // Store player assignments for this round
   // Human players keep their permanent gamePlayerId (0, 1, 2, etc.)
@@ -266,7 +362,18 @@ function addGameRound(game, roundNumber) {
   game.players.forEach((player) => {
     const gamePlayerId = player.get("gamePlayerId"); // Use permanent ID
 
-    const stats = generatePlayerStats(gamePlayerId, gameSeed + roundNumber * 10000, roundConfig.statProfile);
+    // For bot rounds, each player might have a different config
+    let playerRoundConfig = roundConfig;
+    if (isBotRound) {
+      const playerBotConfigIds = player.get("botConfigIds") || [1, 2];
+      const playerBotConfigId = playerBotConfigIds[roundSlot.botSlotIndex];
+      playerRoundConfig = getBotConfig(playerBotConfigId);
+      // Store player-specific config
+      player.set(`round${roundNumber}Config`, playerRoundConfig);
+      console.log(`Round ${roundNumber}: Player ${gamePlayerId} using bot config ID ${playerBotConfigId}`);
+    }
+
+    const stats = generatePlayerStats(gamePlayerId, gameSeed + roundNumber * 10000, playerRoundConfig.statProfile);
 
     playerAssignments.push({
       empiricaPlayerId: player.id,
@@ -277,16 +384,18 @@ function addGameRound(game, roundNumber) {
     console.log(`Round ${roundNumber}: Human Player ${gamePlayerId} stats:`, stats);
   });
 
-  // Store bot configs for this round (positions will be assigned per-player on client)
-  // In solo-with-bots mode, each human sees themselves at their position and bots at the other positions
-  // We store bot configs with a botIndex (0, 1, etc.) rather than fixed positions
-  const botPositionAssignments = botConfigs.map((botConfig, idx) => ({
-    ...botConfig,
-    botIndex: idx // Relative index, not a fixed playerId
-  }));
+  // Store bot configs for this round
+  // For bot rounds, each player has their own bot config (stored per-player above)
+  // For human rounds, no bots
+  let botPositionAssignments = [];
+  if (isBotRound) {
+    // In bot rounds, we store the bot configs per-player (done in onRoundStart)
+    // Here we just mark that this is a bot round
+    console.log(`Round ${roundNumber}: Bot round - per-player configs will be set in onRoundStart`);
+  }
 
   game.set(`round${roundNumber}BotAssignments`, botPositionAssignments);
-  console.log(`Round ${roundNumber}: Bot configs stored:`, botPositionAssignments.length, "bots");
+  console.log(`Round ${roundNumber}: Bot configs stored:`, botPositionAssignments.length, "bots (per-player configs in onRoundStart)");
 
   // Store player assignments on game object with round number key for immediate persistence
   game.set(`round${roundNumber}Assignments`, playerAssignments);
@@ -356,11 +465,13 @@ Empirica.onRoundStart(({ round }) => {
   console.log(`Round ${roundNumber}: Initialized health - Enemy: ${roundConfig.maxEnemyHealth}, Team: ${roundConfig.maxTeamHealth}`);
 
   // Initialize virtual bots for this round (do this in onRoundStart for proper persistence)
-  // Bot configs are stored with botIndex; positions are assigned per-player
-  const botPositionAssignments = game.get(`round${roundNumber}BotAssignments`) || [];
   const gameSeed = game.get("gameSeed");
   const treatment = game.get("treatment");
   const totalPlayers = treatment.totalPlayers;
+  // Derive isBotRound from the shuffled round order
+  const shuffledRoundOrder = game.get("shuffledRoundOrder");
+  const roundSlot = shuffledRoundOrder[roundNumber - 1];
+  const isBotRound = roundSlot.type === "bot";
 
   // For each human player, create their personalized view of virtual bots
   // Each human sees themselves at their gamePlayerId, and bots fill the other positions
@@ -375,38 +486,37 @@ Empirica.onRoundStart(({ round }) => {
       }
     }
 
+    // For bot rounds, get this player's specific bot config
+    let playerBotConfigs = [];
+    let playerRoundConfig = roundConfig;
+    if (isBotRound) {
+      // Each player has their own bot config stored during addGameRound
+      playerRoundConfig = player.get(`round${roundNumber}Config`) || roundConfig;
+      playerBotConfigs = playerRoundConfig.botPlayers || [];
+    }
+
     // Assign bots to these positions
-    const playerVirtualBots = botPositionAssignments.map((botConfig, idx) => ({
+    const playerVirtualBots = playerBotConfigs.map((botConfig, idx) => ({
       playerId: botPositions[idx], // Assign bot to a non-human position
-      botIndex: botConfig.botIndex,
+      botIndex: idx,
       strategy: botConfig.strategy,
-      stats: generatePlayerStats(botPositions[idx], gameSeed + roundNumber * 10000, roundConfig.statProfile),
+      stats: generatePlayerStats(botPositions[idx], gameSeed + roundNumber * 10000, playerRoundConfig.statProfile),
       currentRole: null // Will be set each stage during role selection
     }));
 
     // Store per-player virtual bots
     player.round.set("virtualBots", playerVirtualBots);
-    console.log(`Round ${roundNumber}: Player ${humanPlayerId} sees bots at positions:`, playerVirtualBots.map(b => b.playerId));
-  });
 
-  // Also store a shared virtualBots on round for backward compatibility (uses position 0 human's view)
-  // This is used by server-side turn resolution
-  const firstHumanPlayerId = game.players[0]?.get("gamePlayerId") ?? 0;
-  const sharedBotPositions = [];
-  for (let i = 0; i < totalPlayers; i++) {
-    if (i !== firstHumanPlayerId) {
-      sharedBotPositions.push(i);
+    // For bot rounds, also initialize per-player health (each player has independent game state)
+    if (isBotRound) {
+      player.round.set("enemyHealth", playerRoundConfig.maxEnemyHealth);
+      player.round.set("teamHealth", playerRoundConfig.maxTeamHealth);
+      player.round.set("playerRoundConfig", playerRoundConfig);
+      console.log(`Round ${roundNumber}: Player ${humanPlayerId} bot round - Enemy: ${playerRoundConfig.maxEnemyHealth}, Team: ${playerRoundConfig.maxTeamHealth}`);
     }
-  }
-  const sharedVirtualBots = botPositionAssignments.map((botConfig, idx) => ({
-    playerId: sharedBotPositions[idx],
-    botIndex: botConfig.botIndex,
-    strategy: botConfig.strategy,
-    stats: generatePlayerStats(sharedBotPositions[idx], gameSeed + roundNumber * 10000, roundConfig.statProfile),
-    currentRole: null
-  }));
-  round.set("virtualBots", sharedVirtualBots);
-  console.log(`Round ${roundNumber}: Shared virtualBots initialized (${sharedVirtualBots.length} bots)`);
+
+    console.log(`Round ${roundNumber}: Player ${humanPlayerId} sees ${playerVirtualBots.length} bots at positions:`, playerVirtualBots.map(b => b.playerId));
+  });
 
   const enemyAttackProbability = roundConfig.enemyAttackProbability;
   const maxStagesPerRound = game.get("treatment").maxStagesPerRound;
@@ -440,20 +550,7 @@ Empirica.onStageStart(({ stage }) => {
   const stageStartTime = Date.now();
   stage.set("stageStartedAt", stageStartTime);
 
-  // Bots auto-select roles at stage start
-  // Update shared virtualBots on round
-  const virtualBots = round.get("virtualBots") || [];
-  const updatedBots = virtualBots.map(bot => {
-    const roleChoice = getBotRoleChoice(bot, roundNumber, game);
-    console.log(`Virtual Bot (shared) botIndex ${bot.botIndex} auto-selected role: ${ROLE_NAMES[roleChoice]}`);
-    return {
-      ...bot,
-      currentRole: roleChoice
-    };
-  });
-  round.set("virtualBots", updatedBots);
-
-  // Also update per-player virtualBots
+  // Bots auto-select roles at stage start (per-player bots only)
   game.players.forEach(player => {
     const playerBots = player.round.get("virtualBots") || [];
     const updatedPlayerBots = playerBots.map(bot => {
@@ -466,12 +563,6 @@ Empirica.onStageStart(({ stage }) => {
     player.round.set("virtualBots", updatedPlayerBots);
     console.log(`Player ${player.get("gamePlayerId")} bots updated with roles:`, updatedPlayerBots.map(b => ({ pos: b.playerId, role: ROLE_NAMES[b.currentRole] })));
   });
-
-  // Store bot roles on stage for client access (using shared bots for consistency)
-  stage.set("botRoles", updatedBots.map(bot => ({
-    botIndex: bot.botIndex,
-    role: bot.currentRole
-  })));
 });
 
 Empirica.onStageEnded(({ stage }) => {
@@ -536,8 +627,9 @@ Empirica.onStageEnded(({ stage }) => {
   round.set("stageNumber", stageNumber);
 
   // Check if this is a bot round (each player plays independently with bots)
-  const botAssignments = game.get(`round${roundNumber}BotAssignments`) || [];
-  const isBotRound = botAssignments.length > 0;
+  const shuffledRoundOrder = game.get("shuffledRoundOrder");
+  const roundSlot = shuffledRoundOrder[roundNumber - 1];
+  const isBotRound = roundSlot.type === "bot";
 
   if (isBotRound) {
     // Bot round: resolve turns independently for each player
@@ -763,7 +855,7 @@ function resolveBothTurns(game, round, stage, stageNumber) {
 function resolveBothTurnsPerPlayer(game, round, _stage, stageNumber) {
   const roundNumber = round.get("roundNumber");
   const treatment = game.get("treatment");
-  const roundConfig = game.get(`round${roundNumber}Config`);
+  const baseRoundConfig = game.get(`round${roundNumber}Config`);
   const gameSeed = game.get("gameSeed");
   const maxStagesPerRound = treatment.maxStagesPerRound;
   const totalPlayers = treatment.totalPlayers;
@@ -774,14 +866,17 @@ function resolveBothTurnsPerPlayer(game, round, _stage, stageNumber) {
     const playerId = player.get("gamePlayerId");
     const playerBots = player.round.get("virtualBots") || [];
 
+    // Get player-specific round config (for bot rounds, each player may have different config)
+    const playerRoundConfig = player.round.get("playerRoundConfig") || player.get(`round${roundNumber}Config`) || baseRoundConfig;
+
     // Get or initialize per-player health
     let playerEnemyHealth = player.round.get("enemyHealth");
     let playerTeamHealth = player.round.get("teamHealth");
 
     // Initialize per-player health on first stage
     if (playerEnemyHealth === null || playerEnemyHealth === undefined) {
-      playerEnemyHealth = roundConfig.maxEnemyHealth;
-      playerTeamHealth = roundConfig.maxTeamHealth;
+      playerEnemyHealth = playerRoundConfig.maxEnemyHealth;
+      playerTeamHealth = playerRoundConfig.maxTeamHealth;
     }
 
     // Check if this player's round already ended
@@ -825,8 +920,8 @@ function resolveBothTurnsPerPlayer(game, round, _stage, stageNumber) {
     for (let turnNumber = 1; turnNumber <= 2; turnNumber++) {
       const turnIndex = (stageNumber - 1) * 2 + (turnNumber - 1);
       const enemyIntent = enemyIntents[turnIndex];
-      const maxHealth = roundConfig.maxTeamHealth;
-      const playerDeviateProbability = roundConfig.playerDeviateProbability;
+      const maxHealth = playerRoundConfig.maxTeamHealth;
+      const playerDeviateProbability = playerRoundConfig.playerDeviateProbability;
 
       // Determine actions for all players (human + bots)
       const actions = [];
@@ -868,7 +963,7 @@ function resolveBothTurnsPerPlayer(game, round, _stage, stageNumber) {
 
       // Resolve turn for this player
       const turnResult = resolveTurnActionsForPlayer(
-        player, roundConfig, stageNumber, turnNumber,
+        player, playerRoundConfig, stageNumber, turnNumber,
         actions, stats, enemyIntent, playerEnemyHealth, playerTeamHealth
       );
 
@@ -918,11 +1013,6 @@ function resolveBothTurnsPerPlayer(game, round, _stage, stageNumber) {
     // Store per-player turn results
     player.round.set(`stage${stageNumber}Turns`, turns);
 
-    // Check if player hasn't finished yet
-    if (!player.round.get("outcome")) {
-      allPlayersFinished = false;
-    }
-
     // Log action history for this player
     const history = player.get("actionHistory") || [];
     turns.forEach(turn => {
@@ -938,16 +1028,6 @@ function resolveBothTurnsPerPlayer(game, round, _stage, stageNumber) {
     });
     player.set("actionHistory", history);
   });
-
-  // Also store shared turn results on round for backward compatibility
-  // Use first player's results as the "canonical" result
-  const firstPlayer = game.players[0];
-  if (firstPlayer) {
-    const firstPlayerTurns = firstPlayer.round.get(`stage${stageNumber}Turns`);
-    if (firstPlayerTurns) {
-      round.set(`stage${stageNumber}Turns`, firstPlayerTurns);
-    }
-  }
 
   // Check if all players have finished their rounds
   const allOutcomes = game.players.map(p => p.round.get("outcome")).filter(o => o);

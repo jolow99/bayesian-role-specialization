@@ -1,0 +1,36 @@
+{
+  "humanConfigs": [
+    {"id": 1, "maxEnemyHealth": 20, "maxTeamHealth": 10, "bossDamage": 4, "statProfile": "balanced", "playerDeviateProbability": 0.00, "enemyAttackProbability": 1.0},
+    {"id": 2, "maxEnemyHealth": 20, "maxTeamHealth": 10, "bossDamage": 2, "statProfile": "balanced", "playerDeviateProbability": 0.00, "enemyAttackProbability": 1.0},
+    {"id": 3, "maxEnemyHealth": 20, "maxTeamHealth": 10, "bossDamage": 4, "statProfile": "imbalanced-allunique", "playerDeviateProbability": 0.00, "enemyAttackProbability": 1.0},
+    {"id": 4, "maxEnemyHealth": 20, "maxTeamHealth": 10, "bossDamage": 2, "statProfile": "imbalanced-allunique", "playerDeviateProbability": 0.00, "enemyAttackProbability": 1.0},
+    {"id": 5, "maxEnemyHealth": 20, "maxTeamHealth": 10, "bossDamage": 4, "statProfile": "imbalanced-oneunique-str", "playerDeviateProbability": 0.00, "enemyAttackProbability": 1.0},
+    {"id": 6, "maxEnemyHealth": 20, "maxTeamHealth": 10, "bossDamage": 2, "statProfile": "imbalanced-oneunique-str", "playerDeviateProbability": 0.00, "enemyAttackProbability": 1.0},
+    {"id": 7, "maxEnemyHealth": 20, "maxTeamHealth": 10, "bossDamage": 4, "statProfile": "imbalanced-oneunique-def", "playerDeviateProbability": 0.00, "enemyAttackProbability": 1.0},
+    {"id": 8, "maxEnemyHealth": 20, "maxTeamHealth": 10, "bossDamage": 2, "statProfile": "imbalanced-oneunique-def", "playerDeviateProbability": 0.00, "enemyAttackProbability": 1.0},
+    {"id": 9, "maxEnemyHealth": 20, "maxTeamHealth": 10, "bossDamage": 4, "statProfile": "imbalanced-oneunique-sup", "playerDeviateProbability": 0.00, "enemyAttackProbability": 1.0},
+    {"id": 10, "maxEnemyHealth": 20, "maxTeamHealth": 10, "bossDamage": 2, "statProfile": "imbalanced-oneunique-sup", "playerDeviateProbability": 0.00, "enemyAttackProbability": 1.0},
+    {"id": 11, "maxEnemyHealth": 30, "maxTeamHealth": 10, "bossDamage": 6, "statProfile": "imbalanced-allunique", "playerDeviateProbability": 0.00, "enemyAttackProbability": 1.0},
+    {"id": 12, "maxEnemyHealth": 18, "maxTeamHealth": 10, "bossDamage": 6, "statProfile": "imbalanced-oneunique-str", "playerDeviateProbability": 0.00, "enemyAttackProbability": 1.0},
+    {"id": 13, "maxEnemyHealth": 18, "maxTeamHealth": 10, "bossDamage": 8, "statProfile": "imbalanced-oneunique-def", "playerDeviateProbability": 0.00, "enemyAttackProbability": 1.0},
+    {"id": 14, "maxEnemyHealth": 10, "maxTeamHealth": 10, "bossDamage": 8, "statProfile": "balanced", "playerDeviateProbability": 0.00, "enemyAttackProbability": 0.5},
+    {"id": 15, "maxEnemyHealth": 25, "maxTeamHealth": 10, "bossDamage": 4, "statProfile": "balanced", "playerDeviateProbability": 0.00, "enemyAttackProbability": 0.8}
+  ],
+  "botConfigs": [
+    {"id": 1, "maxEnemyHealth": 31, "maxTeamHealth": 10, "bossDamage": 2, "statProfile": "balanced", "playerDeviateProbability": 0.00, "enemyAttackProbability": 1.0, "botPlayers": [{"strategy": {"type": "fixed", "role": 0}}, {"strategy": {"type": "fixed", "role": 0}}]},
+    {"id": 2, "maxEnemyHealth": 8, "maxTeamHealth": 10, "bossDamage": 4, "statProfile": "balanced", "playerDeviateProbability": 0.00, "enemyAttackProbability": 1.0, "botPlayers": [{"strategy": {"type": "fixed", "role": 1}}, {"strategy": {"type": "fixed", "role": 1}}]},
+    {"id": 3, "maxEnemyHealth": 31, "maxTeamHealth": 10, "bossDamage": 2, "statProfile": "balanced", "playerDeviateProbability": 0.00, "enemyAttackProbability": 1.0, "botPlayers": [{"strategy": {"type": "fixed", "role": 1}}, {"strategy": {"type": "fixed", "role": 1}}]},
+    {"id": 4, "maxEnemyHealth": 8, "maxTeamHealth": 10, "bossDamage": 4, "statProfile": "balanced", "playerDeviateProbability": 0.00, "enemyAttackProbability": 1.0, "botPlayers": [{"strategy": {"type": "fixed", "role": 0}}, {"strategy": {"type": "fixed", "role": 0}}]},
+    {"id": 5, "maxEnemyHealth": 31, "maxTeamHealth": 10, "bossDamage": 2, "statProfile": "balanced", "playerDeviateProbability": 0.00, "enemyAttackProbability": 1.0, "botPlayers": [{"strategy": {"type": "fixed", "role": 2}}, {"strategy": {"type": "fixed", "role": 2}}]},
+    {"id": 6, "maxEnemyHealth": 8, "maxTeamHealth": 10, "bossDamage": 4, "statProfile": "balanced", "playerDeviateProbability": 0.00, "enemyAttackProbability": 1.0, "botPlayers": [{"strategy": {"type": "fixed", "role": 2}}, {"strategy": {"type": "fixed", "role": 2}}]},
+    {"id": 7, "maxEnemyHealth": 25, "maxTeamHealth": 10, "bossDamage": 3, "statProfile": "imbalanced-allunique", "playerDeviateProbability": 0.00, "enemyAttackProbability": 1.0, "botPlayers": [{"strategy": {"type": "fixed", "role": 0}}, {"strategy": {"type": "fixed", "role": 1}}]},
+    {"id": 8, "maxEnemyHealth": 25, "maxTeamHealth": 10, "bossDamage": 3, "statProfile": "imbalanced-allunique", "playerDeviateProbability": 0.00, "enemyAttackProbability": 1.0, "botPlayers": [{"strategy": {"type": "fixed", "role": 1}}, {"strategy": {"type": "fixed", "role": 2}}]},
+    {"id": 9, "maxEnemyHealth": 25, "maxTeamHealth": 10, "bossDamage": 3, "statProfile": "imbalanced-allunique", "playerDeviateProbability": 0.00, "enemyAttackProbability": 1.0, "botPlayers": [{"strategy": {"type": "fixed", "role": 0}}, {"strategy": {"type": "fixed", "role": 2}}]},
+    {"id": 10, "maxEnemyHealth": 20, "maxTeamHealth": 10, "bossDamage": 4, "statProfile": "imbalanced-oneunique-str", "playerDeviateProbability": 0.00, "enemyAttackProbability": 1.0, "botPlayers": [{"strategy": {"type": "fixed", "role": 0}}, {"strategy": {"type": "fixed", "role": 0}}]},
+    {"id": 11, "maxEnemyHealth": 20, "maxTeamHealth": 10, "bossDamage": 4, "statProfile": "imbalanced-oneunique-def", "playerDeviateProbability": 0.00, "enemyAttackProbability": 1.0, "botPlayers": [{"strategy": {"type": "fixed", "role": 1}}, {"strategy": {"type": "fixed", "role": 1}}]},
+    {"id": 12, "maxEnemyHealth": 20, "maxTeamHealth": 10, "bossDamage": 4, "statProfile": "imbalanced-oneunique-sup", "playerDeviateProbability": 0.00, "enemyAttackProbability": 1.0, "botPlayers": [{"strategy": {"type": "fixed", "role": 2}}, {"strategy": {"type": "fixed", "role": 2}}]},
+    {"id": 13, "maxEnemyHealth": 15, "maxTeamHealth": 10, "bossDamage": 5, "statProfile": "balanced", "playerDeviateProbability": 0.00, "enemyAttackProbability": 0.8, "botPlayers": [{"strategy": {"type": "fixed", "role": 0}}, {"strategy": {"type": "fixed", "role": 1}}]},
+    {"id": 14, "maxEnemyHealth": 15, "maxTeamHealth": 10, "bossDamage": 5, "statProfile": "balanced", "playerDeviateProbability": 0.00, "enemyAttackProbability": 0.8, "botPlayers": [{"strategy": {"type": "fixed", "role": 1}}, {"strategy": {"type": "fixed", "role": 2}}]},
+    {"id": 15, "maxEnemyHealth": 15, "maxTeamHealth": 10, "bossDamage": 5, "statProfile": "balanced", "playerDeviateProbability": 0.00, "enemyAttackProbability": 0.8, "botPlayers": [{"strategy": {"type": "fixed", "role": 0}}, {"strategy": {"type": "fixed", "role": 2}}]}
+  ]
+}

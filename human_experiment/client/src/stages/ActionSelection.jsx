@@ -83,8 +83,6 @@ function ActionSelection() {
   const stageNumber = stage.get("stageNumber");
   const maxRounds = treatment?.maxRounds;
   const maxStagesPerRound = treatment?.maxStagesPerRound;
-  const maxHealth = roundConfig?.maxTeamHealth;
-  const maxEnemyHealth = roundConfig?.maxEnemyHealth;
   const currentStage = stage.get("name");
   const stageType = stage.get("stageType");
 
@@ -93,9 +91,19 @@ function ActionSelection() {
     return null;
   }
 
-  // Check if this is a bot round (each player has independent state)
-  const playerVirtualBots = player.round.get("virtualBots");
-  const isBotRound = playerVirtualBots && playerVirtualBots.length > 0;
+  // Derive isBotRound from shuffledRoundOrder (same logic as server)
+  // This is more reliable than round.get("isBotRound") due to Empirica sync timing
+  const shuffledRoundOrder = game.get("shuffledRoundOrder") || [];
+  const roundSlot = shuffledRoundOrder[roundNumber - 1];
+  const isBotRound = roundSlot?.type === "bot";
+
+  // For bot rounds, use player-specific config; for human rounds, use shared round config
+  const playerRoundConfig = player.round.get("playerRoundConfig");
+  const effectiveConfig = isBotRound ? playerRoundConfig : roundConfig;
+  const maxHealth = effectiveConfig?.maxTeamHealth;
+  const maxEnemyHealth = effectiveConfig?.maxEnemyHealth;
+
+  console.log(`[Config Debug] isBotRound: ${isBotRound}, playerRoundConfig:`, playerRoundConfig, `roundConfig:`, roundConfig, `effectiveConfig:`, effectiveConfig);
 
   // Get turns data (computed server-side after role selection)
   // In bot rounds, read from player-specific state; in human rounds, from shared round state
@@ -118,8 +126,8 @@ function ActionSelection() {
   } else {
     // Default to round/player health or config defaults
     if (isBotRound) {
-      enemyHealth = player.round.get("enemyHealth") ?? roundConfig?.maxEnemyHealth;
-      teamHealth = player.round.get("teamHealth") ?? roundConfig?.maxTeamHealth;
+      enemyHealth = player.round.get("enemyHealth") ?? effectiveConfig?.maxEnemyHealth;
+      teamHealth = player.round.get("teamHealth") ?? effectiveConfig?.maxTeamHealth;
     } else {
       enemyHealth = round.get("enemyHealth") ?? roundConfig?.maxEnemyHealth;
       teamHealth = round.get("teamHealth") ?? roundConfig?.maxTeamHealth;

@@ -1,6 +1,6 @@
 factors:
     - name: maxRounds
-      desc: Maximum number of rounds (games) to play
+      desc: Maximum number of rounds (games) to play (6 human + 2 bot = 8)
       values:
         - value: 8
     - name: maxStagesPerRound
@@ -11,6 +11,7 @@ factors:
       desc: Number of human players needed to start the game
       values:
         - value: 1
+        - value: 3
     - name: totalPlayers
       desc: Total number of players in the game (including bots)
       values:
@@ -20,17 +21,22 @@ factors:
       values:
         - value: true
         - value: false
-    - name: roundConfigs
-      desc: Configuration for each round (array of 8 configs with per-round settings)
-      values:
-        - value: []
     - name: gameSeed
-      desc: Fixed seed for reproducible randomness (enemy intents, player stats, etc.)
+      desc: Fixed seed for reproducible randomness (enemy intents, player stats, round shuffle, etc.)
       values:
         - value: 42
+    - name: humanRoundIds
+      desc: Which 6 human config IDs from roundConfigPools.json to use
+      values:
+        - value: [1, 2, 3, 4, 5, 6]
+    - name: botRoundIds
+      desc: Which 2 bot config IDs per player from roundConfigPools.json (array of 3 arrays, one per player)
+      values:
+        - value: [[1, 2], [3, 4], [5, 6]]
+
 treatments:
     - name: Development
-      desc: Development treatment 
+      desc: Development treatment for testing
       factors:
         maxRounds: 8
         maxStagesPerRound: 5
@@ -38,19 +44,11 @@ treatments:
         totalPlayers: 3
         showTutorial: true
         gameSeed: 42
-        roundConfigs: [
-          {roundNumber: 1, maxEnemyHealth: 31, maxTeamHealth: 10, bossDamage: 2, statProfile: "balanced", playerDeviateProbability: 0.00, enemyAttackProbability: 1.0, botPlayers: [{strategy: {type: "fixed", role: 0}},{strategy: {type: "fixed", role: 0}}]},
-          {roundNumber: 2, maxEnemyHealth: 8, maxTeamHealth: 10, bossDamage: 4, statProfile: "balanced", playerDeviateProbability: 0.00, enemyAttackProbability: 1.0, botPlayers: [{strategy: {type: "fixed", role: 1}},{strategy: {type: "fixed", role: 1}}]},
-          {roundNumber: 3, maxEnemyHealth: 20, maxTeamHealth: 10, bossDamage: 4, statProfile: "balanced", playerDeviateProbability: 0.05, enemyAttackProbability: 0.8, botPlayers: []},
-          {roundNumber: 4, maxEnemyHealth: 20, maxTeamHealth: 10, bossDamage: 2, statProfile: "balanced", playerDeviateProbability: 0.05, enemyAttackProbability: 0.8, botPlayers: []},
-          {roundNumber: 5, maxEnemyHealth: 20, maxTeamHealth: 10, bossDamage: 4, statProfile: "imbalanced-allunique", playerDeviateProbability: 0.05, enemyAttackProbability: 0.8, botPlayers: []},
-          {roundNumber: 6, maxEnemyHealth: 20, maxTeamHealth: 10, bossDamage: 2, statProfile: "imbalanced-allunique", playerDeviateProbability: 0.05, enemyAttackProbability: 0.8, botPlayers: []},
-          {roundNumber: 7, maxEnemyHealth: 20, maxTeamHealth: 10, bossDamage: 4, statProfile: "imbalanced-oneunique-str", playerDeviateProbability: 0.05, enemyAttackProbability: 0.8, botPlayers: []},
-          {roundNumber: 8, maxEnemyHealth: 20, maxTeamHealth: 10, bossDamage: 2, statProfile: "imbalanced-oneunique-def", playerDeviateProbability: 0.05, enemyAttackProbability: 0.8, botPlayers: []}
-        ]
+        humanRoundIds: [1, 2, 3, 4, 5, 6]
+        botRoundIds: [[1, 2], [3, 4], [5, 6]]
 
     - name: Test Treatment
-      desc: Test Treatment with 2 rounds
+      desc: Test Treatment with 3 players
       factors:
         maxRounds: 8
         maxStagesPerRound: 5
@@ -58,13 +56,11 @@ treatments:
         totalPlayers: 3
         showTutorial: true
         gameSeed: 42
-        roundConfigs: [
-          {roundNumber: 1, maxEnemyHealth: 20, maxTeamHealth: 10, bossDamage: 4, statProfile: "balanced", playerDeviateProbability: 0.00, enemyAttackProbability: 1.0, botPlayers: []},
-          {roundNumber: 2, maxEnemyHealth: 20, maxTeamHealth: 10, bossDamage: 4, statProfile: "imbalanced-oneunique-str", playerDeviateProbability: 0.00, enemyAttackProbability: 1.0, botPlayers: []}
-        ]
+        humanRoundIds: [1, 3, 5, 7, 9, 11]
+        botRoundIds: [[1, 2], [3, 4], [5, 6]]
 
     - name: Treatment1
-      desc: Treatment 1
+      desc: Treatment 1 - balanced to imbalanced progression
       factors:
         maxRounds: 8
         maxStagesPerRound: 5
@@ -72,19 +68,11 @@ treatments:
         totalPlayers: 3
         showTutorial: true
         gameSeed: 42
-        roundConfigs: [
-          {roundNumber: 1, maxEnemyHealth: 20, maxTeamHealth: 10, bossDamage: 4, statProfile: "balanced", playerDeviateProbability: 0.00, enemyAttackProbability: 1.0, botPlayers: []},
-          {roundNumber: 2, maxEnemyHealth: 31, maxTeamHealth: 10, bossDamage: 2, statProfile: "balanced", playerDeviateProbability: 0.00, enemyAttackProbability: 1.0, botPlayers: [{strategy: {type: "fixed", role: 0}},{strategy: {type: "fixed", role: 0}}]},
-          {roundNumber: 3, maxEnemyHealth: 8, maxTeamHealth: 10, bossDamage: 4, statProfile: "balanced", playerDeviateProbability: 0.00, enemyAttackProbability: 1.0, botPlayers: [{strategy: {type: "fixed", role: 1}},{strategy: {type: "fixed", role: 1}}]},
-          {roundNumber: 4, maxEnemyHealth: 20, maxTeamHealth: 10, bossDamage: 2, statProfile: "balanced", playerDeviateProbability: 0.00, enemyAttackProbability: 1.0, botPlayers: []},
-          {roundNumber: 5, maxEnemyHealth: 20, maxTeamHealth: 10, bossDamage: 4, statProfile: "imbalanced-allunique", playerDeviateProbability: 0.00, enemyAttackProbability: 1.0, botPlayers: []},
-          {roundNumber: 6, maxEnemyHealth: 20, maxTeamHealth: 10, bossDamage: 2, statProfile: "imbalanced-allunique", playerDeviateProbability: 0.00, enemyAttackProbability: 1.0, botPlayers: []},
-          {roundNumber: 7, maxEnemyHealth: 20, maxTeamHealth: 10, bossDamage: 4, statProfile: "imbalanced-oneunique-str", playerDeviateProbability: 0.00, enemyAttackProbability: 1.0, botPlayers: []},
-          {roundNumber: 8, maxEnemyHealth: 20, maxTeamHealth: 10, bossDamage: 2, statProfile: "imbalanced-oneunique-def", playerDeviateProbability: 0.00, enemyAttackProbability: 1.0, botPlayers: []}
-        ]
+        humanRoundIds: [1, 2, 3, 4, 5, 6]
+        botRoundIds: [[1, 2], [3, 4], [5, 6]]
 
     - name: Treatment2
-      desc: Treatment 2
+      desc: Treatment 2 - different config mix
       factors:
         maxRounds: 8
         maxStagesPerRound: 5
@@ -92,14 +80,41 @@ treatments:
         totalPlayers: 3
         showTutorial: true
         gameSeed: 42
-        roundConfigs: [
-          {roundNumber: 1, maxEnemyHealth: 20, maxTeamHealth: 10, bossDamage: 4, statProfile: "balanced", playerDeviateProbability: 0.00, enemyAttackProbability: 1.0, botPlayers: []},
-          {roundNumber: 2, maxEnemyHealth: 30, maxTeamHealth: 10, bossDamage: 6, statProfile: "imbalanced-allunique", playerDeviateProbability: 0.00, enemyAttackProbability: 1.0, botPlayers: []},
-          {roundNumber: 3, maxEnemyHealth: 18, maxTeamHealth: 10, bossDamage: 6, statProfile: "imbalanced-oneunique-str", playerDeviateProbability: 0.00, enemyAttackProbability: 1.0, botPlayers: []},
-          {roundNumber: 4, maxEnemyHealth: 18, maxTeamHealth: 10, bossDamage: 8, statProfile: "imbalanced-oneunique-def", playerDeviateProbability: 0.00, enemyAttackProbability: 1.0, botPlayers: []},
-          {roundNumber: 5, maxEnemyHealth: 20, maxTeamHealth: 10, bossDamage: 4, statProfile: "imbalanced-oneunique-sup", playerDeviateProbability: 0.00, enemyAttackProbability: 1.0, botPlayers: []},
-          {roundNumber: 6, maxEnemyHealth: 10, maxTeamHealth: 10, bossDamage: 8, statProfile: "balanced", playerDeviateProbability: 0.00, enemyAttackProbability: 0.5, botPlayers: []},
-          {roundNumber: 7, maxEnemyHealth: 31, maxTeamHealth: 10, bossDamage: 2, statProfile: "balanced", playerDeviateProbability: 0.00, enemyAttackProbability: 1.0, botPlayers: [{strategy: {type: "fixed", role: 0}},{strategy: {type: "fixed", role: 0}}]},
-          {roundNumber: 8, maxEnemyHealth: 8, maxTeamHealth: 10, bossDamage: 4, statProfile: "balanced", playerDeviateProbability: 0.00, enemyAttackProbability: 1.0, botPlayers: [{strategy: {type: "fixed", role: 1}},{strategy: {type: "fixed", role: 1}}]}
-        ]
+        humanRoundIds: [3, 4, 5, 6, 7, 8]
+        botRoundIds: [[7, 8], [9, 10], [11, 12]]
 
+    - name: Treatment3
+      desc: Treatment 3 - advanced configs
+      factors:
+        maxRounds: 8
+        maxStagesPerRound: 5
+        playerCount: 3
+        totalPlayers: 3
+        showTutorial: 42
+        gameSeed: 42
+        humanRoundIds: [7, 8, 9, 10, 11, 12]
+        botRoundIds: [[13, 14], [1, 3], [2, 4]]
+
+    - name: Treatment4
+      desc: Treatment 4 - mixed difficulty
+      factors:
+        maxRounds: 8
+        maxStagesPerRound: 5
+        playerCount: 3
+        totalPlayers: 3
+        showTutorial: true
+        gameSeed: 42
+        humanRoundIds: [1, 5, 9, 11, 13, 15]
+        botRoundIds: [[5, 6], [7, 8], [9, 10]]
+
+    - name: Treatment5
+      desc: Treatment 5 - endgame configs
+      factors:
+        maxRounds: 8
+        maxStagesPerRound: 5
+        playerCount: 3
+        totalPlayers: 3
+        showTutorial: true
+        gameSeed: 42
+        humanRoundIds: [11, 12, 13, 14, 15, 1]
+        botRoundIds: [[11, 12], [13, 14], [15, 1]]

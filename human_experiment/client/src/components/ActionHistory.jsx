@@ -17,17 +17,32 @@ export function ActionHistory({ currentStageView = null, currentTurnView = 0 }) 
   const currentRound = round?.get("roundNumber");
   const currentRoundStageNumber = round?.get("stageNumber") || 0;
 
+  // Derive isBotRound from shuffledRoundOrder (same logic as server)
+  // This is more reliable than round.get("isBotRound") due to Empirica sync timing
+  const shuffledRoundOrder = game?.get("shuffledRoundOrder") || [];
+  const roundSlot = currentRound ? shuffledRoundOrder[currentRound - 1] : null;
+  const isBotRound = roundSlot?.type === "bot";
+
   // Get round config for max health values
-  const roundConfig = currentRound ? game?.get(`round${currentRound}Config`) : null;
+  // For bot rounds, use player-specific config; for human rounds, use shared round config
+  const roundConfig = isBotRound
+    ? (player?.round?.get ? player.round.get("playerRoundConfig") : null)
+    : (currentRound ? game?.get(`round${currentRound}Config`) : null);
   const maxTeamHealth = roundConfig?.maxTeamHealth;
   const maxEnemyHealth = roundConfig?.maxEnemyHealth;
 
-  // Check if this is a bot round (player has per-player virtual bots)
-  const playerVirtualBots = player?.round?.get ? player.round.get("virtualBots") : null;
-  const isBotRound = playerVirtualBots && playerVirtualBots.length > 0;
-
   const actionIcons = ACTION_ICONS;
   const roleNames = ROLE_LABELS;
+
+  // // Read all stage turns data outside useMemo to ensure Empirica's reactivity tracks changes
+  // // For bot rounds, each player has their own turn data; for human rounds, it's shared on round
+  // const allStageTurnsData = [];
+  // for (let stageNum = 1; stageNum <= currentRoundStageNumber; stageNum++) {
+  //   const stageTurns = isBotRound
+  //     ? player?.round?.get(`stage${stageNum}Turns`)
+  //     : round?.get(`stage${stageNum}Turns`);
+  //   allStageTurnsData.push(stageTurns || null);
+  // }
 
   // Build stage history from per-stage turn data stored on the round (or player.round for bot rounds)
   // This is synchronized with the frontend's turn-by-turn display
@@ -81,7 +96,7 @@ export function ActionHistory({ currentStageView = null, currentTurnView = 0 }) 
     }
 
     return stages;
-  }, [round, player, currentRound, currentRoundStageNumber, currentStageView, currentTurnView, isBotRound]);
+  }, [round, currentRound, currentRoundStageNumber, currentStageView, currentTurnView, isBotRound]);
 
   // Get player's action history to find their role for each stage
   const playerActionHistory = player.get("actionHistory") || [];
