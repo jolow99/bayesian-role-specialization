@@ -375,7 +375,9 @@ function addGameRound(game, roundNumber) {
       console.log(`Round ${roundNumber}: Player ${gamePlayerId} using bot config ID ${playerBotConfigId}`);
     }
 
-    const stats = generatePlayerStats(gamePlayerId, gameSeed + roundNumber * 10000, playerRoundConfig.statProfile);
+    // For bot rounds, human always uses stat slot 0 (the imbalanced one); for human rounds, use actual gamePlayerId
+    const statSlot = isBotRound ? 0 : gamePlayerId;
+    const stats = generatePlayerStats(statSlot, gameSeed + roundNumber * 10000, playerRoundConfig.statProfile);
 
     playerAssignments.push({
       empiricaPlayerId: player.id,
@@ -498,11 +500,12 @@ Empirica.onRoundStart(({ round }) => {
     }
 
     // Assign bots to these positions
+    // For bot rounds, bots use stat slots 1 and 2 (balanced), human uses slot 0 (imbalanced)
     const playerVirtualBots = playerBotConfigs.map((botConfig, idx) => ({
       playerId: botPositions[idx], // Assign bot to a non-human position
       botIndex: idx,
       strategy: botConfig.strategy,
-      stats: generatePlayerStats(botPositions[idx], gameSeed + roundNumber * 10000, playerRoundConfig.statProfile),
+      stats: generatePlayerStats(idx + 1, gameSeed + roundNumber * 10000, playerRoundConfig.statProfile),
       currentRole: null // Will be set each stage during role selection
     }));
 
