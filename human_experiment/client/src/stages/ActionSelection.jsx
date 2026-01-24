@@ -422,8 +422,8 @@ function ActionSelection() {
                 currentPlayerGameId={currentPlayerGameId}
                 previousEnemyHealth={previousEnemyHealth}
                 previousTeamHealth={previousTeamHealth}
-                bossDamage={roundConfig?.bossDamage}
-                enemyAttackProbability={roundConfig?.enemyAttackProbability}
+                bossDamage={effectiveConfig?.bossDamage}
+                enemyAttackProbability={effectiveConfig?.enemyAttackProbability}
               />
             </div>
 
