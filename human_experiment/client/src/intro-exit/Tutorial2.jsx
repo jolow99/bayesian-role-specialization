@@ -69,12 +69,12 @@ export function Tutorial2({ next }) {
       tooltipPosition: "top",
       content: (
         <div>
-          <h4 className="text-lg font-bold text-gray-900 mb-2">Report Your Inferences</h4>
+          <h4 className="text-lg font-bold text-gray-900 mb-2">Think about your teammates roles</h4>
           <p className="text-sm text-gray-700 mb-2">
-            First, report what roles you think P1 and P2 have based on their actions.
+            First, think about what roles P1 and P2 have based on their actions.
           </p>
           <p className="text-sm text-gray-700">
-            Look at the battle history: P1 blocked when attacked (Tank?), P2 healed when damaged (Medic?).
+            Look at the battle history: P1 blocked when attacked, P2 healed when damaged.
           </p>
         </div>
       )
@@ -89,7 +89,7 @@ export function Tutorial2({ next }) {
             Now select a role to complement your team for Stage 2.
           </p>
           <p className="text-sm text-gray-700 font-semibold">
-            Based on what you inferred, which role would best help the team?
+            Based on the roles you inferred, the player stats/health and the enemy stats/health, what happens if you choose each role? Which role would best help the team?
           </p>
         </div>
       )
@@ -1079,7 +1079,7 @@ export function Tutorial2({ next }) {
                           <p className={`font-semibold ${outcome.success ? 'text-green-600' : 'text-red-600'}`}>
                             {outcome.success
                               ? "Your additional damage helped defeat the enemy!"
-                              : "The team needed more protection to survive."}
+                              : "If you chose Tank earlier, that wasted turns — your teammate already provides blocking as defence does not stack."}
                           </p>
                         </div>
                       )}
