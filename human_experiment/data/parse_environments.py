@@ -18,9 +18,9 @@ STAT_PROFILE_NAMES = {
     "411_141_114": "imbalanced-allunique",
 }
 
-# Role character to number mapping (F=0, M=1, T=2 based on typical conventions)
-# F = First/Fixed role 0, M = Middle role 1, T = Third role 2
-ROLE_MAPPING = {"F": 0, "M": 1, "T": 2}
+# Role character to number mapping
+# F = Fighter (0), T = Tank (1), M = Medic (2)
+ROLE_MAPPING = {"F": 0, "T": 1, "M": 2}
 
 
 def parse_python_file_for_env_params(py_file_path):
@@ -109,11 +109,15 @@ def parse_human_configs(data_dir):
 
             env_params = parse_python_file_for_env_params(py_file)
 
+            # Convert player_config to optimal roles array (e.g., "TFF" -> [1, 0, 0])
+            optimal_roles = [ROLE_MAPPING[c] for c in player_config]
+
             config = {
                 "maxEnemyHealth": env_params["maxEnemyHealth"],
                 "maxTeamHealth": env_params["maxTeamHealth"],
                 "bossDamage": env_params["bossDamage"],
                 "statProfile": stat_profile_name,
+                "optimalRoles": optimal_roles,
                 "playerDeviateProbability": 0.00,
                 "enemyAttackProbability": attack_prob,
                 "enemyIntentSequence": intent_sequence,
@@ -133,6 +137,7 @@ def parse_human_configs(data_dir):
             "maxTeamHealth": config["maxTeamHealth"],
             "bossDamage": config["bossDamage"],
             "statProfile": config["statProfile"],
+            "optimalRoles": config["optimalRoles"],
             "playerDeviateProbability": config["playerDeviateProbability"],
             "enemyAttackProbability": config["enemyAttackProbability"],
             "enemyIntentSequence": config["enemyIntentSequence"],
@@ -193,10 +198,16 @@ def parse_bot_configs(data_dir):
 
             env_params = parse_python_file_for_env_params(py_file)
 
-            # Create botPlayers from the bot_config string (e.g., "FFT" -> [{role:0}, {role:0}, {role:2}])
-            # But we only need 2 bot players (the other 2 bots, not the human)
+            # Convert optimal_config to optimal roles array (e.g., "TFF" -> [1, 0, 0])
+            optimal_roles = [ROLE_MAPPING[c] for c in optimal_config]
+
+            # Human's role is the first character of bot_config (e.g., "FFT" -> F -> 0)
+            human_role = ROLE_MAPPING[bot_config[0]]
+
+            # Create botPlayers from the remaining characters of bot_config
+            # (e.g., "FFT" -> bots play "FT" -> [{role:0}, {role:1}])
             bot_players = []
-            for char in bot_config[:2]:  # Only first 2 characters for 2 bots
+            for char in bot_config[1:3]:  # Characters 2 and 3 for the 2 bots
                 role = ROLE_MAPPING.get(char, 0)
                 bot_players.append({"strategy": {"type": "fixed", "role": role}})
 
@@ -205,6 +216,8 @@ def parse_bot_configs(data_dir):
                 "maxTeamHealth": env_params["maxTeamHealth"],
                 "bossDamage": env_params["bossDamage"],
                 "statProfile": stat_profile_name,
+                "optimalRoles": optimal_roles,
+                "humanRole": human_role,
                 "playerDeviateProbability": 0.00,
                 "enemyAttackProbability": attack_prob,
                 "enemyIntentSequence": intent_sequence,
@@ -225,6 +238,8 @@ def parse_bot_configs(data_dir):
             "maxTeamHealth": config["maxTeamHealth"],
             "bossDamage": config["bossDamage"],
             "statProfile": config["statProfile"],
+            "optimalRoles": config["optimalRoles"],
+            "humanRole": config["humanRole"],
             "playerDeviateProbability": config["playerDeviateProbability"],
             "enemyAttackProbability": config["enemyAttackProbability"],
             "enemyIntentSequence": config["enemyIntentSequence"],

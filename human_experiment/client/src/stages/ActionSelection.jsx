@@ -19,6 +19,7 @@ function ActionSelection() {
   const containerRef = React.useRef(null);
 
   const [selectedRole, setSelectedRole] = useState(null);
+  const [inferredRoles, setInferredRoles] = useState({}); // { playerId: roleValue } - user's inference of other players' roles
   const [showDamageAnimation, setShowDamageAnimation] = useState(false);
   const [localSubmitted, setLocalSubmitted] = useState(false); // Local state to immediately show waiting screen
   const [currentTurnView, setCurrentTurnView] = useState(0); // 0 = role selection/waiting, 1 = turn 1 results, 2 = turn 2 results
@@ -167,10 +168,11 @@ function ActionSelection() {
     setAllowRoundEnd(false);
   }, [roundNumber]);
 
-  // Reset localSubmitted when stage changes (but preserve acknowledgedEarlyFinish)
+  // Reset localSubmitted and inferredRoles when stage changes (but preserve acknowledgedEarlyFinish)
   const stageId = stage?.id;
   useEffect(() => {
     setLocalSubmitted(false);
+    setInferredRoles({});
   }, [stageId]);
 
   // Auto-submit for players who have finished their bot round early
@@ -266,11 +268,23 @@ function ActionSelection() {
     }
   }, [submitted, hasTurns]);
 
+  const handleInferredRoleChange = useCallback((playerId, roleValue) => {
+    if (!submitted && !hasTurns) {
+      setInferredRoles(prev => ({
+        ...prev,
+        [playerId]: roleValue
+      }));
+    }
+  }, [submitted, hasTurns]);
+
   const handleSubmit = useCallback(() => {
     if (!submitted && selectedRole !== null) {
       // Store the selected role on stage (not round)
       player.stage.set("selectedRole", selectedRole);
       player.stage.set("roleSubmittedAt", Date.now()); // Track when role was submitted
+
+      // Store the inferred roles for other players
+      player.stage.set("inferredRoles", inferredRoles);
 
       // Set local state to immediately show waiting screen
       setLocalSubmitted(true);
@@ -279,7 +293,7 @@ function ActionSelection() {
       // who are also playing with bots in their own sessions
       player.stage.set("submit", true);
     }
-  }, [submitted, selectedRole, player]);
+  }, [submitted, selectedRole, inferredRoles, player]);
 
   // Get virtual bots from player-specific round state (each player has their own bot positions)
   // Falls back to round-level virtualBots for backward compatibility
@@ -469,6 +483,9 @@ function ActionSelection() {
                       submitted={submitted}
                       roleOrder={roleOrder}
                       otherPlayersStatus={otherPlayersStatus}
+                      inferredRoles={inferredRoles}
+                      onInferredRoleChange={handleInferredRoleChange}
+                      showInference={true}
                     />
                   </div>
                 )}

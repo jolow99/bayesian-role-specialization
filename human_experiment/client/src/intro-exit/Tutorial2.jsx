@@ -8,6 +8,7 @@ import { ROLES, ROLE_ICONS, ROLE_NAMES, ROLE_LABELS } from "../constants";
 
 export function Tutorial2({ next }) {
   const [selectedRole, setSelectedRole] = useState(null);
+  const [inferredRoles, setInferredRoles] = useState({}); // { playerId: roleValue } - user's inference of other players' roles
   const [mockData, setMockData] = useState(null);
   const [showOutcome, setShowOutcome] = useState(false);
   const [outcome, setOutcome] = useState(null);
@@ -64,16 +65,31 @@ export function Tutorial2({ next }) {
   // Role selection tutorial step - shown when reaching role selection
   const roleSelectionTutorialSteps = [
     {
+      targetId: "inference-section",
+      tooltipPosition: "top",
+      content: (
+        <div>
+          <h4 className="text-lg font-bold text-gray-900 mb-2">Report Your Inferences</h4>
+          <p className="text-sm text-gray-700 mb-2">
+            First, report what roles you think P1 and P2 have based on their actions.
+          </p>
+          <p className="text-sm text-gray-700">
+            Look at the battle history: P1 blocked when attacked (Tank?), P2 healed when damaged (Medic?).
+          </p>
+        </div>
+      )
+    },
+    {
       targetId: "action-menu",
       tooltipPosition: "top",
       content: (
         <div>
           <h4 className="text-lg font-bold text-gray-900 mb-2">Choose Your Role</h4>
           <p className="text-sm text-gray-700 mb-2">
-            Based on the action patterns you observed, what roles do you think the players have?
+            Now select a role to complement your team for Stage 2.
           </p>
           <p className="text-sm text-gray-700 font-semibold">
-            Select a role to complement your team for Stage 2.
+            Based on what you inferred, which role would best help the team?
           </p>
         </div>
       )
@@ -709,8 +725,17 @@ export function Tutorial2({ next }) {
     setSelectedRole(role);
   };
 
+  const handleInferredRoleChange = (playerId, roleValue) => {
+    setInferredRoles(prev => ({
+      ...prev,
+      [playerId]: roleValue
+    }));
+  };
+
   const handleSubmit = () => {
     if (selectedRole === null) return;
+    // Check that inferences are complete (both P1 and P2)
+    if (inferredRoles[0] === undefined || inferredRoles[1] === undefined) return;
 
     // Get current stage number (stage 2 is index 0 in allStageResults)
     const currentStageNum = allStageResults.length + 2; // Stage 2, 3, 4, 5...
@@ -803,6 +828,7 @@ export function Tutorial2({ next }) {
 
       // Otherwise, go to role selection for next stage
       setSelectedRole(null);
+      setInferredRoles({});
       setCurrentTurnInStage(0);
       const newMockData = createMockDataForRoleSelection();
       setMockData(newMockData);
@@ -820,6 +846,7 @@ export function Tutorial2({ next }) {
 
   const handlePlayAgain = () => {
     setSelectedRole(null);
+    setInferredRoles({});
     setShowOutcome(false);
     setOutcome(null);
     setRound1Turn1Result(null);
@@ -969,6 +996,13 @@ export function Tutorial2({ next }) {
                             roundsRemaining={0}
                             submitted={false}
                             roleOrder={[ROLES.FIGHTER, ROLES.TANK, ROLES.MEDIC]}
+                            otherPlayersStatus={[
+                              { odId: "bot-1", playerId: 0, isBot: true, submitted: true },
+                              { odId: "bot-2", playerId: 1, isBot: true, submitted: true }
+                            ]}
+                            inferredRoles={inferredRoles}
+                            onInferredRoleChange={handleInferredRoleChange}
+                            showInference={true}
                           />
                         </div>
                       </div>

@@ -6,6 +6,11 @@
       "maxTeamHealth": 15,
       "bossDamage": 5,
       "statProfile": "imbalanced-oneunique-sup",
+      "optimalRoles": [
+        2,
+        0,
+        0
+      ],
       "playerDeviateProbability": 0.0,
       "enemyAttackProbability": 0.8,
       "enemyIntentSequence": "1011111100"
@@ -16,6 +21,11 @@
       "maxTeamHealth": 5,
       "bossDamage": 6,
       "statProfile": "imbalanced-oneunique-sup",
+      "optimalRoles": [
+        2,
+        0,
+        1
+      ],
       "playerDeviateProbability": 0.0,
       "enemyAttackProbability": 0.8,
       "enemyIntentSequence": "1101111011"
@@ -26,6 +36,11 @@
       "maxTeamHealth": 10,
       "bossDamage": 6,
       "statProfile": "imbalanced-oneunique-sup",
+      "optimalRoles": [
+        2,
+        2,
+        0
+      ],
       "playerDeviateProbability": 0.0,
       "enemyAttackProbability": 0.8,
       "enemyIntentSequence": "1011111100"
@@ -36,6 +51,11 @@
       "maxTeamHealth": 15,
       "bossDamage": 9,
       "statProfile": "imbalanced-oneunique-def",
+      "optimalRoles": [
+        1,
+        0,
+        2
+      ],
       "playerDeviateProbability": 0.0,
       "enemyAttackProbability": 0.8,
       "enemyIntentSequence": "1011111100"
@@ -46,6 +66,11 @@
       "maxTeamHealth": 15,
       "bossDamage": 6,
       "statProfile": "imbalanced-oneunique-def",
+      "optimalRoles": [
+        1,
+        0,
+        0
+      ],
       "playerDeviateProbability": 0.0,
       "enemyAttackProbability": 0.8,
       "enemyIntentSequence": "1111001111"
@@ -56,6 +81,11 @@
       "maxTeamHealth": 5,
       "bossDamage": 8,
       "statProfile": "imbalanced-oneunique-def",
+      "optimalRoles": [
+        1,
+        2,
+        2
+      ],
       "playerDeviateProbability": 0.0,
       "enemyAttackProbability": 0.5,
       "enemyIntentSequence": "1100110010"
@@ -66,6 +96,11 @@
       "maxTeamHealth": 10,
       "bossDamage": 5,
       "statProfile": "balanced",
+      "optimalRoles": [
+        0,
+        1,
+        2
+      ],
       "playerDeviateProbability": 0.0,
       "enemyAttackProbability": 1.0,
       "enemyIntentSequence": "1111111111"
@@ -76,6 +111,11 @@
       "maxTeamHealth": 10,
       "bossDamage": 10,
       "statProfile": "balanced",
+      "optimalRoles": [
+        1,
+        0,
+        0
+      ],
       "playerDeviateProbability": 0.0,
       "enemyAttackProbability": 0.4,
       "enemyIntentSequence": "1011000100"
@@ -86,6 +126,11 @@
       "maxTeamHealth": 5,
       "bossDamage": 6,
       "statProfile": "balanced",
+      "optimalRoles": [
+        1,
+        2,
+        2
+      ],
       "playerDeviateProbability": 0.0,
       "enemyAttackProbability": 0.66,
       "enemyIntentSequence": "1100110111"
@@ -96,6 +141,11 @@
       "maxTeamHealth": 10,
       "bossDamage": 9,
       "statProfile": "imbalanced-allunique",
+      "optimalRoles": [
+        0,
+        1,
+        2
+      ],
       "playerDeviateProbability": 0.0,
       "enemyAttackProbability": 0.8,
       "enemyIntentSequence": "1111001111"
@@ -106,6 +156,11 @@
       "maxTeamHealth": 8,
       "bossDamage": 4,
       "statProfile": "imbalanced-allunique",
+      "optimalRoles": [
+        0,
+        0,
+        2
+      ],
       "playerDeviateProbability": 0.0,
       "enemyAttackProbability": 1.0,
       "enemyIntentSequence": "1111111111"
@@ -116,6 +171,11 @@
       "maxTeamHealth": 5,
       "bossDamage": 5,
       "statProfile": "imbalanced-allunique",
+      "optimalRoles": [
+        0,
+        1,
+        0
+      ],
       "playerDeviateProbability": 0.0,
       "enemyAttackProbability": 1.0,
       "enemyIntentSequence": "1111111111"
@@ -126,6 +186,11 @@
       "maxTeamHealth": 15,
       "bossDamage": 10,
       "statProfile": "imbalanced-oneunique-str",
+      "optimalRoles": [
+        0,
+        1,
+        2
+      ],
       "playerDeviateProbability": 0.0,
       "enemyAttackProbability": 0.8,
       "enemyIntentSequence": "1110110111"
@@ -136,6 +201,11 @@
       "maxTeamHealth": 15,
       "bossDamage": 5,
       "statProfile": "imbalanced-oneunique-str",
+      "optimalRoles": [
+        0,
+        0,
+        2
+      ],
       "playerDeviateProbability": 0.0,
       "enemyAttackProbability": 0.8,
       "enemyIntentSequence": "1011111100"
@@ -146,6 +216,11 @@
       "maxTeamHealth": 5,
       "bossDamage": 4,
       "statProfile": "imbalanced-oneunique-str",
+      "optimalRoles": [
+        0,
+        2,
+        2
+      ],
       "playerDeviateProbability": 0.0,
       "enemyAttackProbability": 1.0,
       "enemyIntentSequence": "1111111111"
@@ -158,6 +233,12 @@
       "maxTeamHealth": 15,
       "bossDamage": 4,
       "statProfile": "imbalanced-oneunique-sup",
+      "optimalRoles": [
+        2,
+        0,
+        0
+      ],
+      "humanRole": 0,
       "playerDeviateProbability": 0.0,
       "enemyAttackProbability": 1.0,
       "enemyIntentSequence": "1111111111",
@@ -171,7 +252,7 @@
         {
           "strategy": {
             "type": "fixed",
-            "role": 0
+            "role": 1
           }
         }
       ]
@@ -182,6 +263,12 @@
       "maxTeamHealth": 5,
       "bossDamage": 3,
       "statProfile": "imbalanced-oneunique-sup",
+      "optimalRoles": [
+        2,
+        0,
+        0
+      ],
+      "humanRole": 0,
       "playerDeviateProbability": 0.0,
       "enemyAttackProbability": 1.0,
       "enemyIntentSequence": "1111111111",
@@ -189,7 +276,7 @@
         {
           "strategy": {
             "type": "fixed",
-            "role": 0
+            "role": 1
           }
         },
         {
@@ -206,6 +293,12 @@
       "maxTeamHealth": 5,
       "bossDamage": 1,
       "statProfile": "imbalanced-oneunique-sup",
+      "optimalRoles": [
+        2,
+        0,
+        0
+      ],
+      "humanRole": 1,
       "playerDeviateProbability": 0.0,
       "enemyAttackProbability": 0.8,
       "enemyIntentSequence": "1110110111",
@@ -219,7 +312,7 @@
         {
           "strategy": {
             "type": "fixed",
-            "role": 1
+            "role": 2
           }
         }
       ]
@@ -230,6 +323,12 @@
       "maxTeamHealth": 10,
       "bossDamage": 9,
       "statProfile": "imbalanced-oneunique-sup",
+      "optimalRoles": [
+        2,
+        0,
+        1
+      ],
+      "humanRole": 0,
       "playerDeviateProbability": 0.0,
       "enemyAttackProbability": 0.33,
       "enemyIntentSequence": "1000110000",
@@ -254,6 +353,12 @@
       "maxTeamHealth": 15,
       "bossDamage": 8,
       "statProfile": "imbalanced-oneunique-sup",
+      "optimalRoles": [
+        2,
+        0,
+        1
+      ],
+      "humanRole": 2,
       "playerDeviateProbability": 0.0,
       "enemyAttackProbability": 0.66,
       "enemyIntentSequence": "1100110111",
@@ -261,7 +366,7 @@
         {
           "strategy": {
             "type": "fixed",
-            "role": 1
+            "role": 0
           }
         },
         {
@@ -278,6 +383,12 @@
       "maxTeamHealth": 15,
       "bossDamage": 4,
       "statProfile": "imbalanced-oneunique-def",
+      "optimalRoles": [
+        1,
+        0,
+        0
+      ],
+      "humanRole": 0,
       "playerDeviateProbability": 0.0,
       "enemyAttackProbability": 1.0,
       "enemyIntentSequence": "1111111111",
@@ -291,7 +402,7 @@
         {
           "strategy": {
             "type": "fixed",
-            "role": 0
+            "role": 1
           }
         }
       ]
@@ -302,6 +413,12 @@
       "maxTeamHealth": 5,
       "bossDamage": 3,
       "statProfile": "imbalanced-oneunique-def",
+      "optimalRoles": [
+        1,
+        0,
+        2
+      ],
+      "humanRole": 0,
       "playerDeviateProbability": 0.0,
       "enemyAttackProbability": 1.0,
       "enemyIntentSequence": "1111111111",
@@ -309,7 +426,7 @@
         {
           "strategy": {
             "type": "fixed",
-            "role": 0
+            "role": 2
           }
         },
         {
@@ -326,6 +443,12 @@
       "maxTeamHealth": 10,
       "bossDamage": 4,
       "statProfile": "imbalanced-oneunique-def",
+      "optimalRoles": [
+        1,
+        0,
+        2
+      ],
+      "humanRole": 2,
       "playerDeviateProbability": 0.0,
       "enemyAttackProbability": 1.0,
       "enemyIntentSequence": "1111111111",
@@ -333,13 +456,13 @@
         {
           "strategy": {
             "type": "fixed",
-            "role": 1
+            "role": 0
           }
         },
         {
           "strategy": {
             "type": "fixed",
-            "role": 0
+            "role": 1
           }
         }
       ]
@@ -350,6 +473,12 @@
       "maxTeamHealth": 15,
       "bossDamage": 4,
       "statProfile": "imbalanced-oneunique-def",
+      "optimalRoles": [
+        1,
+        2,
+        2
+      ],
+      "humanRole": 0,
       "playerDeviateProbability": 0.0,
       "enemyAttackProbability": 1.0,
       "enemyIntentSequence": "1111111111",
@@ -363,7 +492,7 @@
         {
           "strategy": {
             "type": "fixed",
-            "role": 0
+            "role": 1
           }
         }
       ]
@@ -374,6 +503,12 @@
       "maxTeamHealth": 5,
       "bossDamage": 3,
       "statProfile": "imbalanced-oneunique-def",
+      "optimalRoles": [
+        1,
+        2,
+        2
+      ],
+      "humanRole": 0,
       "playerDeviateProbability": 0.0,
       "enemyAttackProbability": 1.0,
       "enemyIntentSequence": "1111111111",
@@ -381,7 +516,7 @@
         {
           "strategy": {
             "type": "fixed",
-            "role": 0
+            "role": 2
           }
         },
         {
@@ -398,6 +533,12 @@
       "maxTeamHealth": 15,
       "bossDamage": 8,
       "statProfile": "imbalanced-oneunique-str",
+      "optimalRoles": [
+        0,
+        0,
+        1
+      ],
+      "humanRole": 1,
       "playerDeviateProbability": 0.0,
       "enemyAttackProbability": 0.25,
       "enemyIntentSequence": "1000110000",
@@ -405,7 +546,7 @@
         {
           "strategy": {
             "type": "fixed",
-            "role": 2
+            "role": 0
           }
         },
         {
@@ -422,6 +563,12 @@
       "maxTeamHealth": 5,
       "bossDamage": 3,
       "statProfile": "imbalanced-oneunique-str",
+      "optimalRoles": [
+        0,
+        2,
+        2
+      ],
+      "humanRole": 2,
       "playerDeviateProbability": 0.0,
       "enemyAttackProbability": 1.0,
       "enemyIntentSequence": "1111111111",
@@ -429,13 +576,13 @@
         {
           "strategy": {
             "type": "fixed",
-            "role": 1
+            "role": 0
           }
         },
         {
           "strategy": {
             "type": "fixed",
-            "role": 0
+            "role": 2
           }
         }
       ]
@@ -446,6 +593,12 @@
       "maxTeamHealth": 10,
       "bossDamage": 7,
       "statProfile": "imbalanced-oneunique-str",
+      "optimalRoles": [
+        0,
+        1,
+        2
+      ],
+      "humanRole": 2,
       "playerDeviateProbability": 0.0,
       "enemyAttackProbability": 0.4,
       "enemyIntentSequence": "1000110011",
@@ -453,13 +606,13 @@
         {
           "strategy": {
             "type": "fixed",
-            "role": 1
+            "role": 0
           }
         },
         {
           "strategy": {
             "type": "fixed",
-            "role": 0
+            "role": 1
           }
         }
       ]
@@ -470,6 +623,12 @@
       "maxTeamHealth": 15,
       "bossDamage": 8,
       "statProfile": "imbalanced-oneunique-str",
+      "optimalRoles": [
+        0,
+        1,
+        2
+      ],
+      "humanRole": 1,
       "playerDeviateProbability": 0.0,
       "enemyAttackProbability": 0.25,
       "enemyIntentSequence": "1000110000",
@@ -477,7 +636,7 @@
         {
           "strategy": {
             "type": "fixed",
-            "role": 2
+            "role": 0
           }
         },
         {
@@ -494,6 +653,12 @@
       "maxTeamHealth": 15,
       "bossDamage": 10,
       "statProfile": "imbalanced-oneunique-str",
+      "optimalRoles": [
+        0,
+        1,
+        2
+      ],
+      "humanRole": 1,
       "playerDeviateProbability": 0.0,
       "enemyAttackProbability": 0.4,
       "enemyIntentSequence": "1000110011",
@@ -501,13 +666,13 @@
         {
           "strategy": {
             "type": "fixed",
-            "role": 2
+            "role": 0
           }
         },
         {
           "strategy": {
             "type": "fixed",
-            "role": 0
+            "role": 2
           }
         }
       ]

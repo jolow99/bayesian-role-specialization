@@ -130,13 +130,33 @@ export function Introduction({ next }) {
       )
     },
     {
+      targetId: "inference-section",
+      tooltipPosition: "top",
+      content: (
+        <div>
+          <h4 className="text-lg font-bold text-gray-900 mb-2">Reporting Your Inferences</h4>
+          <p className="text-sm text-gray-700 mb-3">
+            First, report what roles you think your teammates have based on the battle history.
+          </p>
+          <p className="text-sm text-gray-700 mb-2">
+            Use the action patterns to infer their roles:
+          </p>
+          <ul className="text-sm text-gray-700 space-y-1 ml-4">
+            <li>• Did they block when the enemy attacked? Likely a <strong>Tank</strong></li>
+            <li>• Did they heal when the team was damaged? Likely a <strong>Medic</strong></li>
+            <li>• Did they attack most of the time? Likely a <strong>Fighter</strong></li>
+          </ul>
+        </div>
+      )
+    },
+    {
       targetId: "action-menu",
       tooltipPosition: "top",
       content: (
         <div>
           <h4 className="text-lg font-bold text-gray-900 mb-2">Role Selection</h4>
           <p className="text-sm text-gray-700 mb-3">
-            At each stage you'll have to choose a role, which determines the actions your character takes. 
+            Then choose your own role, which determines the actions your character takes.
             You'll be committed to the role for 2 turns:
           </p>
           <ul className="text-sm text-gray-700 space-y-2 ml-4">
@@ -324,6 +344,13 @@ export function Introduction({ next }) {
                         roundsRemaining={0}
                         submitted={false}
                         roleOrder={[ROLES.FIGHTER, ROLES.TANK, ROLES.MEDIC]}
+                        otherPlayersStatus={[
+                          { odId: "player-1", playerId: 0, isBot: false, submitted: false },
+                          { odId: "player-2", playerId: 1, isBot: false, submitted: false }
+                        ]}
+                        inferredRoles={{}}
+                        onInferredRoleChange={() => {}}
+                        showInference={true}
                       />
                     </div>
                   </div>
