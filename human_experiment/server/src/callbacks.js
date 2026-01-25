@@ -523,21 +523,11 @@ Empirica.onRoundStart(({ round }) => {
     console.log(`Round ${roundNumber}: Player ${humanPlayerId} sees ${playerVirtualBots.length} bots at positions:`, playerVirtualBots.map(b => b.playerId));
   });
 
-  const enemyAttackProbability = roundConfig.enemyAttackProbability;
-  const maxStagesPerRound = game.get("treatment").maxStagesPerRound;
-
-  // Pre-generate enemy intents for all possible turns in this round
-  // Each stage has 2 turns, so we need up to maxStagesPerRound * 2 intents
-  // Use seeded RNG for reproducibility across experiments
-  // First turn always attacks to ensure consistent initial experience
-  const enemyIntentRng = seededRandom(gameSeed + roundNumber * 100);
-  const enemyIntents = [];
-  for (let i = 0; i < maxStagesPerRound * 2; i++) {
-    const intent = i === 0
-      ? "WILL_ATTACK"
-      : (enemyIntentRng() < enemyAttackProbability ? "WILL_ATTACK" : "WILL_NOT_ATTACK");
-    enemyIntents.push(intent);
-  }
+  // Parse enemy intent sequence from round config (1=attack, 0=rest)
+  const enemyIntentSequence = roundConfig.enemyIntentSequence;
+  const enemyIntents = enemyIntentSequence.split('').map(char =>
+    char === '1' ? "WILL_ATTACK" : "WILL_NOT_ATTACK"
+  );
 
   round.set("enemyIntents", enemyIntents);
   console.log(`Round ${roundNumber}: Pre-generated ${enemyIntents.length} enemy intents:`, enemyIntents);
