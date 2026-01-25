@@ -9,12 +9,7 @@ import { ROLES, ROLE_LABELS } from "../constants";
 
 const EMPTY_ARRAY = []; // Stable reference to prevent unnecessary re-renders
 
-let renderCount = 0;
-
 function ActionSelection() {
-  renderCount++;
-  console.log(`[RENDER #${renderCount}] ActionSelection component rendering`);
-
   const player = usePlayer();
   const players = usePlayers();
   const game = useGame();
@@ -43,20 +38,17 @@ function ActionSelection() {
       try {
         const html = containerRef.current.outerHTML; // Use outerHTML to include the container itself
         sessionStorage.setItem('stageStateCache', JSON.stringify({ html }));
-        // Don't log on every render to avoid spam
       } catch (e) {
-        console.error('[ActionSelection] Failed to cache state:', e);
+        // Silently fail - caching is best-effort
       }
     }
   }); // No dependency array - runs after every render
 
   // Clear stage cache on mount (new stage state has loaded)
   useEffect(() => {
-    console.log('[ActionSelection] Mounted - will use cached state during transition');
     // Clear cache after a delay to allow transition to complete
     const timer = setTimeout(() => {
       sessionStorage.removeItem('stageStateCache');
-      console.log('[ActionSelection] Cleared stage cache after transition complete');
     }, 200);
     return () => clearTimeout(timer);
   }, []);
@@ -73,7 +65,6 @@ function ActionSelection() {
       const roles = [ROLES.FIGHTER, ROLES.TANK, ROLES.MEDIC];
       const shuffled = [...roles].sort(() => Math.random() - 0.5);
       player.set("roleOrder", shuffled);
-      console.log("[ActionSelection] Initialized random role order:", shuffled);
     }
   }, [player]);
 
@@ -83,7 +74,6 @@ function ActionSelection() {
   const stageNumber = stage.get("stageNumber");
   const maxRounds = treatment?.maxRounds;
   const maxStagesPerRound = treatment?.maxStagesPerRound;
-  const currentStage = stage.get("name");
   const stageType = stage.get("stageType");
 
   // Check if we have valid data
@@ -103,8 +93,6 @@ function ActionSelection() {
   const maxHealth = effectiveConfig?.maxTeamHealth;
   const maxEnemyHealth = effectiveConfig?.maxEnemyHealth;
 
-  console.log(`[Config Debug] isBotRound: ${isBotRound}, playerRoundConfig:`, playerRoundConfig, `roundConfig:`, roundConfig, `effectiveConfig:`, effectiveConfig);
-
   // Get turns data (computed server-side after role selection)
   // In bot rounds, read from player-specific state; in human rounds, from shared round state
   const currentRoundStageNumber = round.get("stageNumber") || 0;
@@ -113,8 +101,6 @@ function ActionSelection() {
     ? (player.round.get(`stage${stageToView}Turns`) || EMPTY_ARRAY)
     : (round.get(`stage${stageToView}Turns`) || EMPTY_ARRAY);
   const hasTurns = turns.length > 0;
-
-  console.log(`[Turns Data] isBotRound: ${isBotRound}, currentRoundStageNumber: ${currentRoundStageNumber}, lastViewedStage: ${lastViewedStage}, stageToView: ${stageToView}, hasTurns: ${hasTurns}`);
 
   // Read health - if we're viewing a specific turn, show health after that turn
   // In bot rounds, use per-player health; in human rounds, use shared round health
@@ -174,11 +160,6 @@ function ActionSelection() {
   const totalPoints = player.get("totalPoints") || 0;
   const shouldShowGameEnd = isGameEndStage;
 
-  // Debug logging
-  console.log(`[Client RENDER] Round ${roundNumber}, Stage: ${currentStage}, Type: ${stageType}`);
-  console.log(`[Client RENDER] Enemy HP: ${enemyHealth}, Team HP: ${teamHealth}`);
-  console.log(`[Client RENDER] submitted: ${submitted}, hasTurns: ${hasTurns}, currentTurnView: ${currentTurnView}, turns.length: ${turns.length}`);
-
   // Reset last viewed stage and round end flag when moving to a new round
   // Note: acknowledgedEarlyFinish is stored in player.round state, so it auto-resets with new rounds
   useEffect(() => {
@@ -189,7 +170,6 @@ function ActionSelection() {
   // Reset localSubmitted when stage changes (but preserve acknowledgedEarlyFinish)
   const stageId = stage?.id;
   useEffect(() => {
-    console.log(`[Stage Change] Stage ID changed to ${stageId}, resetting localSubmitted`);
     setLocalSubmitted(false);
   }, [stageId]);
 
@@ -207,7 +187,6 @@ function ActionSelection() {
     const submitIfNeeded = () => {
       const currentSubmitStatus = player.stage.get("submit");
       if (!currentSubmitStatus) {
-        console.log(`[Auto-Submit] Player finished bot round early with ${roundOutcome}, auto-submitting for stage ${stageId} (isRoundEndStage: ${isRoundEndStage})`);
         player.stage.set("submit", true);
       }
     };
@@ -234,15 +213,12 @@ function ActionSelection() {
     if ((isRoundEndStage || playerFinishedBotRound) && !allowRoundEnd) {
       if (!hasTurns) {
         // No turns to show, allow round end immediately
-        console.log(`[Round End] Entered round end stage directly (no turns), allowing round end screen`);
         setAllowRoundEnd(true);
       } else if (currentTurnView === turns.length && turns.length > 0) {
         // We've already viewed all turns, allow round end immediately
-        console.log(`[Round End] Entered round end stage after viewing all turns, allowing round end screen`);
         setAllowRoundEnd(true);
       } else if (currentTurnView === 0 && turns.length > 0) {
         // We haven't started viewing turns yet, start viewing them
-        console.log(`[Round End] Entered round end stage with unviewed turns, starting turn display`);
         setCurrentTurnView(1);
       }
     }
@@ -251,7 +227,6 @@ function ActionSelection() {
   // Auto-start showing turn 1 when turns data arrives
   useEffect(() => {
     if (hasTurns && currentTurnView === 0 && !isRoundEndStage && !isGameEndStage) {
-      console.log(`[Turn Auto-Advance] Turns data arrived, starting turn 1 display`);
       setCurrentTurnView(1);
     }
   }, [hasTurns, currentTurnView, isRoundEndStage, isGameEndStage]);
@@ -272,15 +247,12 @@ function ActionSelection() {
   const handleNextTurn = useCallback(() => {
     if (currentTurnView < turns.length) {
       // Advance to next turn
-      console.log(`[Turn Advance] User clicked next, advancing from turn ${currentTurnView} to ${currentTurnView + 1}`);
       setCurrentTurnView(currentTurnView + 1);
     } else if (currentTurnView === turns.length && turns.length > 0) {
       // All turns viewed - either show round end or go to next stage
       if (roundOutcome) {
-        console.log(`[Turn Advance] All turns viewed, round ended with outcome: ${roundOutcome}, showing round end`);
         setAllowRoundEnd(true);
       } else {
-        console.log(`[Turn Advance] All turns viewed, marking stage ${stageToView} as viewed, resetting to role selection`);
         setLastViewedStage(stageToView);
         setCurrentTurnView(0);
         setLocalSubmitted(false);

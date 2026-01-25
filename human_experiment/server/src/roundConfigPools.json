@@ -1,6 +1,6 @@
 {
   "humanConfigs": [
-    {"id": 1, "maxEnemyHealth": 25, "maxTeamHealth": 15, "bossDamage": 5, "statProfile": "imbalanced-oneunique-sup", "playerDeviateProbability": 0.00, "enemyAttackProbability": 0.8},
+    {"id": 1, "maxEnemyHealth": 25, "maxTeamHealth": 15, "bossDamage": 5, "statProfile": "imbalanced-oneunique-sup", "playerDeviateProbability": 0.00, "enemyAttackProbability": 0.8}, 
     {"id": 2, "maxEnemyHealth": 15, "maxTeamHealth": 5, "bossDamage": 6, "statProfile": "imbalanced-oneunique-sup", "playerDeviateProbability": 0.00, "enemyAttackProbability": 0.8},
     {"id": 3, "maxEnemyHealth": 15, "maxTeamHealth": 10, "bossDamage": 6, "statProfile": "imbalanced-oneunique-sup", "playerDeviateProbability": 0.00, "enemyAttackProbability": 0.8},
     {"id": 4, "maxEnemyHealth": 25, "maxTeamHealth": 15, "bossDamage": 6, "statProfile": "imbalanced-oneunique-def", "playerDeviateProbability": 0.00, "enemyAttackProbability": 0.8},
