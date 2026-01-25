@@ -56,13 +56,14 @@ export const ActionMenu = React.memo(function ActionMenu({
   // New props for inference reporting
   inferredRoles = {}, // { playerId: roleValue } - what user thinks each player's role is
   onInferredRoleChange = () => {}, // (playerId, roleValue) => void
-  showInference = true // Whether to show inference UI (can be disabled for tutorials)
+  showInference = true, // Whether to show inference UI (can be disabled for tutorials)
+  isFirstStage = false // Whether this is the first stage (no past turns to infer from)
 }) {
   const orderedRoleNames = roleOrder.map(roleId => ROLE_NAMES[roleId]);
 
   // Check if all inferences are complete
   const otherPlayerIds = otherPlayersStatus.map(p => p.playerId);
-  const allInferencesComplete = showInference
+  const allInferencesComplete = (showInference && !isFirstStage)
     ? otherPlayerIds.every(pid => inferredRoles[pid] !== undefined && inferredRoles[pid] !== null)
     : true;
 
@@ -72,7 +73,7 @@ export const ActionMenu = React.memo(function ActionMenu({
   return (
     <div data-tutorial-id="action-menu" className="space-y-3">
       {/* Inference card - what do you think other players' roles are? */}
-      {showInference && otherPlayersStatus.length > 0 && !isRoleCommitted && (
+      {showInference && !isFirstStage && otherPlayersStatus.length > 0 && !isRoleCommitted && (
         <div data-tutorial-id="inference-section">
           <div className="bg-amber-600 text-white rounded-t-lg px-4 py-2 text-sm font-bold">
             What roles do you think your teammates played in the past stage?

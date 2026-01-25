@@ -486,6 +486,7 @@ function ActionSelection() {
                       inferredRoles={inferredRoles}
                       onInferredRoleChange={handleInferredRoleChange}
                       showInference={true}
+                      isFirstStage={stageNumber <= 1}
                     />
                   </div>
                 )}
