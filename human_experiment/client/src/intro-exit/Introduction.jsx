@@ -130,13 +130,30 @@ export function Introduction({ next }) {
       )
     },
     {
+      targetId: "action-menu",
+      tooltipPosition: "top",
+      content: (
+        <div>
+          <h4 className="text-lg font-bold text-gray-900 mb-2">The 3 Actions</h4>
+          <p className="text-sm text-gray-700 mb-3">
+            Each turn, every player performs one of three actions:
+          </p>
+          <ul className="text-sm text-gray-700 space-y-2 ml-4">
+            <li><strong>⚔️ Attack:</strong> Deal damage to the enemy</li>
+            <li><strong>🛡️ Block:</strong> Reduce incoming damage from the enemy</li>
+            <li><strong>💚 Heal:</strong> Restore your team's health</li>
+          </ul>
+        </div>
+      )
+    },
+    {
       targetId: "inference-section",
       tooltipPosition: "top",
       content: (
         <div>
-          <h4 className="text-lg font-bold text-gray-900 mb-2">Reporting Your Inferences</h4>
+          <h4 className="text-lg font-bold text-gray-900 mb-2">Inferring Teammates' Roles</h4>
           <p className="text-sm text-gray-700 mb-3">
-            First, report what roles you think your teammates have based on the battle history.
+            Think about what roles your teammates are playing based on the battle history. This will help you decide what role you should play.
           </p>
           <p className="text-sm text-gray-700 mb-2">
             Use the action patterns to infer their roles:
@@ -156,7 +173,7 @@ export function Introduction({ next }) {
         <div>
           <h4 className="text-lg font-bold text-gray-900 mb-2">Role Selection</h4>
           <p className="text-sm text-gray-700 mb-3">
-            Then choose your own role, which determines the actions your character takes.
+            You don't choose actions directly. Instead, you choose a role, which determines the actions your character takes.
             You'll be committed to the role for 2 turns:
           </p>
           <ul className="text-sm text-gray-700 space-y-2 ml-4">
@@ -184,6 +201,7 @@ export function Introduction({ next }) {
             <div>
               <div className="font-semibold text-blue-600 mb-1">🛡️ DEF (Defense) → Block</div>
               <div className="text-sm text-gray-700">Damage blocked = <strong>highest</strong> DEF among blockers</div>
+              <div className="text-xs text-gray-500 mt-1 ml-2">e.g., if a player with 3 DEF and another with 2 DEF both block, only 3 damage is blocked (NOT the sum)</div>
             </div>
             <div>
               <div className="font-semibold text-green-600 mb-1">💚 SUP (Support) → Heal</div>
