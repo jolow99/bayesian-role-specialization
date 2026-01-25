@@ -111,7 +111,10 @@ export function ActionHistory({ currentStageView = null, currentTurnView = 0 }) 
     "MEDIC": ROLE_LABELS[2]
   };
 
-  if (stageHistory.length === 0) {
+  // Show starting state as soon as round config is available, even before any stages complete
+  const hasStartingState = maxTeamHealth && maxEnemyHealth;
+
+  if (!hasStartingState && stageHistory.length === 0) {
     return (
       <div className="text-xs text-gray-500 italic text-center py-4">
         No stages completed yet...
@@ -122,7 +125,7 @@ export function ActionHistory({ currentStageView = null, currentTurnView = 0 }) 
   return (
     <div className="space-y-3">
       {/* Starting state - shows initial health before any stages */}
-      {maxTeamHealth && maxEnemyHealth && (
+      {hasStartingState && (
         <div className="bg-gray-50 rounded-lg border border-gray-300 p-3">
           <div className="mb-2">
             <span className="font-bold text-sm text-gray-800">Starting State</span>

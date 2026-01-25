@@ -24,18 +24,20 @@ ROLE_MAPPING = {"F": 0, "T": 1, "M": 2}
 
 
 def parse_python_file_for_env_params(py_file_path):
-    """Extract TEAM_MAX_HP, ENEMY_MAX_HP, BOSS_DAMAGE from a python file."""
+    """Extract TEAM_MAX_HP, ENEMY_MAX_HP, BOSS_DAMAGE, ENEMY_ATTACK_PROB from a python file."""
     with open(py_file_path, "r") as f:
         content = f.read()
 
     team_max_hp = None
     enemy_max_hp = None
     boss_damage = None
+    enemy_attack_prob = None
 
     # Search for the variable assignments
     team_match = re.search(r"TEAM_MAX_HP\s*=\s*(\d+)", content)
     enemy_match = re.search(r"ENEMY_MAX_HP\s*=\s*(\d+)", content)
     boss_match = re.search(r"BOSS_DAMAGE\s*=\s*(\d+)", content)
+    attack_prob_match = re.search(r"ENEMY_ATTACK_PROB\s*=\s*([\d.]+)", content)
 
     if team_match:
         team_max_hp = int(team_match.group(1))
@@ -43,11 +45,14 @@ def parse_python_file_for_env_params(py_file_path):
         enemy_max_hp = int(enemy_match.group(1))
     if boss_match:
         boss_damage = int(boss_match.group(1))
+    if attack_prob_match:
+        enemy_attack_prob = float(attack_prob_match.group(1))
 
     return {
         "maxTeamHealth": team_max_hp,
         "maxEnemyHealth": enemy_max_hp,
         "bossDamage": boss_damage,
+        "enemyAttackProbability": enemy_attack_prob,
     }
 
 
@@ -77,7 +82,6 @@ def parse_human_configs(data_dir):
                 continue
 
             full_id = parts[0]
-            attack_prob = float(parts[1])
             intent_sequence = parts[2]
 
             # Parse the stat profile and player config
@@ -109,17 +113,21 @@ def parse_human_configs(data_dir):
 
             env_params = parse_python_file_for_env_params(py_file)
 
+            # Extract the python filename (without extension)
+            py_filename = os.path.basename(py_file).replace(".py", "")
+
             # Convert player_config to optimal roles array (e.g., "TFF" -> [1, 0, 0])
             optimal_roles = [ROLE_MAPPING[c] for c in player_config]
 
             config = {
+                "envId": py_filename,
                 "maxEnemyHealth": env_params["maxEnemyHealth"],
                 "maxTeamHealth": env_params["maxTeamHealth"],
                 "bossDamage": env_params["bossDamage"],
                 "statProfile": stat_profile_name,
                 "optimalRoles": optimal_roles,
                 "playerDeviateProbability": 0.00,
-                "enemyAttackProbability": attack_prob,
+                "enemyAttackProbability": env_params["enemyAttackProbability"],
                 "enemyIntentSequence": intent_sequence,
             }
             configs.append(config)
@@ -133,6 +141,7 @@ def parse_human_configs(data_dir):
     for config in configs:
         ordered_config = {
             "id": config["id"],
+            "envId": config["envId"],
             "maxEnemyHealth": config["maxEnemyHealth"],
             "maxTeamHealth": config["maxTeamHealth"],
             "bossDamage": config["bossDamage"],
@@ -165,7 +174,6 @@ def parse_bot_configs(data_dir):
                 continue
 
             full_id = parts[0]
-            attack_prob = float(parts[1])
             intent_sequence = parts[2]
 
             # Parse: XXX_XXX_XXX_YYY_ZZZ
@@ -198,6 +206,9 @@ def parse_bot_configs(data_dir):
 
             env_params = parse_python_file_for_env_params(py_file)
 
+            # Extract the python filename (without extension)
+            py_filename = os.path.basename(py_file).replace(".py", "")
+
             # Convert optimal_config to optimal roles array (e.g., "TFF" -> [1, 0, 0])
             optimal_roles = [ROLE_MAPPING[c] for c in optimal_config]
 
@@ -212,6 +223,7 @@ def parse_bot_configs(data_dir):
                 bot_players.append({"strategy": {"type": "fixed", "role": role}})
 
             config = {
+                "envId": py_filename,
                 "maxEnemyHealth": env_params["maxEnemyHealth"],
                 "maxTeamHealth": env_params["maxTeamHealth"],
                 "bossDamage": env_params["bossDamage"],
@@ -219,7 +231,7 @@ def parse_bot_configs(data_dir):
                 "optimalRoles": optimal_roles,
                 "humanRole": human_role,
                 "playerDeviateProbability": 0.00,
-                "enemyAttackProbability": attack_prob,
+                "enemyAttackProbability": env_params["enemyAttackProbability"],
                 "enemyIntentSequence": intent_sequence,
                 "botPlayers": bot_players,
             }
@@ -234,6 +246,7 @@ def parse_bot_configs(data_dir):
     for config in configs:
         ordered_config = {
             "id": config["id"],
+            "envId": config["envId"],
             "maxEnemyHealth": config["maxEnemyHealth"],
             "maxTeamHealth": config["maxTeamHealth"],
             "bossDamage": config["bossDamage"],

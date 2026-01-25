@@ -2,6 +2,7 @@
   "humanConfigs": [
     {
       "id": 1,
+      "envId": "959",
       "maxEnemyHealth": 25,
       "maxTeamHealth": 15,
       "bossDamage": 5,
@@ -17,6 +18,7 @@
     },
     {
       "id": 2,
+      "envId": "6949",
       "maxEnemyHealth": 15,
       "maxTeamHealth": 5,
       "bossDamage": 6,
@@ -32,6 +34,7 @@
     },
     {
       "id": 3,
+      "envId": "4449",
       "maxEnemyHealth": 15,
       "maxTeamHealth": 10,
       "bossDamage": 6,
@@ -47,6 +50,7 @@
     },
     {
       "id": 4,
+      "envId": "2319",
       "maxEnemyHealth": 10,
       "maxTeamHealth": 15,
       "bossDamage": 9,
@@ -62,6 +66,7 @@
     },
     {
       "id": 5,
+      "envId": "849",
       "maxEnemyHealth": 25,
       "maxTeamHealth": 15,
       "bossDamage": 6,
@@ -77,6 +82,7 @@
     },
     {
       "id": 6,
+      "envId": "7325",
       "maxEnemyHealth": 10,
       "maxTeamHealth": 5,
       "bossDamage": 8,
@@ -92,6 +98,7 @@
     },
     {
       "id": 7,
+      "envId": "4060",
       "maxEnemyHealth": 15,
       "maxTeamHealth": 10,
       "bossDamage": 5,
@@ -107,6 +114,7 @@
     },
     {
       "id": 8,
+      "envId": "4504",
       "maxEnemyHealth": 10,
       "maxTeamHealth": 10,
       "bossDamage": 10,
@@ -122,6 +130,7 @@
     },
     {
       "id": 9,
+      "envId": "7047",
       "maxEnemyHealth": 10,
       "maxTeamHealth": 5,
       "bossDamage": 6,
@@ -137,6 +146,7 @@
     },
     {
       "id": 10,
+      "envId": "4119",
       "maxEnemyHealth": 15,
       "maxTeamHealth": 10,
       "bossDamage": 9,
@@ -152,6 +162,7 @@
     },
     {
       "id": 11,
+      "envId": "7501",
       "maxEnemyHealth": 16,
       "maxTeamHealth": 8,
       "bossDamage": 4,
@@ -167,6 +178,7 @@
     },
     {
       "id": 12,
+      "envId": "7160",
       "maxEnemyHealth": 10,
       "maxTeamHealth": 5,
       "bossDamage": 5,
@@ -182,6 +194,7 @@
     },
     {
       "id": 13,
+      "envId": "2209",
       "maxEnemyHealth": 10,
       "maxTeamHealth": 15,
       "bossDamage": 10,
@@ -197,6 +210,7 @@
     },
     {
       "id": 14,
+      "envId": "759",
       "maxEnemyHealth": 25,
       "maxTeamHealth": 15,
       "bossDamage": 5,
@@ -212,6 +226,7 @@
     },
     {
       "id": 15,
+      "envId": "6770",
       "maxEnemyHealth": 15,
       "maxTeamHealth": 5,
       "bossDamage": 4,
@@ -229,6 +244,7 @@
   "botConfigs": [
     {
       "id": 1,
+      "envId": "1470",
       "maxEnemyHealth": 20,
       "maxTeamHealth": 15,
       "bossDamage": 4,
@@ -259,6 +275,7 @@
     },
     {
       "id": 2,
+      "envId": "6980",
       "maxEnemyHealth": 15,
       "maxTeamHealth": 5,
       "bossDamage": 3,
@@ -289,6 +306,7 @@
     },
     {
       "id": 3,
+      "envId": "5999",
       "maxEnemyHealth": 25,
       "maxTeamHealth": 5,
       "bossDamage": 1,
@@ -319,6 +337,7 @@
     },
     {
       "id": 4,
+      "envId": "4413",
       "maxEnemyHealth": 15,
       "maxTeamHealth": 10,
       "bossDamage": 9,
@@ -349,6 +368,7 @@
     },
     {
       "id": 5,
+      "envId": "1927",
       "maxEnemyHealth": 15,
       "maxTeamHealth": 15,
       "bossDamage": 8,
@@ -379,6 +399,7 @@
     },
     {
       "id": 6,
+      "envId": "1370",
       "maxEnemyHealth": 20,
       "maxTeamHealth": 15,
       "bossDamage": 4,
@@ -409,6 +430,7 @@
     },
     {
       "id": 7,
+      "envId": "6880",
       "maxEnemyHealth": 15,
       "maxTeamHealth": 5,
       "bossDamage": 3,
@@ -439,6 +461,7 @@
     },
     {
       "id": 8,
+      "envId": "4370",
       "maxEnemyHealth": 15,
       "maxTeamHealth": 10,
       "bossDamage": 4,
@@ -469,6 +492,7 @@
     },
     {
       "id": 9,
+      "envId": "1370",
       "maxEnemyHealth": 20,
       "maxTeamHealth": 15,
       "bossDamage": 4,
@@ -499,6 +523,7 @@
     },
     {
       "id": 10,
+      "envId": "6880",
       "maxEnemyHealth": 15,
       "maxTeamHealth": 5,
       "bossDamage": 3,
@@ -529,6 +554,7 @@
     },
     {
       "id": 11,
+      "envId": "722",
       "maxEnemyHealth": 25,
       "maxTeamHealth": 15,
       "bossDamage": 8,
@@ -559,6 +585,7 @@
     },
     {
       "id": 12,
+      "envId": "6280",
       "maxEnemyHealth": 20,
       "maxTeamHealth": 5,
       "bossDamage": 3,
@@ -589,6 +616,7 @@
     },
     {
       "id": 13,
+      "envId": "4234",
       "maxEnemyHealth": 15,
       "maxTeamHealth": 10,
       "bossDamage": 7,
@@ -619,6 +647,7 @@
     },
     {
       "id": 14,
+      "envId": "222",
       "maxEnemyHealth": 30,
       "maxTeamHealth": 15,
       "bossDamage": 8,
@@ -649,6 +678,7 @@
     },
     {
       "id": 15,
+      "envId": "1704",
       "maxEnemyHealth": 15,
       "maxTeamHealth": 15,
       "bossDamage": 10,
