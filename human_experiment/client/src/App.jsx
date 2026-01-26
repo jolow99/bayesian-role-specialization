@@ -32,11 +32,10 @@ export default function App() {
   }
 
   function exitSteps({ game, player }) {
-    // Skip survey if player never got into a game (lobby timeout)
-    // player.get("ended") will be something other than "finished" for lobby timeout
-    const ended = player?.get("ended");
-    if (!game || ended !== "finished") {
-      // Lobby timed out or game never started - skip survey, go straight to Finished
+    // Skip survey if player never completed the game (lobby timeout or early exit)
+    const gameComplete = player?.get("game_complete");
+    if (!game || !gameComplete) {
+      // Lobby timed out or game never completed - skip survey, go straight to Finished
       return [];
     }
     return [ExitSurvey];
