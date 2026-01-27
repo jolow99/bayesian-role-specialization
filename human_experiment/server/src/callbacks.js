@@ -1338,8 +1338,13 @@ Empirica.onGameEnded(({ game }) => {
   const maxRounds = treatment?.maxRounds || 0;
   const completedAllRounds = roundOutcomes && roundOutcomes.length >= maxRounds;
 
+  const shuffledRoundOrder = game.get("shuffledRoundOrder") || [];
+  const gameSeed = game.get("gameSeed");
+
   game.players.forEach(player => {
     const playerTotalPoints = player.get("totalPoints") || 0;
+    const gamePlayerId = player.get("gamePlayerId");
+
     // Only mark as "finished" if all rounds were completed (not early termination)
     if (completedAllRounds) {
       player.set("game_complete", true);
@@ -1352,6 +1357,67 @@ Empirica.onGameEnded(({ game }) => {
     if (consentedAt) {
       player.set("totalExperimentDurationMs", gameEndTime - consentedAt);
     }
+
+    // Build consolidated game summary for clean data export
+    // This avoids needing to join across game.csv and player.csv during analysis
+    const playerOutcomes = player.get("roundOutcomes") || [];
+    const playerBotConfigIds = player.get("botConfigIds") || [];
+    const actionHistory = player.get("actionHistory") || [];
+    const roleHistory = player.get("roleHistory") || [];
+
+    // Create round results with envId and stats embedded for each round
+    const roundResults = playerOutcomes.map((outcome) => {
+      const roundNumber = outcome.roundNumber;
+      const roundIdx = roundNumber - 1; // 0-indexed
+      const roundSlot = shuffledRoundOrder[roundIdx];
+
+      let envId = null;
+      let roundType = null;
+      let statSlot = null;
+      let stats = null;
+
+      if (roundSlot) {
+        roundType = roundSlot.type;
+        if (roundSlot.type === "human") {
+          envId = roundSlot.humanConfigId;
+          // Human rounds: player uses their gamePlayerId as stat slot
+          statSlot = gamePlayerId;
+        } else if (roundSlot.type === "bot") {
+          // Map botSlotIndex to this player's specific bot config
+          envId = playerBotConfigIds[roundSlot.botSlotIndex];
+          // Bot rounds: human always uses stat slot 0 (the imbalanced one)
+          statSlot = 0;
+        }
+
+        // Regenerate the stats for this round (same logic as addGameRound)
+        const roundConfig = game.get(`round${roundNumber}Config`) ||
+                           player.get(`round${roundNumber}Config`);
+        if (roundConfig) {
+          stats = generatePlayerStats(statSlot, gameSeed + roundNumber * 10000, roundConfig.statProfile);
+        }
+      }
+
+      return {
+        roundNumber,
+        roundType,
+        envId,
+        statSlot,
+        stats,
+        outcome: outcome.outcome,
+        pointsEarned: outcome.pointsEarned,
+        turnsTaken: outcome.turnsTaken
+      };
+    });
+
+    const gameSummary = {
+      gamePlayerId,
+      totalPoints: playerTotalPoints,
+      roundResults,
+      actionHistory,
+      roleHistory
+    };
+
+    player.set("gameSummary", gameSummary);
 
     // Don't overwrite player's individual totalPoints - they already have their own cumulative score
     console.log(`Player ${player.get("gamePlayerId")} final points: ${playerTotalPoints}`);
