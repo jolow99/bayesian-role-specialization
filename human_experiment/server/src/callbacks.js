@@ -854,7 +854,7 @@ function resolveBothTurnsPerPlayer(game, round, _stage, stageNumber) {
   const gameSeed = game.get("gameSeed");
   const maxStagesPerRound = treatment.maxStagesPerRound;
   const totalPlayers = treatment.totalPlayers;
-  const enemyIntents = round.get("enemyIntents");
+  // Note: enemyIntents is derived per-player from their config (not shared round-level)
 
   // Process each player independently
   game.players.forEach(player => {
@@ -863,6 +863,12 @@ function resolveBothTurnsPerPlayer(game, round, _stage, stageNumber) {
 
     // Get player-specific round config (for bot rounds, each player may have different config)
     const playerRoundConfig = player.round.get("playerRoundConfig") || player.get(`round${roundNumber}Config`) || baseRoundConfig;
+
+    // Derive per-player enemy intents from their config (fixes bug where all players used first player's config)
+    const playerEnemyIntentSequence = playerRoundConfig.enemyIntentSequence;
+    const playerEnemyIntents = playerEnemyIntentSequence.split('').map(char =>
+      char === '1' ? "WILL_ATTACK" : "WILL_NOT_ATTACK"
+    );
 
     // Get or initialize per-player health
     let playerEnemyHealth = player.round.get("enemyHealth");
@@ -914,7 +920,7 @@ function resolveBothTurnsPerPlayer(game, round, _stage, stageNumber) {
     const turns = [];
     for (let turnNumber = 1; turnNumber <= 2; turnNumber++) {
       const turnIndex = (stageNumber - 1) * 2 + (turnNumber - 1);
-      const enemyIntent = enemyIntents[turnIndex];
+      const enemyIntent = playerEnemyIntents[turnIndex];
       const maxHealth = playerRoundConfig.maxTeamHealth;
       const playerDeviateProbability = playerRoundConfig.playerDeviateProbability;
 

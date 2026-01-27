@@ -6,6 +6,7 @@ import { ResultsPanel } from "../components/ResultsPanel";
 import { ActionHistory } from "../components/ActionHistory";
 import { GameEndScreen } from "../components/GameEndScreen";
 import { ROLES, ROLE_LABELS } from "../constants";
+import { useAfkReminder } from "../hooks/useAfkReminder";
 
 const EMPTY_ARRAY = []; // Stable reference to prevent unnecessary re-renders
 
@@ -356,6 +357,14 @@ function ActionSelection() {
         .sort((a, b) => (a.playerId ?? 0) - (b.playerId ?? 0)); // Sort by playerId for consistent order
     }
   }, [players, player.id, hasBots, virtualBots]);
+
+  // AFK reminder - only active during role selection when player hasn't submitted
+  const isRoleSelectionPhase = !submitted && !hasTurns && !isRoundEndStage && !isGameEndStage;
+  useAfkReminder({
+    needsInput: isRoleSelectionPhase,
+    hasSubmitted: submitted,
+    otherPlayersStatus,
+  });
 
   // Determine which UI to show based on state
   // Note: roundEnd and gameEnd are now overlays, so we show the underlying UI beneath them
