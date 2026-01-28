@@ -618,6 +618,31 @@ Empirica.onStageEnded(({ stage }) => {
   // Normal game stage ended - players have submitted their roles, resolve both turns
   console.log(`Stage ${stageNumber} role selection ended, resolving turns...`);
 
+  // Collect inferredRoles from each player and store in history
+  // Format: { playerId: roleValue } -> "P1: F, P2: T"
+  const ROLE_ABBREV = ["F", "T", "M"]; // FIGHTER=0, TANK=1, MEDIC=2
+  game.players.forEach(player => {
+    const inferredRoles = player.stage.get("inferredRoles") || {};
+    const inferredRolesHistory = player.get("inferredRolesHistory") || [];
+
+    // Format as "P1: F, P2: T" style string
+    const entries = Object.entries(inferredRoles)
+      .map(([playerId, roleValue]) => `P${parseInt(playerId) + 1}: ${ROLE_ABBREV[roleValue] || "?"}`)
+      .sort() // Sort by player ID
+      .join(", ");
+
+    inferredRolesHistory.push({
+      round: roundNumber,
+      stage: stageNumber,
+      inferences: entries || null // null if no inferences (e.g., first stage)
+    });
+    player.set("inferredRolesHistory", inferredRolesHistory);
+
+    if (entries) {
+      console.log(`Player ${player.get("gamePlayerId")} inferred roles: ${entries}`);
+    }
+  });
+
   // Update round's current stage number
   round.set("stageNumber", stageNumber);
 
@@ -1370,6 +1395,7 @@ Empirica.onGameEnded(({ game }) => {
     const playerBotConfigIds = player.get("botConfigIds") || [];
     const actionHistory = player.get("actionHistory") || [];
     const roleHistory = player.get("roleHistory") || [];
+    const inferredRolesHistory = player.get("inferredRolesHistory") || [];
 
     // Create round results with envId and stats embedded for each round
     const roundResults = playerOutcomes.map((outcome) => {
@@ -1420,7 +1446,8 @@ Empirica.onGameEnded(({ game }) => {
       totalPoints: playerTotalPoints,
       roundResults,
       actionHistory,
-      roleHistory
+      roleHistory,
+      inferredRolesHistory
     };
 
     player.set("gameSummary", gameSummary);
