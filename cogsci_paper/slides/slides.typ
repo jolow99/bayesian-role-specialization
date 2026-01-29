@@ -1,6 +1,6 @@
 #import "@preview/polylux:0.4.0": *
 #import "@preview/metropolis-polylux:0.1.0" as metropolis
-#import metropolis: new-section, focus
+#import metropolis: focus, new-section
 
 #show: metropolis.setup
 
@@ -101,8 +101,13 @@
 #slide[
   = Role Selection
 
-  Agent $i$ computes expected value for each role:
-  $ "EV"_i(r_i) = sum_(r_(-i)) P(r_(-i)) dot V^((r_i, r_(-i)))(s) $
+  Agent $i$ chooses a role that maximizes the expected reward
+
+  $ r_i = op("softmax")_(r in "all role combos") ( EE_(r_(-i) ~b_i^t (r_i, dot, dot)) [V^(r_i, r_(-i)) (s)] ) $
+
+  $ EE_(r ~b_i^t (dot)) [V^r (s)] = sum_(r_(-i)) P(r_(-i)) dot V^((r_i, r_(-i)))(s) $
+
+
 
   #v(1em)
 
@@ -171,14 +176,14 @@
 ]
 
 #slide[
-  = Formal Definition: Dec-POMDP
+  = Formal Definition: MDP
 
   $chevron.l cal(N), cal(S), cal(A), cal(O), cal(R), T, gamma chevron.r$
 
   #v(0.5em)
 
   - *Agents*: $cal(N) = {0, 1, 2}$
-  - *State*: Health values, enemy intent, round number
+  - *State*: Health values, enemy intent
   - *Actions*: Attack, Block, Heal
   - *Observations*: State + all actions (but not roles)
   - *Reward*: $+100$ win, $-100$ loss (shared)
@@ -192,10 +197,12 @@
   #v(0.5em)
 
   *Fighter*:
-  $ pi_"Fighter"(a | s) = cases(
-    1 - epsilon + epsilon/3 & "if" a = "Attack",
-    epsilon/3 & "otherwise"
-  ) $
+  $
+    pi_"Fighter"(a | s) = cases(
+      1 - epsilon + epsilon/3 & "if" a = "Attack",
+      epsilon/3 & "otherwise"
+    )
+  $
 
   #v(0.5em)
 
@@ -212,10 +219,38 @@
   1. Precompute value functions for all 27 role assignments
   2. Initialize uniform prior over assignments
   3. Each round:
-     - Generate enemy intent
-     - Players sample roles (softmax over EV)
-     - Convert roles to actions
-     - Update beliefs via Bayesian inference
+    - Generate enemy intent
+    - Players sample roles (softmax over EV)
+    - Convert roles to actions
+    - Update beliefs via Bayesian inference
+]
+
+// ============================================
+#new-section[Example Gameplay]
+// ============================================
+
+#slide[
+  = Balanced Team (2-2-2)
+
+  #align(center)[
+    #image("222_222_222_FTM/env_4060_round4.png", height: 80%)
+  ]
+]
+
+#slide[
+  = Specialized Team (4-1-1)
+
+  #align(center)[
+    #image("411_141_114_FTM/env_4119_round4.png", height: 80%)
+  ]
+]
+
+#slide[
+  = Mixed Team (1-2-2)
+
+  #align(center)[
+    #image("114_222_222_MFF/env_959_round4.png", height: 80%)
+  ]
 ]
 
 // ============================================
