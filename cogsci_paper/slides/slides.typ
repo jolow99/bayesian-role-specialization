@@ -29,6 +29,24 @@
 // ]
 
 // ============================================
+#new-section[Learnings]
+// ============================================
+#slide[
+  = Learnings
+  *Experiment Design*
+  #item-by-item[
+    - Designing a good tutorial is really difficult!
+    - Comprehension check is really important. Many participants are simply speeding through the game before we had this.
+    - Running multiplayer experiments on Prolific requires you to pay people to wait in a game lobby
+  ]
+
+  *Computational Model*
+  #item-by-item[
+    - Finding suitable environment values that is not too difficult nor easy for the game require heuristics (e.g. assume stat-optimal actions for 4 turns before deviation)
+]
+]
+
+// ============================================
 #new-section[Introduction]
 // ============================================
 
@@ -68,37 +86,55 @@
     ][
       #v(1em)
       #text(fill: red)[*Wait... should you?*]
-    ][
-      #v(1em)
-      Same person. Similar request. Why does it feel different?
     ]
   ]
 ]
 
 #slide[
-  = Mentalistic Stance vs Institutional Stance visualized
+  = Mentalistic vs Institutional Stance
+
+  #toolbox.side-by-side[
+    *Mentalistic Stance (Theory of Mind):*
+
+    - Same beliefs and desires in both scenarios
+    - Prof Xuan wants help, believes you'll assist
+    - You want to help, believe you can
+    - #sym.arrow.r Predicts grocery request is fine
+  ][
+    *Institutional Stance:*
+
+    - In lab: "advisor" and "student" roles are active
+    - At grocery: those roles are *not active*
+    - No normative basis for the request
+    - #sym.arrow.r Explains why it feels wrong
+  ]
+
+  #v(1em)
+  #align(center)[
+    We track not just *what people want*, but *which roles apply* in each context
+  ]
+]
+
+#slide[
+  = Mentalistic Stance vs Institutional Stance
 
   #toolbox.side-by-side(columns: (1fr, 1fr))[
-    #one-by-one[
-      #align(center)[
-        #image("images/fig1a.png", width: 90%)
+    #align(center)[
+      #image("images/fig1a.png", width: 90%)
 
-        #text(size: 0.8em)[*Mentalistic Stance:* Individual beliefs and desires]
-      ]
+      #text(size: 0.8em)[*Mentalistic Stance:* Individual beliefs and desires]
     ]
   ][
-    #one-by-one(start: 2)[
-      #align(center)[
-        #image("images/fig1b.png", width: 90%)
+    #align(center)[
+      #image("images/fig1b.png", width: 90%)
 
-        #text(size: 0.8em)[*Institutional Stance:* Roles and normative relations]
-      ]
+      #text(size: 0.8em)[*Institutional Stance:* Roles and normative relations]
     ]
   ]
 ]
 
 #slide[
-  = Stage 2: Fixed Institutional Reprensentations
+  = Institutional Reprensentations
 
   #toolbox.side-by-side[
     #image("images/stage_2.png", width: 80%)
@@ -115,20 +151,11 @@
 ]
 
 #slide[
-  = The Puzzle of Spontaneous Coordination
+  = Our research question
 
-  Humans coordinate with unfamiliar teammates *without explicit communication*
+  Humans coordinate with others *without explicit communication*
 
-  #v(1em)
-
-  *Role specialization*: spontaneous differentiation into complementary roles
-  - "The planner," "the executor," "the quality checker"
-  - Emerges without central authority
-  - Makes teams more effective
-
-  #v(1em)
-
-  *Key question*: How do people infer teammates' roles and decide their own?
+  *Key question*: How do people infer their roles in a team ?
 ]
 
 #slide[
@@ -145,6 +172,14 @@
   #v(1em)
 
   This is a *best-response* strategy: fill gaps in team composition
+]
+
+#slide[
+  = Game time!
+  Let's go through the tutorial and play the game! 
+  
+  Please go to * https://coop-battle.cosilab.app *
+  
 ]
 
 // ============================================
@@ -307,9 +342,9 @@
     - Update beliefs via Bayesian inference
 ]
 
-// ============================================
-#new-section[Example Gameplay]
-// ============================================
+// // ============================================
+// #new-section[Example Gameplay]
+// // ============================================
 
 #slide[
   = 3 Humans, Balanced Stats (222-222-222)
@@ -505,3 +540,4 @@
 
   Questions?
 ]
+
