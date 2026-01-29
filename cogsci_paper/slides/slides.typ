@@ -33,6 +33,88 @@
 // ============================================
 
 #slide[
+  = Scenario 1: In the Lab
+
+  #toolbox.side-by-side[
+    #align(center)[
+      #image("images/tanzx.jpg", height: 150pt)
+    ]
+  ][
+    #one-by-one[
+      You're working in Prof Xuan's research lab.
+    ][
+      #v(1em)
+      Prof Xuan asks you: "Can you run these experiments and write up the results?"
+    ][
+      #v(1em)
+      #text(fill: green)[*Seems reasonable!*]
+    ]
+  ]
+]
+
+#slide[
+  = Scenario 2: At the Grocery Store
+
+  #toolbox.side-by-side[
+    #align(center)[
+      #image("images/tanzx.jpg", height: 150pt)
+    ]
+  ][
+    #one-by-one[
+      You bump into Prof Xuan at the grocery store.
+    ][
+      #v(1em)
+      Prof Xuan asks you: "Can you carry my groceries to my car?"
+    ][
+      #v(1em)
+      #text(fill: red)[*Wait... should you?*]
+    ][
+      #v(1em)
+      Same person. Similar request. Why does it feel different?
+    ]
+  ]
+]
+
+#slide[
+  = Mentalistic Stance vs Institutional Stance visualized
+
+  #toolbox.side-by-side(columns: (1fr, 1fr))[
+    #one-by-one[
+      #align(center)[
+        #image("images/fig1a.png", width: 90%)
+
+        #text(size: 0.8em)[*Mentalistic Stance:* Individual beliefs and desires]
+      ]
+    ]
+  ][
+    #one-by-one(start: 2)[
+      #align(center)[
+        #image("images/fig1b.png", width: 90%)
+
+        #text(size: 0.8em)[*Institutional Stance:* Roles and normative relations]
+      ]
+    ]
+  ]
+]
+
+#slide[
+  = Stage 2: Fixed Institutional Reprensentations
+
+  #toolbox.side-by-side[
+    #image("images/stage_2.png", width: 80%)
+  ][
+    *The core idea:* Any individual can occupy specific roles
+
+    Abstract representation of roles independent of who occupies them
+
+    Agents can track and remember:
+    - Which role an individual occupies
+    - When roles change
+    - How to adjust behavior accordingly
+  ]
+]
+
+#slide[
   = The Puzzle of Spontaneous Coordination
 
   Humans coordinate with unfamiliar teammates *without explicit communication*
