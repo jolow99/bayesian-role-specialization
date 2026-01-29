@@ -22,11 +22,11 @@
   #super[1]Metagov, #super[2]National University of Singapore
 ]
 
-#slide[
-  = Agenda
+// #slide[
+//   = Agenda
 
-  #metropolis.outline
-]
+//   #metropolis.outline
+// ]
 
 // ============================================
 #new-section[Introduction]
@@ -183,19 +183,53 @@
 #slide[
   = Role Selection
 
-  Agent $i$ chooses a role that maximizes the expected reward
+  Agent $i$ samples a role from a softmax distribution over the expected reward
 
-  $ r_i = op("softmax")_(r in "all role combos") ( EE_(r_(-i) ~b_i^t (r_i, dot, dot)) [V^(r_i, r_(-i)) (s)] ) $
-
-  $ EE_(r ~b_i^t (dot)) [V^r (s)] = sum_(r_(-i)) P(r_(-i)) dot V^((r_i, r_(-i)))(s) $
-
-
+  $ r_i ~ op("softmax")_(r_i in "roles") (sum_(r_(-i)) P(r_(-i) | r_i) dot V^((r_i, r_(-i)))(s)) $
 
   #v(1em)
 
   - $V^(bold(r))(s)$ = state-value function for role assignment $bold(r)$
   - Select role via softmax over expected values
   - *Best-response*: complement teammates' likely roles
+]
+
+#slide[
+  = Formal Definition: MDP
+
+  $chevron.l cal(N), cal(H), cal(S), cal(A), cal(T), cal(R)chevron.r$
+
+  #v(0.5em)
+
+  - agents $cal(N) = {0, 1, 2}$
+  - horizon $cal(H) = 10$
+  - state space $cal(S)$: enemy intent $times$ team health $times$ enemy health
+  - action space $cal(A)$ = {attack, block, heal}
+  - transition function $cal(T)$: $P(s'|s, bold(a))$
+  - reward function $cal(R)(s^t)$ = $100 times (1 - t/cal(H))$ if team alive, enemy dead, 0 else
+]
+
+#slide[
+  = Role-Based Policies
+
+  #v(0.5em)
+
+  *Fighter*:
+  $
+    pi_"Fighter"(a | s) = cases(
+      1 - epsilon & "if" a = "Attack",
+      epsilon/2 & "otherwise"
+    )
+  $
+
+  #v(0.5em)
+
+  *Tank* and *Medic*: Similar structure with state-dependent preferred actions
+
+
+  Grid search over all roles, range of team/enemy health values, enemy attack damage, and enemy attack probability to create
+  - lookup tables for the model
+  - choose env params for the human experiments
 ]
 
 // ============================================
@@ -258,40 +292,6 @@
 ]
 
 #slide[
-  = Formal Definition: MDP
-
-  $chevron.l cal(N), cal(S), cal(A), cal(O), cal(R), T, gamma chevron.r$
-
-  #v(0.5em)
-
-  - *Agents*: $cal(N) = {0, 1, 2}$
-  - *State*: Health values, enemy intent
-  - *Actions*: Attack, Block, Heal
-  - *Observations*: State + all actions (but not roles)
-  - *Reward*: $+100$ win, $-100$ loss (shared)
-]
-
-#slide[
-  = Role-Based Policies
-
-  Epsilon-greedy policies ($epsilon = 0.1$):
-
-  #v(0.5em)
-
-  *Fighter*:
-  $
-    pi_"Fighter"(a | s) = cases(
-      1 - epsilon + epsilon/3 & "if" a = "Attack",
-      epsilon/3 & "otherwise"
-    )
-  $
-
-  #v(0.5em)
-
-  *Tank* and *Medic*: Similar structure with state-dependent preferred actions
-]
-
-#slide[
   = Implementation
 
   Probabilistic programming with `memo` in JAX
@@ -312,26 +312,34 @@
 // ============================================
 
 #slide[
-  = Balanced Team (2-2-2)
+  = 3 Humans, Balanced Stats (222-222-222)
 
   #align(center)[
-    #image("222_222_222_FTM/env_4060_round4.png", height: 80%)
+    #image("images/env_4060_round1.png", height: 80%)
   ]
 ]
 
 #slide[
-  = Specialized Team (4-1-1)
+  = 3 Humans, 1 Specialized Player(141_222_222)
 
   #align(center)[
-    #image("411_141_114_FTM/env_4119_round4.png", height: 80%)
+    #image("images/env_2319_round5.png", height: 80%)
   ]
 ]
 
 #slide[
-  = Mixed Team (1-2-2)
+  = 1 Human, 2 Bots (141_222_222) - Player 0 is a human
 
   #align(center)[
-    #image("114_222_222_MFF/env_959_round4.png", height: 80%)
+    #image("images/game_RAYSSF_round_8_player_XESM.png", height: 80%)
+  ]
+]
+
+#slide[
+  = 1 Human, 2 Bots (141_222_222) - Player 0 is a human
+
+  #align(center)[
+    #image("images/game_NM9RTP_round_4_player_GE0E.png", height: 80%)
   ]
 ]
 
