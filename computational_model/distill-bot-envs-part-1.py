@@ -87,7 +87,6 @@ TRACKED_COMBOS = {
         ("FTT", "TMM"),
         ("FTT", "TMT"),
         ("FTT", "TTT"),
-        ("TFM", "TMM"),
     ],
     "141_222_222": [
         ("TFF", "FFF"),
