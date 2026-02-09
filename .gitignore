@@ -3,3 +3,4 @@ human_experiment/bayesian-role-specialization.tar.zst
 .env
 .env.local
 .env.*.local
+*env*/

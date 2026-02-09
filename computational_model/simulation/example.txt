@@ -1,0 +1,10 @@
+Step  | Intent     | Team HP  | Enemy HP | Roles           | Actions        
+--------------------------------------------------------------------------------
+0     | ATTACK     | 10       | 30       | ATK,HEL,HEL     | ATK,ATK,ATK    
+1     | ATTACK     | 8        | 24       | ATK,HEL,HEL     | ATK,HEL,HEL    
+2     | ATTACK     | 10       | 22       | ATK,ATK,HEL     | ATK,ATK,ATK    
+3     | ATTACK     | 8        | 16       | ATK,ATK,HEL     | ATK,ATK,HEL    
+4     | ATTACK     | 8        | 12       | ATK,ATK,ATK     | ATK,ATK,ATK    
+5     | ATTACK     | 6        | 6        | ATK,ATK,ATK     | ATK,ATK,ATK    
+--------------------------------------------------------------------------------
+FINAL | -          | 4        | 0        | -               | -              
