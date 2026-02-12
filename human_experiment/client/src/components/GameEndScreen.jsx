@@ -83,7 +83,7 @@ export const GameEndScreen = React.memo(function GameEndScreen({
   }
 
   return (
-    <div className="flex items-center justify-center h-full px-4">
+    <div className="flex items-center justify-center h-full px-4 py-4 overflow-y-auto">
       <div className={`${bgColorClass} border-4 ${borderColorClass} rounded-xl p-6 max-w-6xl min-w-[600px] w-full shadow-2xl`}>
         {/* Icon and Title */}
         <div className="text-center mb-4">

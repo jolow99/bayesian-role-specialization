@@ -389,7 +389,7 @@ function ActionSelection() {
         {/* Battle Screen */}
         <div className="bg-white rounded-lg shadow-2xl border-4 border-gray-800 w-full h-full flex overflow-hidden relative">
           {/* Left Column - Game Interface and Role Selection */}
-          <div className="flex-1 flex flex-col min-w-0">
+          <div className="flex-1 flex flex-col min-w-0 relative">
             {/* Round Header */}
             <div className="bg-gray-800 text-white text-center flex-shrink-0 rounded-tl-lg flex items-center justify-center" style={{ height: '40px' }}>
               <h1 className="text-lg font-bold">
@@ -501,6 +501,34 @@ function ActionSelection() {
                 )}
               </div>
             </div>
+
+            {/* Round End Overlay - covers left panel only, leaves history visible */}
+            {shouldShowRoundEnd && (
+              <div className="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
+                <GameEndScreen
+                  outcome={roundOutcome}
+                  endMessage={round.get("roundEndMessage")}
+                  totalPoints={totalPoints}
+                  roundOutcomes={player.get("roundOutcomes") || []}
+                  isBotRoundEarlyFinish={isBotRound && roundOutcome && !isRoundEndStage}
+                  onEarlyFinishContinue={() => setAcknowledgedEarlyFinish(true)}
+                  otherPlayersStatus={otherPlayersStatus}
+                />
+              </div>
+            )}
+
+            {/* Game End Overlay - covers left panel only, leaves history visible */}
+            {shouldShowGameEnd && (
+              <div className="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
+                <GameEndScreen
+                  outcome={game.get("finalOutcome")}
+                  endMessage={stage.get("endMessage")}
+                  totalPoints={totalPoints}
+                  roundOutcomes={player.get("roundOutcomes") || []}
+                  otherPlayersStatus={otherPlayersStatus}
+                />
+              </div>
+            )}
           </div>
 
           {/* Right Column - Battle History (full height) */}
@@ -514,34 +542,6 @@ function ActionSelection() {
               <ActionHistory currentStageView={stageToView} currentTurnView={currentTurnView} />
             </div>
           </div>
-
-          {/* Round End Overlay - covers left panel only, leaves history visible */}
-          {shouldShowRoundEnd && (
-            <div className="absolute top-0 bottom-0 left-0 bg-black bg-opacity-60 flex items-center justify-center z-50" style={{ right: 'calc(22% + 4px)', minWidth: 'calc(100% - 354px)' }}>
-              <GameEndScreen
-                outcome={roundOutcome}
-                endMessage={round.get("roundEndMessage")}
-                totalPoints={totalPoints}
-                roundOutcomes={player.get("roundOutcomes") || []}
-                isBotRoundEarlyFinish={isBotRound && roundOutcome && !isRoundEndStage}
-                onEarlyFinishContinue={() => setAcknowledgedEarlyFinish(true)}
-                otherPlayersStatus={otherPlayersStatus}
-              />
-            </div>
-          )}
-
-          {/* Game End Overlay - covers left panel only, leaves history visible */}
-          {shouldShowGameEnd && (
-            <div className="absolute top-0 bottom-0 left-0 bg-black bg-opacity-60 flex items-center justify-center z-50" style={{ right: 'calc(22% + 4px)', minWidth: 'calc(100% - 354px)' }}>
-              <GameEndScreen
-                outcome={game.get("finalOutcome")}
-                endMessage={stage.get("endMessage")}
-                totalPoints={totalPoints}
-                roundOutcomes={player.get("roundOutcomes") || []}
-                otherPlayersStatus={otherPlayersStatus}
-              />
-            </div>
-          )}
         </div>
       </div>
     </div>
