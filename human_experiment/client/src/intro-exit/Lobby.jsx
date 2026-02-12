@@ -25,7 +25,7 @@ export function Lobby() {
 
           <p className="text-gray-600 mb-6">
             Please wait while we match you with other participants.
-            This may take up to <span className="font-semibold">10 minutes</span>.
+            This may take up to <span className="font-semibold">15 minutes</span>.
           </p>
 
           {/* Player connection status */}
