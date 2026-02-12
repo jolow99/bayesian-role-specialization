@@ -159,7 +159,7 @@ def parse_human_configs(data_dir):
 def parse_bot_configs(data_dir):
     """Parse deviate_case_envs for botConfigs."""
     configs = []
-    lds_file = os.path.join(data_dir, "deviate_case_envs", "bot_case_lds_arrays.txt")
+    lds_file = os.path.join(data_dir, "deviate_case_envs", "bot_lds_seqs.txt")
 
     with open(lds_file, "r") as f:
         for line in f:

@@ -244,25 +244,25 @@
   "botConfigs": [
     {
       "id": 1,
-      "envId": "1470",
-      "maxEnemyHealth": 20,
+      "envId": "1937",
+      "maxEnemyHealth": 15,
       "maxTeamHealth": 15,
-      "bossDamage": 4,
+      "bossDamage": 7,
       "statProfile": "imbalanced-oneunique-sup",
       "optimalRoles": [
         2,
         0,
-        0
+        1
       ],
       "humanRole": 0,
       "playerDeviateProbability": 0.0,
-      "enemyAttackProbability": 1.0,
-      "enemyIntentSequence": "1111111111",
+      "enemyAttackProbability": 0.66,
+      "enemyIntentSequence": "1100110111",
       "botPlayers": [
         {
           "strategy": {
             "type": "fixed",
-            "role": 0
+            "role": 1
           }
         },
         {
@@ -275,9 +275,40 @@
     },
     {
       "id": 2,
-      "envId": "6980",
-      "maxEnemyHealth": 15,
-      "maxTeamHealth": 5,
+      "envId": "924",
+      "maxEnemyHealth": 25,
+      "maxTeamHealth": 15,
+      "bossDamage": 8,
+      "statProfile": "imbalanced-oneunique-sup",
+      "optimalRoles": [
+        2,
+        0,
+        0
+      ],
+      "humanRole": 0,
+      "playerDeviateProbability": 0.0,
+      "enemyAttackProbability": 0.4,
+      "enemyIntentSequence": "1000110011",
+      "botPlayers": [
+        {
+          "strategy": {
+            "type": "fixed",
+            "role": 1
+          }
+        },
+        {
+          "strategy": {
+            "type": "fixed",
+            "role": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "envId": "476",
+      "maxEnemyHealth": 30,
+      "maxTeamHealth": 15,
       "bossDamage": 3,
       "statProfile": "imbalanced-oneunique-sup",
       "optimalRoles": [
@@ -287,13 +318,44 @@
       ],
       "humanRole": 0,
       "playerDeviateProbability": 0.0,
+      "enemyAttackProbability": 0.6,
+      "enemyIntentSequence": "1100110011",
+      "botPlayers": [
+        {
+          "strategy": {
+            "type": "fixed",
+            "role": 2
+          }
+        },
+        {
+          "strategy": {
+            "type": "fixed",
+            "role": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "envId": "5500",
+      "maxEnemyHealth": 30,
+      "maxTeamHealth": 5,
+      "bossDamage": 1,
+      "statProfile": "imbalanced-oneunique-sup",
+      "optimalRoles": [
+        2,
+        0,
+        0
+      ],
+      "humanRole": 1,
+      "playerDeviateProbability": 0.0,
       "enemyAttackProbability": 1.0,
       "enemyIntentSequence": "1111111111",
       "botPlayers": [
         {
           "strategy": {
             "type": "fixed",
-            "role": 1
+            "role": 2
           }
         },
         {
@@ -305,20 +367,20 @@
       ]
     },
     {
-      "id": 3,
-      "envId": "5999",
-      "maxEnemyHealth": 25,
-      "maxTeamHealth": 5,
-      "bossDamage": 1,
-      "statProfile": "imbalanced-oneunique-sup",
+      "id": 5,
+      "envId": "4838",
+      "maxEnemyHealth": 10,
+      "maxTeamHealth": 10,
+      "bossDamage": 7,
+      "statProfile": "imbalanced-oneunique-def",
       "optimalRoles": [
-        2,
+        1,
         0,
         0
       ],
-      "humanRole": 1,
+      "humanRole": 0,
       "playerDeviateProbability": 0.0,
-      "enemyAttackProbability": 0.8,
+      "enemyAttackProbability": 0.75,
       "enemyIntentSequence": "1110110111",
       "botPlayers": [
         {
@@ -330,55 +392,55 @@
         {
           "strategy": {
             "type": "fixed",
-            "role": 2
+            "role": 1
           }
         }
       ]
     },
     {
-      "id": 4,
-      "envId": "4413",
+      "id": 6,
+      "envId": "1816",
       "maxEnemyHealth": 15,
-      "maxTeamHealth": 10,
+      "maxTeamHealth": 15,
       "bossDamage": 9,
-      "statProfile": "imbalanced-oneunique-sup",
+      "statProfile": "imbalanced-oneunique-def",
       "optimalRoles": [
-        2,
+        1,
         0,
-        1
+        2
       ],
       "humanRole": 0,
       "playerDeviateProbability": 0.0,
-      "enemyAttackProbability": 0.33,
-      "enemyIntentSequence": "1000110000",
+      "enemyAttackProbability": 0.6,
+      "enemyIntentSequence": "1100110011",
       "botPlayers": [
         {
           "strategy": {
             "type": "fixed",
-            "role": 0
+            "role": 2
           }
         },
         {
           "strategy": {
             "type": "fixed",
-            "role": 0
+            "role": 1
           }
         }
       ]
     },
     {
-      "id": 5,
-      "envId": "1927",
-      "maxEnemyHealth": 15,
+      "id": 7,
+      "envId": "357",
+      "maxEnemyHealth": 30,
       "maxTeamHealth": 15,
-      "bossDamage": 8,
-      "statProfile": "imbalanced-oneunique-sup",
+      "bossDamage": 5,
+      "statProfile": "imbalanced-oneunique-def",
       "optimalRoles": [
-        2,
+        1,
         0,
-        1
+        0
       ],
-      "humanRole": 2,
+      "humanRole": 0,
       "playerDeviateProbability": 0.0,
       "enemyAttackProbability": 0.66,
       "enemyIntentSequence": "1100110111",
@@ -392,68 +454,6 @@
         {
           "strategy": {
             "type": "fixed",
-            "role": 0
-          }
-        }
-      ]
-    },
-    {
-      "id": 6,
-      "envId": "1370",
-      "maxEnemyHealth": 20,
-      "maxTeamHealth": 15,
-      "bossDamage": 4,
-      "statProfile": "imbalanced-oneunique-def",
-      "optimalRoles": [
-        1,
-        0,
-        0
-      ],
-      "humanRole": 0,
-      "playerDeviateProbability": 0.0,
-      "enemyAttackProbability": 1.0,
-      "enemyIntentSequence": "1111111111",
-      "botPlayers": [
-        {
-          "strategy": {
-            "type": "fixed",
-            "role": 0
-          }
-        },
-        {
-          "strategy": {
-            "type": "fixed",
-            "role": 1
-          }
-        }
-      ]
-    },
-    {
-      "id": 7,
-      "envId": "6880",
-      "maxEnemyHealth": 15,
-      "maxTeamHealth": 5,
-      "bossDamage": 3,
-      "statProfile": "imbalanced-oneunique-def",
-      "optimalRoles": [
-        1,
-        0,
-        2
-      ],
-      "humanRole": 0,
-      "playerDeviateProbability": 0.0,
-      "enemyAttackProbability": 1.0,
-      "enemyIntentSequence": "1111111111",
-      "botPlayers": [
-        {
-          "strategy": {
-            "type": "fixed",
-            "role": 2
-          }
-        },
-        {
-          "strategy": {
-            "type": "fixed",
             "role": 1
           }
         }
@@ -461,9 +461,9 @@
     },
     {
       "id": 8,
-      "envId": "4370",
-      "maxEnemyHealth": 15,
-      "maxTeamHealth": 10,
+      "envId": "367",
+      "maxEnemyHealth": 30,
+      "maxTeamHealth": 15,
       "bossDamage": 4,
       "statProfile": "imbalanced-oneunique-def",
       "optimalRoles": [
@@ -471,10 +471,10 @@
         0,
         2
       ],
-      "humanRole": 2,
+      "humanRole": 0,
       "playerDeviateProbability": 0.0,
-      "enemyAttackProbability": 1.0,
-      "enemyIntentSequence": "1111111111",
+      "enemyAttackProbability": 0.66,
+      "enemyIntentSequence": "1100110111",
       "botPlayers": [
         {
           "strategy": {
@@ -492,8 +492,8 @@
     },
     {
       "id": 9,
-      "envId": "1370",
-      "maxEnemyHealth": 20,
+      "envId": "367",
+      "maxEnemyHealth": 30,
       "maxTeamHealth": 15,
       "bossDamage": 4,
       "statProfile": "imbalanced-oneunique-def",
@@ -504,8 +504,8 @@
       ],
       "humanRole": 0,
       "playerDeviateProbability": 0.0,
-      "enemyAttackProbability": 1.0,
-      "enemyIntentSequence": "1111111111",
+      "enemyAttackProbability": 0.66,
+      "enemyIntentSequence": "1100110111",
       "botPlayers": [
         {
           "strategy": {
@@ -523,17 +523,17 @@
     },
     {
       "id": 10,
-      "envId": "6880",
-      "maxEnemyHealth": 15,
+      "envId": "5280",
+      "maxEnemyHealth": 30,
       "maxTeamHealth": 5,
       "bossDamage": 3,
-      "statProfile": "imbalanced-oneunique-def",
+      "statProfile": "imbalanced-oneunique-str",
       "optimalRoles": [
-        1,
+        0,
         2,
         2
       ],
-      "humanRole": 0,
+      "humanRole": 2,
       "playerDeviateProbability": 0.0,
       "enemyAttackProbability": 1.0,
       "enemyIntentSequence": "1111111111",
@@ -541,7 +541,7 @@
         {
           "strategy": {
             "type": "fixed",
-            "role": 2
+            "role": 0
           }
         },
         {
@@ -554,82 +554,20 @@
     },
     {
       "id": 11,
-      "envId": "722",
-      "maxEnemyHealth": 25,
-      "maxTeamHealth": 15,
-      "bossDamage": 8,
-      "statProfile": "imbalanced-oneunique-str",
-      "optimalRoles": [
-        0,
-        0,
-        1
-      ],
-      "humanRole": 1,
-      "playerDeviateProbability": 0.0,
-      "enemyAttackProbability": 0.25,
-      "enemyIntentSequence": "1000110000",
-      "botPlayers": [
-        {
-          "strategy": {
-            "type": "fixed",
-            "role": 0
-          }
-        },
-        {
-          "strategy": {
-            "type": "fixed",
-            "role": 0
-          }
-        }
-      ]
-    },
-    {
-      "id": 12,
-      "envId": "6280",
-      "maxEnemyHealth": 20,
+      "envId": "5280",
+      "maxEnemyHealth": 30,
       "maxTeamHealth": 5,
       "bossDamage": 3,
       "statProfile": "imbalanced-oneunique-str",
       "optimalRoles": [
         0,
         2,
-        2
+        1
       ],
       "humanRole": 2,
       "playerDeviateProbability": 0.0,
       "enemyAttackProbability": 1.0,
       "enemyIntentSequence": "1111111111",
-      "botPlayers": [
-        {
-          "strategy": {
-            "type": "fixed",
-            "role": 0
-          }
-        },
-        {
-          "strategy": {
-            "type": "fixed",
-            "role": 2
-          }
-        }
-      ]
-    },
-    {
-      "id": 13,
-      "envId": "4234",
-      "maxEnemyHealth": 15,
-      "maxTeamHealth": 10,
-      "bossDamage": 7,
-      "statProfile": "imbalanced-oneunique-str",
-      "optimalRoles": [
-        0,
-        1,
-        2
-      ],
-      "humanRole": 2,
-      "playerDeviateProbability": 0.0,
-      "enemyAttackProbability": 0.4,
-      "enemyIntentSequence": "1000110011",
       "botPlayers": [
         {
           "strategy": {
@@ -646,16 +584,78 @@
       ]
     },
     {
-      "id": 14,
-      "envId": "222",
-      "maxEnemyHealth": 30,
+      "id": 12,
+      "envId": "715",
+      "maxEnemyHealth": 25,
       "maxTeamHealth": 15,
-      "bossDamage": 8,
+      "bossDamage": 9,
       "statProfile": "imbalanced-oneunique-str",
       "optimalRoles": [
         0,
-        1,
-        2
+        0,
+        1
+      ],
+      "humanRole": 1,
+      "playerDeviateProbability": 0.0,
+      "enemyAttackProbability": 0.5,
+      "enemyIntentSequence": "1100110011",
+      "botPlayers": [
+        {
+          "strategy": {
+            "type": "fixed",
+            "role": 2
+          }
+        },
+        {
+          "strategy": {
+            "type": "fixed",
+            "role": 2
+          }
+        }
+      ]
+    },
+    {
+      "id": 13,
+      "envId": "245",
+      "maxEnemyHealth": 30,
+      "maxTeamHealth": 15,
+      "bossDamage": 6,
+      "statProfile": "imbalanced-oneunique-str",
+      "optimalRoles": [
+        0,
+        2,
+        1
+      ],
+      "humanRole": 2,
+      "playerDeviateProbability": 0.0,
+      "enemyAttackProbability": 0.5,
+      "enemyIntentSequence": "1100110011",
+      "botPlayers": [
+        {
+          "strategy": {
+            "type": "fixed",
+            "role": 1
+          }
+        },
+        {
+          "strategy": {
+            "type": "fixed",
+            "role": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": 14,
+      "envId": "202",
+      "maxEnemyHealth": 30,
+      "maxTeamHealth": 15,
+      "bossDamage": 10,
+      "statProfile": "imbalanced-oneunique-str",
+      "optimalRoles": [
+        0,
+        2,
+        1
       ],
       "humanRole": 1,
       "playerDeviateProbability": 0.0,
@@ -665,44 +665,44 @@
         {
           "strategy": {
             "type": "fixed",
-            "role": 0
-          }
-        },
-        {
-          "strategy": {
-            "type": "fixed",
-            "role": 0
-          }
-        }
-      ]
-    },
-    {
-      "id": 15,
-      "envId": "1704",
-      "maxEnemyHealth": 15,
-      "maxTeamHealth": 15,
-      "bossDamage": 10,
-      "statProfile": "imbalanced-oneunique-str",
-      "optimalRoles": [
-        0,
-        1,
-        2
-      ],
-      "humanRole": 1,
-      "playerDeviateProbability": 0.0,
-      "enemyAttackProbability": 0.4,
-      "enemyIntentSequence": "1000110011",
-      "botPlayers": [
-        {
-          "strategy": {
-            "type": "fixed",
-            "role": 0
+            "role": 2
           }
         },
         {
           "strategy": {
             "type": "fixed",
             "role": 2
+          }
+        }
+      ]
+    },
+    {
+      "id": 15,
+      "envId": "2712",
+      "maxEnemyHealth": 30,
+      "maxTeamHealth": 10,
+      "bossDamage": 9,
+      "statProfile": "imbalanced-oneunique-str",
+      "optimalRoles": [
+        0,
+        0,
+        0
+      ],
+      "humanRole": 2,
+      "playerDeviateProbability": 0.0,
+      "enemyAttackProbability": 0.25,
+      "enemyIntentSequence": "1000110000",
+      "botPlayers": [
+        {
+          "strategy": {
+            "type": "fixed",
+            "role": 2
+          }
+        },
+        {
+          "strategy": {
+            "type": "fixed",
+            "role": 1
           }
         }
       ]
