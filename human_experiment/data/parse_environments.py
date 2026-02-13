@@ -125,7 +125,9 @@ def parse_human_configs(data_dir):
                 "maxTeamHealth": env_params["maxTeamHealth"],
                 "bossDamage": env_params["bossDamage"],
                 "statProfile": stat_profile_name,
+                "statProfileId": stat_profile_code,
                 "optimalRoles": optimal_roles,
+                "optimalRolesId": player_config,
                 "playerDeviateProbability": 0.00,
                 "enemyAttackProbability": env_params["enemyAttackProbability"],
                 "enemyIntentSequence": intent_sequence,
@@ -146,7 +148,9 @@ def parse_human_configs(data_dir):
             "maxTeamHealth": config["maxTeamHealth"],
             "bossDamage": config["bossDamage"],
             "statProfile": config["statProfile"],
+            "statProfileId": config["statProfileId"],
             "optimalRoles": config["optimalRoles"],
+            "optimalRolesId": config["optimalRolesId"],
             "playerDeviateProbability": config["playerDeviateProbability"],
             "enemyAttackProbability": config["enemyAttackProbability"],
             "enemyIntentSequence": config["enemyIntentSequence"],
@@ -212,6 +216,9 @@ def parse_bot_configs(data_dir):
             # Convert optimal_config to optimal roles array (e.g., "TFF" -> [1, 0, 0])
             optimal_roles = [ROLE_MAPPING[c] for c in optimal_config]
 
+            # Convert bot_config to deviate roles array (e.g., "MMT" -> [2, 2, 1])
+            deviate_roles = [ROLE_MAPPING[c] for c in bot_config]
+
             # Human's role is the first character of bot_config (e.g., "FFT" -> F -> 0)
             human_role = ROLE_MAPPING[bot_config[0]]
 
@@ -228,7 +235,10 @@ def parse_bot_configs(data_dir):
                 "maxTeamHealth": env_params["maxTeamHealth"],
                 "bossDamage": env_params["bossDamage"],
                 "statProfile": stat_profile_name,
+                "statProfileId": stat_profile_code,
                 "optimalRoles": optimal_roles,
+                "deviateRoles": deviate_roles,
+                "optimalDeviateRolesId": f"{optimal_config}_{bot_config}",
                 "humanRole": human_role,
                 "playerDeviateProbability": 0.00,
                 "enemyAttackProbability": env_params["enemyAttackProbability"],
@@ -251,7 +261,10 @@ def parse_bot_configs(data_dir):
             "maxTeamHealth": config["maxTeamHealth"],
             "bossDamage": config["bossDamage"],
             "statProfile": config["statProfile"],
+            "statProfileId": config["statProfileId"],
             "optimalRoles": config["optimalRoles"],
+            "deviateRoles": config["deviateRoles"],
+            "optimalDeviateRolesId": config["optimalDeviateRolesId"],
             "humanRole": config["humanRole"],
             "playerDeviateProbability": config["playerDeviateProbability"],
             "enemyAttackProbability": config["enemyAttackProbability"],

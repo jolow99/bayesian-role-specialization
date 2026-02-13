@@ -1392,62 +1392,63 @@ Empirica.onGameEnded(({ game }) => {
     // Build consolidated game summary for clean data export
     // This avoids needing to join across game.csv and player.csv during analysis
     const playerOutcomes = player.get("roundOutcomes") || [];
-    const playerBotConfigIds = player.get("botConfigIds") || [];
     const actionHistory = player.get("actionHistory") || [];
     const roleHistory = player.get("roleHistory") || [];
     const inferredRolesHistory = player.get("inferredRolesHistory") || [];
 
-    // Create round results with envId and stats embedded for each round
-    const roundResults = playerOutcomes.map((outcome) => {
+    // Build simplified game summary: config per round, role+inferences per stage, health per turn
+    const rounds = playerOutcomes.map((outcome) => {
       const roundNumber = outcome.roundNumber;
-      const roundIdx = roundNumber - 1; // 0-indexed
-      const roundSlot = shuffledRoundOrder[roundIdx];
+      const roundSlot = shuffledRoundOrder[roundNumber - 1];
 
-      let envId = null;
-      let roundType = null;
-      let statSlot = null;
-      let stats = null;
+      // Get the full config for this round (player-specific for bot rounds)
+      const config = (roundSlot.type === "bot"
+        ? player.get(`round${roundNumber}Config`)
+        : game.get(`round${roundNumber}Config`))
+        || game.get(`round${roundNumber}Config`);
 
-      if (roundSlot) {
-        roundType = roundSlot.type;
-        if (roundSlot.type === "human") {
-          envId = roundSlot.humanConfigId;
-          // Human rounds: player uses their gamePlayerId as stat slot
-          statSlot = gamePlayerId;
-        } else if (roundSlot.type === "bot") {
-          // Map botSlotIndex to this player's specific bot config
-          envId = playerBotConfigIds[roundSlot.botSlotIndex];
-          // Bot rounds: human always uses stat slot 0 (the imbalanced one)
-          statSlot = 0;
-        }
+      // Regenerate player stats for this round
+      const statSlot = roundSlot.type === "bot" ? 0 : gamePlayerId;
+      const playerStats = config
+        ? generatePlayerStats(statSlot, gameSeed + roundNumber * 10000, config.statProfile)
+        : null;
 
-        // Regenerate the stats for this round (same logic as addGameRound)
-        const roundConfig = game.get(`round${roundNumber}Config`) ||
-                           player.get(`round${roundNumber}Config`);
-        if (roundConfig) {
-          stats = generatePlayerStats(statSlot, gameSeed + roundNumber * 10000, roundConfig.statProfile);
-        }
-      }
+      // Build stages from roleHistory, inferredRolesHistory, and actionHistory
+      const roundRoles = roleHistory.filter(r => r.round === roundNumber);
+      const stages = roundRoles.map(roleEntry => {
+        const stageNum = roleEntry.stage;
+        const inference = inferredRolesHistory.find(
+          i => i.round === roundNumber && i.stage === stageNum
+        );
+        const turns = actionHistory
+          .filter(a => a.round === roundNumber && a.stage === stageNum)
+          .map(a => ({ turn: a.turn, action: a.action, enemyHealth: a.enemyHealth, teamHealth: a.teamHealth }));
+
+        return {
+          stage: stageNum,
+          role: roleEntry.role,
+          submittedAt: roleEntry.submittedAt,
+          inferredRoles: inference ? inference.inferences : null,
+          turns
+        };
+      });
 
       return {
         roundNumber,
-        roundType,
-        envId,
-        statSlot,
-        stats,
+        roundType: roundSlot.type,
+        config,
+        playerStats,
         outcome: outcome.outcome,
         pointsEarned: outcome.pointsEarned,
-        turnsTaken: outcome.turnsTaken
+        turnsTaken: outcome.turnsTaken,
+        stages
       };
     });
 
     const gameSummary = {
       gamePlayerId,
       totalPoints: playerTotalPoints,
-      roundResults,
-      actionHistory,
-      roleHistory,
-      inferredRolesHistory
+      rounds
     };
 
     player.set("gameSummary", gameSummary);

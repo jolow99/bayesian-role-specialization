@@ -35,6 +35,18 @@ factors:
         - value: [[1, 2], [3, 4], [5, 6]]
 
 treatments:
+    - name: Treatment1-notutorial
+      desc: Treatment 1
+      factors:
+        maxRounds: 8
+        maxStagesPerRound: 5
+        playerCount: 3
+        totalPlayers: 3
+        showTutorial: false
+        gameSeed: 348989437
+        humanRoundIds: [1, 4, 7, 10, 13, 2]
+        botRoundIds: [[1, 7], [2,11], [6, 12]]
+
     - name: Treatment1
       desc: Treatment 1
       factors:

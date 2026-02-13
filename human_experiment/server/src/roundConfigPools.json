@@ -7,11 +7,13 @@
       "maxTeamHealth": 15,
       "bossDamage": 5,
       "statProfile": "imbalanced-oneunique-sup",
+      "statProfileId": "114_222_222",
       "optimalRoles": [
         2,
         0,
         0
       ],
+      "optimalRolesId": "MFF",
       "playerDeviateProbability": 0.0,
       "enemyAttackProbability": 0.8,
       "enemyIntentSequence": "1011111100"
@@ -23,11 +25,13 @@
       "maxTeamHealth": 5,
       "bossDamage": 6,
       "statProfile": "imbalanced-oneunique-sup",
+      "statProfileId": "114_222_222",
       "optimalRoles": [
         2,
         0,
         1
       ],
+      "optimalRolesId": "MFT",
       "playerDeviateProbability": 0.0,
       "enemyAttackProbability": 0.8,
       "enemyIntentSequence": "1101111011"
@@ -39,11 +43,13 @@
       "maxTeamHealth": 10,
       "bossDamage": 6,
       "statProfile": "imbalanced-oneunique-sup",
+      "statProfileId": "114_222_222",
       "optimalRoles": [
         2,
         2,
         0
       ],
+      "optimalRolesId": "MMF",
       "playerDeviateProbability": 0.0,
       "enemyAttackProbability": 0.8,
       "enemyIntentSequence": "1011111100"
@@ -55,11 +61,13 @@
       "maxTeamHealth": 15,
       "bossDamage": 9,
       "statProfile": "imbalanced-oneunique-def",
+      "statProfileId": "141_222_222",
       "optimalRoles": [
         1,
         0,
         2
       ],
+      "optimalRolesId": "TFM",
       "playerDeviateProbability": 0.0,
       "enemyAttackProbability": 0.8,
       "enemyIntentSequence": "1011111100"
@@ -71,11 +79,13 @@
       "maxTeamHealth": 15,
       "bossDamage": 6,
       "statProfile": "imbalanced-oneunique-def",
+      "statProfileId": "141_222_222",
       "optimalRoles": [
         1,
         0,
         0
       ],
+      "optimalRolesId": "TFF",
       "playerDeviateProbability": 0.0,
       "enemyAttackProbability": 0.8,
       "enemyIntentSequence": "1111001111"
@@ -87,11 +97,13 @@
       "maxTeamHealth": 5,
       "bossDamage": 8,
       "statProfile": "imbalanced-oneunique-def",
+      "statProfileId": "141_222_222",
       "optimalRoles": [
         1,
         2,
         2
       ],
+      "optimalRolesId": "TMM",
       "playerDeviateProbability": 0.0,
       "enemyAttackProbability": 0.5,
       "enemyIntentSequence": "1100110010"
@@ -103,11 +115,13 @@
       "maxTeamHealth": 10,
       "bossDamage": 5,
       "statProfile": "balanced",
+      "statProfileId": "222_222_222",
       "optimalRoles": [
         0,
         1,
         2
       ],
+      "optimalRolesId": "FTM",
       "playerDeviateProbability": 0.0,
       "enemyAttackProbability": 1.0,
       "enemyIntentSequence": "1111111111"
@@ -119,11 +133,13 @@
       "maxTeamHealth": 10,
       "bossDamage": 10,
       "statProfile": "balanced",
+      "statProfileId": "222_222_222",
       "optimalRoles": [
         1,
         0,
         0
       ],
+      "optimalRolesId": "TFF",
       "playerDeviateProbability": 0.0,
       "enemyAttackProbability": 0.4,
       "enemyIntentSequence": "1011000100"
@@ -135,11 +151,13 @@
       "maxTeamHealth": 5,
       "bossDamage": 6,
       "statProfile": "balanced",
+      "statProfileId": "222_222_222",
       "optimalRoles": [
         1,
         2,
         2
       ],
+      "optimalRolesId": "TMM",
       "playerDeviateProbability": 0.0,
       "enemyAttackProbability": 0.66,
       "enemyIntentSequence": "1100110111"
@@ -151,11 +169,13 @@
       "maxTeamHealth": 10,
       "bossDamage": 9,
       "statProfile": "imbalanced-allunique",
+      "statProfileId": "411_141_114",
       "optimalRoles": [
         0,
         1,
         2
       ],
+      "optimalRolesId": "FTM",
       "playerDeviateProbability": 0.0,
       "enemyAttackProbability": 0.8,
       "enemyIntentSequence": "1111001111"
@@ -167,11 +187,13 @@
       "maxTeamHealth": 8,
       "bossDamage": 4,
       "statProfile": "imbalanced-allunique",
+      "statProfileId": "411_141_114",
       "optimalRoles": [
         0,
         0,
         2
       ],
+      "optimalRolesId": "FFM",
       "playerDeviateProbability": 0.0,
       "enemyAttackProbability": 1.0,
       "enemyIntentSequence": "1111111111"
@@ -183,11 +205,13 @@
       "maxTeamHealth": 5,
       "bossDamage": 5,
       "statProfile": "imbalanced-allunique",
+      "statProfileId": "411_141_114",
       "optimalRoles": [
         0,
         1,
         0
       ],
+      "optimalRolesId": "FTF",
       "playerDeviateProbability": 0.0,
       "enemyAttackProbability": 1.0,
       "enemyIntentSequence": "1111111111"
@@ -199,11 +223,13 @@
       "maxTeamHealth": 15,
       "bossDamage": 10,
       "statProfile": "imbalanced-oneunique-str",
+      "statProfileId": "411_222_222",
       "optimalRoles": [
         0,
         1,
         2
       ],
+      "optimalRolesId": "FTM",
       "playerDeviateProbability": 0.0,
       "enemyAttackProbability": 0.8,
       "enemyIntentSequence": "1110110111"
@@ -215,11 +241,13 @@
       "maxTeamHealth": 15,
       "bossDamage": 5,
       "statProfile": "imbalanced-oneunique-str",
+      "statProfileId": "411_222_222",
       "optimalRoles": [
         0,
         0,
         2
       ],
+      "optimalRolesId": "FFM",
       "playerDeviateProbability": 0.0,
       "enemyAttackProbability": 0.8,
       "enemyIntentSequence": "1011111100"
@@ -231,11 +259,13 @@
       "maxTeamHealth": 5,
       "bossDamage": 4,
       "statProfile": "imbalanced-oneunique-str",
+      "statProfileId": "411_222_222",
       "optimalRoles": [
         0,
         2,
         2
       ],
+      "optimalRolesId": "FMM",
       "playerDeviateProbability": 0.0,
       "enemyAttackProbability": 1.0,
       "enemyIntentSequence": "1111111111"
@@ -249,11 +279,18 @@
       "maxTeamHealth": 15,
       "bossDamage": 7,
       "statProfile": "imbalanced-oneunique-sup",
+      "statProfileId": "114_222_222",
       "optimalRoles": [
         2,
         0,
         1
       ],
+      "deviateRoles": [
+        0,
+        1,
+        1
+      ],
+      "optimalDeviateRolesId": "MFT_FTT",
       "humanRole": 0,
       "playerDeviateProbability": 0.0,
       "enemyAttackProbability": 0.66,
@@ -280,11 +317,18 @@
       "maxTeamHealth": 15,
       "bossDamage": 8,
       "statProfile": "imbalanced-oneunique-sup",
+      "statProfileId": "114_222_222",
       "optimalRoles": [
         2,
         0,
         0
       ],
+      "deviateRoles": [
+        0,
+        1,
+        1
+      ],
+      "optimalDeviateRolesId": "MFF_FTT",
       "humanRole": 0,
       "playerDeviateProbability": 0.0,
       "enemyAttackProbability": 0.4,
@@ -311,11 +355,18 @@
       "maxTeamHealth": 15,
       "bossDamage": 3,
       "statProfile": "imbalanced-oneunique-sup",
+      "statProfileId": "114_222_222",
       "optimalRoles": [
         2,
         0,
         0
       ],
+      "deviateRoles": [
+        0,
+        2,
+        1
+      ],
+      "optimalDeviateRolesId": "MFF_FMT",
       "humanRole": 0,
       "playerDeviateProbability": 0.0,
       "enemyAttackProbability": 0.6,
@@ -342,11 +393,18 @@
       "maxTeamHealth": 5,
       "bossDamage": 1,
       "statProfile": "imbalanced-oneunique-sup",
+      "statProfileId": "114_222_222",
       "optimalRoles": [
         2,
         0,
         0
       ],
+      "deviateRoles": [
+        1,
+        2,
+        2
+      ],
+      "optimalDeviateRolesId": "MFF_TMM",
       "humanRole": 1,
       "playerDeviateProbability": 0.0,
       "enemyAttackProbability": 1.0,
@@ -373,11 +431,18 @@
       "maxTeamHealth": 10,
       "bossDamage": 7,
       "statProfile": "imbalanced-oneunique-def",
+      "statProfileId": "141_222_222",
       "optimalRoles": [
         1,
         0,
         0
       ],
+      "deviateRoles": [
+        0,
+        2,
+        1
+      ],
+      "optimalDeviateRolesId": "TFF_FMT",
       "humanRole": 0,
       "playerDeviateProbability": 0.0,
       "enemyAttackProbability": 0.75,
@@ -404,11 +469,18 @@
       "maxTeamHealth": 15,
       "bossDamage": 9,
       "statProfile": "imbalanced-oneunique-def",
+      "statProfileId": "141_222_222",
       "optimalRoles": [
         1,
         0,
         2
       ],
+      "deviateRoles": [
+        0,
+        2,
+        1
+      ],
+      "optimalDeviateRolesId": "TFM_FMT",
       "humanRole": 0,
       "playerDeviateProbability": 0.0,
       "enemyAttackProbability": 0.6,
@@ -435,11 +507,18 @@
       "maxTeamHealth": 15,
       "bossDamage": 5,
       "statProfile": "imbalanced-oneunique-def",
+      "statProfileId": "141_222_222",
       "optimalRoles": [
         1,
         0,
         0
       ],
+      "deviateRoles": [
+        0,
+        0,
+        1
+      ],
+      "optimalDeviateRolesId": "TFF_FFT",
       "humanRole": 0,
       "playerDeviateProbability": 0.0,
       "enemyAttackProbability": 0.66,
@@ -466,11 +545,18 @@
       "maxTeamHealth": 15,
       "bossDamage": 4,
       "statProfile": "imbalanced-oneunique-def",
+      "statProfileId": "141_222_222",
       "optimalRoles": [
         1,
         0,
         2
       ],
+      "deviateRoles": [
+        0,
+        0,
+        1
+      ],
+      "optimalDeviateRolesId": "TFM_FFT",
       "humanRole": 0,
       "playerDeviateProbability": 0.0,
       "enemyAttackProbability": 0.66,
@@ -497,11 +583,18 @@
       "maxTeamHealth": 15,
       "bossDamage": 4,
       "statProfile": "imbalanced-oneunique-def",
+      "statProfileId": "141_222_222",
       "optimalRoles": [
         1,
         2,
         2
       ],
+      "deviateRoles": [
+        0,
+        0,
+        1
+      ],
+      "optimalDeviateRolesId": "TMM_FFT",
       "humanRole": 0,
       "playerDeviateProbability": 0.0,
       "enemyAttackProbability": 0.66,
@@ -528,11 +621,18 @@
       "maxTeamHealth": 5,
       "bossDamage": 3,
       "statProfile": "imbalanced-oneunique-str",
+      "statProfileId": "411_222_222",
       "optimalRoles": [
         0,
         2,
         2
       ],
+      "deviateRoles": [
+        2,
+        0,
+        1
+      ],
+      "optimalDeviateRolesId": "FMM_MFT",
       "humanRole": 2,
       "playerDeviateProbability": 0.0,
       "enemyAttackProbability": 1.0,
@@ -559,11 +659,18 @@
       "maxTeamHealth": 5,
       "bossDamage": 3,
       "statProfile": "imbalanced-oneunique-str",
+      "statProfileId": "411_222_222",
       "optimalRoles": [
         0,
         2,
         1
       ],
+      "deviateRoles": [
+        2,
+        0,
+        1
+      ],
+      "optimalDeviateRolesId": "FMT_MFT",
       "humanRole": 2,
       "playerDeviateProbability": 0.0,
       "enemyAttackProbability": 1.0,
@@ -590,11 +697,18 @@
       "maxTeamHealth": 15,
       "bossDamage": 9,
       "statProfile": "imbalanced-oneunique-str",
+      "statProfileId": "411_222_222",
       "optimalRoles": [
         0,
         0,
         1
       ],
+      "deviateRoles": [
+        1,
+        2,
+        2
+      ],
+      "optimalDeviateRolesId": "FFT_TMM",
       "humanRole": 1,
       "playerDeviateProbability": 0.0,
       "enemyAttackProbability": 0.5,
@@ -621,11 +735,18 @@
       "maxTeamHealth": 15,
       "bossDamage": 6,
       "statProfile": "imbalanced-oneunique-str",
+      "statProfileId": "411_222_222",
       "optimalRoles": [
         0,
         2,
         1
       ],
+      "deviateRoles": [
+        2,
+        1,
+        1
+      ],
+      "optimalDeviateRolesId": "FMT_MTT",
       "humanRole": 2,
       "playerDeviateProbability": 0.0,
       "enemyAttackProbability": 0.5,
@@ -652,11 +773,18 @@
       "maxTeamHealth": 15,
       "bossDamage": 10,
       "statProfile": "imbalanced-oneunique-str",
+      "statProfileId": "411_222_222",
       "optimalRoles": [
         0,
         2,
         1
       ],
+      "deviateRoles": [
+        1,
+        2,
+        2
+      ],
+      "optimalDeviateRolesId": "FMT_TMM",
       "humanRole": 1,
       "playerDeviateProbability": 0.0,
       "enemyAttackProbability": 0.25,
@@ -683,11 +811,18 @@
       "maxTeamHealth": 10,
       "bossDamage": 9,
       "statProfile": "imbalanced-oneunique-str",
+      "statProfileId": "411_222_222",
       "optimalRoles": [
         0,
         0,
         0
       ],
+      "deviateRoles": [
+        2,
+        2,
+        1
+      ],
+      "optimalDeviateRolesId": "FFF_MMT",
       "humanRole": 2,
       "playerDeviateProbability": 0.0,
       "enemyAttackProbability": 0.25,
