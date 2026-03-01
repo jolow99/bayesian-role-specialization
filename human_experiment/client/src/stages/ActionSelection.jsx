@@ -1,14 +1,54 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
-import { usePlayer, useGame, useRound, usePlayers, useStage } from "@empirica/core/player/classic/react";
+import { usePlayer, useGame, useRound, usePlayers, useStage, useStageTimer } from "@empirica/core/player/classic/react";
 import { BattleField } from "../components/BattleField";
 import { ActionMenu } from "../components/ActionMenu";
 import { ResultsPanel } from "../components/ResultsPanel";
 import { ActionHistory } from "../components/ActionHistory";
 import { GameEndScreen } from "../components/GameEndScreen";
-import { ROLES, ROLE_LABELS } from "../constants";
+import { ROLES, ROLE_LABELS, STAGE_TIMER_SECONDS, BUFFER_TOTAL_SECONDS } from "../constants";
 import { useAfkReminder } from "../hooks/useAfkReminder";
 
 const EMPTY_ARRAY = []; // Stable reference to prevent unnecessary re-renders
+
+function formatTime(seconds) {
+  if (seconds === null || seconds === undefined) return "--:--";
+  const s = Math.max(0, Math.floor(seconds));
+  const min = Math.floor(s / 60);
+  const sec = s % 60;
+  return `${min < 10 ? "0" + min : min}:${sec < 10 ? "0" + sec : sec}`;
+}
+
+function StageBufferTimer({ player, submitted }) {
+  const stageTimer = useStageTimer();
+  const bufferTimeRemaining = player?.get("bufferTimeRemaining") ?? BUFFER_TOTAL_SECONDS;
+
+  const totalRemaining = stageTimer?.remaining ? Math.round(stageTimer.remaining / 1000) : null;
+  const stageSeconds = totalRemaining !== null ? Math.max(0, totalRemaining - BUFFER_TOTAL_SECONDS) : null;
+  const stageExpired = stageSeconds === 0 && totalRemaining !== null;
+
+  // Buffer only counts down if stage timer expired AND player hasn't submitted
+  // Once submitted, buffer freezes at stored value
+  const bufferSeconds = (stageExpired && !submitted)
+    ? Math.min(totalRemaining, bufferTimeRemaining)
+    : Math.round(bufferTimeRemaining);
+  const bufferLow = bufferSeconds < 60;
+  const bufferCritical = bufferSeconds < 30;
+
+  return (
+    <div className="flex items-center gap-3 tabular-nums text-sm font-mono">
+      <span className={stageExpired ? "text-red-400" : submitted ? "text-gray-400" : "text-white"}>
+        {formatTime(stageSeconds)}
+      </span>
+      <span className={`${
+        stageExpired
+          ? (bufferCritical ? "text-red-400 animate-pulse" : bufferLow ? "text-amber-400" : "text-amber-300")
+          : "text-gray-400"
+      }`}>
+        Buffer: {formatTime(bufferSeconds)}
+      </span>
+    </div>
+  );
+}
 
 function ActionSelection() {
   const player = usePlayer();
@@ -32,6 +72,18 @@ function ActionSelection() {
   const setAcknowledgedEarlyFinish = useCallback((value) => {
     player.round.set("acknowledgedEarlyFinish", value);
   }, [player]);
+
+  // Dropout detection: check server-side flag and client-side buffer depletion
+  const stageTimer = useStageTimer();
+  const isDropout = player.get("isDropout");
+  const bufferTimeRemaining = player.get("bufferTimeRemaining") ?? BUFFER_TOTAL_SECONDS;
+  const hasSubmitted = player.stage.get("submit");
+
+  // Client-side buffer depletion check
+  const totalRemainingSeconds = stageTimer?.remaining ? Math.round(stageTimer.remaining / 1000) : null;
+  const stageTimeExpired = totalRemainingSeconds !== null && totalRemainingSeconds <= BUFFER_TOTAL_SECONDS;
+  const bufferDepleted = stageTimeExpired && totalRemainingSeconds !== null &&
+    totalRemainingSeconds <= (BUFFER_TOTAL_SECONDS - bufferTimeRemaining);
 
   // Cache the current stage state HTML continuously (after every render)
   // This ensures the cache is ALWAYS up-to-date before any unmount happens
@@ -366,6 +418,41 @@ function ActionSelection() {
     otherPlayersStatus,
   });
 
+  // Show dropout screen immediately (client-side detection) — must be after all hooks
+  if (isDropout || (bufferDepleted && !hasSubmitted)) {
+    if (!isDropout && bufferDepleted) {
+      player.set("isDropout", true);
+    }
+
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-red-400 to-red-600 flex items-center justify-center p-4">
+        <div className="bg-white rounded-lg shadow-2xl border-4 border-gray-800 p-8 max-w-lg w-full">
+          <div className="text-center">
+            <div className="text-6xl mb-4">⏱️</div>
+            <h1 className="text-2xl font-bold text-gray-800 mb-4">
+              Removed Due to Inactivity
+            </h1>
+            <p className="text-gray-600 mb-6">
+              Your buffer time has run out. You have been removed from the game
+              and replaced by an automated player.
+            </p>
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+              <h2 className="font-semibold text-yellow-800 mb-2">
+                What to do next
+              </h2>
+              <p className="text-yellow-700 text-sm">
+                Please <strong>return the study on Prolific</strong>.
+              </p>
+            </div>
+            <p className="text-sm text-gray-500">
+              Thank you for your participation.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   // Determine which UI to show based on state
   // Note: roundEnd and gameEnd are now overlays, so we show the underlying UI beneath them
   let currentUI;
@@ -390,13 +477,15 @@ function ActionSelection() {
         <div className="bg-white rounded-lg shadow-2xl border-4 border-gray-800 w-full h-full flex overflow-hidden relative">
           {/* Left Column - Game Interface and Role Selection */}
           <div className="flex-1 flex flex-col min-w-0 relative">
-            {/* Round Header */}
-            <div className="bg-gray-800 text-white text-center flex-shrink-0 rounded-tl-lg flex items-center justify-center" style={{ height: '40px' }}>
+            {/* Round Header with Timer */}
+            <div className="bg-gray-800 text-white flex-shrink-0 rounded-tl-lg flex items-center justify-between px-4" style={{ height: '40px' }}>
               <h1 className="text-lg font-bold">
                 Round {roundNumber}/{maxRounds}
                 {stageNumber > 0 && ` - Stage ${stageNumber}/${maxStagesPerRound}`}
                 {totalPoints !== undefined && ` | Points: ${totalPoints}`}
               </h1>
+              {/* Inline Timer */}
+              <StageBufferTimer player={player} submitted={submitted} />
             </div>
 
             {/* Battle Field */}

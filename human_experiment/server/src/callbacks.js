@@ -97,6 +97,9 @@ function updateLobbyCount(ctx, game) {
 
 // Game configuration constants
 const TURNS_PER_STAGE = 2; // Each stage (role commitment) lasts for 2 turns
+const STAGE_TIMER_SECONDS = 90; // Primary stage timer (seconds)
+const BUFFER_TOTAL_SECONDS = 300; // Shared buffer across all rounds (seconds)
+const STAGE_DURATION = STAGE_TIMER_SECONDS + BUFFER_TOTAL_SECONDS; // Total Empirica stage duration
 
 // Helper function to generate player stats
 // Stats now sum to 6
@@ -215,6 +218,133 @@ function getBotRoleChoice(bot, roundNumber, game) {
   }
 }
 
+// Determine optimal role for a dropout player's bot replacement
+function getOptimalRoleForDropout(player, roundConfig, game, round, stageNumber, isBotRound) {
+  const gamePlayerId = player.get("gamePlayerId");
+  const gameSeed = game.get("gameSeed");
+  const roundNumber = round.get("roundNumber");
+
+  // For bot rounds, use the config's humanRole or optimalRoles[0] (human is at stat slot 0)
+  if (isBotRound) {
+    const playerRoundConfig = player.round.get("playerRoundConfig") || player.get(`round${roundNumber}Config`) || roundConfig;
+    if (playerRoundConfig.humanRole !== undefined && playerRoundConfig.humanRole !== null) {
+      return playerRoundConfig.humanRole;
+    }
+    return playerRoundConfig.optimalRoles ? playerRoundConfig.optimalRoles[0] : ROLES.FIGHTER;
+  }
+
+  // Human round: use optimalRoles array from config
+  const optimalRoles = roundConfig.optimalRoles;
+  if (!optimalRoles) {
+    console.warn(`No optimalRoles in config, defaulting to FIGHTER`);
+    return ROLES.FIGHTER;
+  }
+
+  // Parse statProfileId to determine which position has the unique stat
+  // Format: "114_222_222" → positions are separated by "_"
+  const statProfileId = roundConfig.statProfileId || "";
+  const statSlots = statProfileId.split("_");
+
+  // Check if this player has the unique (imbalanced) stat
+  // A stat slot is unique if no other player shares it
+  const playerStatSlot = statSlots[gamePlayerId];
+  const isUnique = playerStatSlot && statSlots.filter(s => s === playerStatSlot).length === 1;
+
+  // If player has unique stat, always play their optimal role
+  if (isUnique || statProfileId.startsWith("balanced")) {
+    return optimalRoles[gamePlayerId];
+  }
+
+  // Balanced player - need to coordinate with others
+  if (stageNumber <= 1) {
+    // Stage 1: No history. Randomly pick from optimal roles assigned to balanced positions.
+    const balancedPositions = [];
+    const uniqueStatSlot = statSlots.find((s, idx) => {
+      return statSlots.filter(ss => ss === s).length === 1;
+    });
+    statSlots.forEach((s, idx) => {
+      if (s !== uniqueStatSlot) {
+        balancedPositions.push(idx);
+      }
+    });
+
+    // Get optimal roles for balanced positions
+    const balancedOptimalRoles = balancedPositions.map(pos => optimalRoles[pos]);
+
+    // Find which balanced players are dropouts (need deconflicting)
+    const dropoutBalancedPositions = [];
+    const activeBalancedPositions = [];
+    game.players.forEach(p => {
+      const pid = p.get("gamePlayerId");
+      if (balancedPositions.includes(pid)) {
+        if (p.get("isDropout")) {
+          dropoutBalancedPositions.push(pid);
+        } else {
+          activeBalancedPositions.push(pid);
+        }
+      }
+    });
+
+    if (dropoutBalancedPositions.length <= 1) {
+      // Only this player dropped - pick randomly from balanced optimal roles
+      const rng = seededRandom(gameSeed + roundNumber * 7777 + gamePlayerId);
+      return balancedOptimalRoles[Math.floor(rng() * balancedOptimalRoles.length)];
+    } else {
+      // Multiple balanced dropouts - deconflict by assigning in order
+      const myDropoutIndex = dropoutBalancedPositions.indexOf(gamePlayerId);
+      // Shuffle balanced optimal roles deterministically, then assign by index
+      const rng = seededRandom(gameSeed + roundNumber * 7777);
+      const shuffledRoles = shuffleArray(balancedOptimalRoles, rng);
+      return shuffledRoles[myDropoutIndex % shuffledRoles.length];
+    }
+  } else {
+    // Stage 2+: Look at what active humans chose last stage and fill remaining optimal roles
+    const roleHistory = [];
+    game.players.forEach(p => {
+      if (!p.get("isDropout")) {
+        const history = p.get("roleHistory") || [];
+        const lastEntry = history.filter(h => h.round === roundNumber).pop();
+        if (lastEntry) {
+          roleHistory.push({ playerId: p.get("gamePlayerId"), role: ROLES[lastEntry.role] !== undefined ? ROLES[lastEntry.role] : lastEntry.role });
+        }
+      }
+    });
+
+    // Determine which optimal roles are already taken by active humans
+    const takenRoles = roleHistory.map(h => {
+      // Convert role name string to role number if needed
+      if (typeof h.role === "string") {
+        return ROLES[h.role] !== undefined ? ROLES[h.role] : ROLES.FIGHTER;
+      }
+      return h.role;
+    });
+
+    // Find remaining optimal roles not covered by active humans
+    const remainingOptimalRoles = [...optimalRoles];
+    takenRoles.forEach(taken => {
+      const idx = remainingOptimalRoles.indexOf(taken);
+      if (idx !== -1) {
+        remainingOptimalRoles.splice(idx, 1);
+      }
+    });
+
+    if (remainingOptimalRoles.length === 0) {
+      // All optimal roles taken - just use this position's optimal role
+      return optimalRoles[gamePlayerId];
+    }
+
+    // Find dropout players that need roles (for deconflicting)
+    const dropoutPlayers = game.players.filter(p => p.get("isDropout")).map(p => p.get("gamePlayerId")).sort();
+    const myDropoutIndex = dropoutPlayers.indexOf(gamePlayerId);
+
+    if (myDropoutIndex < remainingOptimalRoles.length) {
+      return remainingOptimalRoles[myDropoutIndex];
+    }
+    // More dropouts than remaining roles - use position's optimal
+    return optimalRoles[gamePlayerId];
+  }
+}
+
 // Game initialization
 Empirica.onGameStart(({ game }) => {
   const treatment = game.get("treatment");
@@ -282,6 +412,10 @@ Empirica.onGameStart(({ game }) => {
     player.set("roleHistory", []);
     player.set("roundOutcomes", []); // Player-specific round outcomes (for accurate bot round display)
     player.set("isBot", false);
+    player.set("bufferTimeRemaining", BUFFER_TOTAL_SECONDS); // Shared buffer timer across all rounds
+    player.set("isDropout", false);
+    player.set("droppedOutAtRound", null);
+    player.set("droppedOutAtStage", null);
     player.set("gamePlayerId", idx); // Permanent player ID (0, 1, or 2)
     player.set("gameStartedAt", gameStartTime); // When this player's game started
 
@@ -416,7 +550,7 @@ function addRoundStage(round, stageNumber) {
   // Create a stage for role selection (turns will be resolved automatically when stage starts)
   const stage = round.addStage({
     name: `Stage ${stageNumber}`,
-    duration: 300 // 5 minutes max for role selection
+    duration: STAGE_DURATION // 90s stage timer + 300s buffer
   });
 
   stage.set("stageNumber", stageNumber);
@@ -558,6 +692,23 @@ Empirica.onStageStart(({ stage }) => {
     player.round.set("virtualBots", updatedPlayerBots);
     console.log(`Player ${player.get("gamePlayerId")} bots updated with roles:`, updatedPlayerBots.map(b => ({ pos: b.playerId, role: ROLE_NAMES[b.currentRole] })));
   });
+
+  // Auto-submit for dropout players immediately at stage start
+  const roundConfig = game.get(`round${roundNumber}Config`);
+  const shuffledRoundOrder = game.get("shuffledRoundOrder");
+  const roundSlot = shuffledRoundOrder[roundNumber - 1];
+  const isBotRound = roundSlot.type === "bot";
+
+  game.players.forEach(player => {
+    if (player.get("isDropout")) {
+      const optimalRole = getOptimalRoleForDropout(player, roundConfig, game, round, stageNumber, isBotRound);
+      player.stage.set("selectedRole", optimalRole);
+      player.stage.set("roleSubmittedAt", Date.now());
+      player.stage.set("autoSubmitted", true);
+      player.stage.set("submit", true);
+      console.log(`Dropout player ${player.get("gamePlayerId")} auto-submitted role ${ROLE_NAMES[optimalRole]} at stage start`);
+    }
+  });
 });
 
 Empirica.onStageEnded(({ stage }) => {
@@ -615,6 +766,47 @@ Empirica.onStageEnded(({ stage }) => {
     return;
   }
 
+  // Handle dropout detection and auto-submission for non-submitters
+  const roundConfig = game.get(`round${roundNumber}Config`);
+  const shuffledRoundOrder = game.get("shuffledRoundOrder");
+  const roundSlot = shuffledRoundOrder[roundNumber - 1];
+  const isBotRound = roundSlot.type === "bot";
+
+  game.players.forEach(player => {
+    const playerSubmitted = player.stage.get("submit");
+    const isAlreadyDropout = player.get("isDropout");
+
+    if (!playerSubmitted && !isAlreadyDropout) {
+      // Player didn't submit - calculate overtime and deduct from buffer
+      const stageDurationMs = stage.get("stageDurationMs") || (Date.now() - (stage.get("stageStartedAt") || Date.now()));
+      const overtimeMs = Math.max(0, stageDurationMs - STAGE_TIMER_SECONDS * 1000);
+      const overtimeSeconds = overtimeMs / 1000;
+      const currentBuffer = player.get("bufferTimeRemaining") || 0;
+      const newBuffer = Math.max(0, currentBuffer - overtimeSeconds);
+      player.set("bufferTimeRemaining", newBuffer);
+
+      console.log(`Player ${player.get("gamePlayerId")} didn't submit. Overtime: ${overtimeSeconds.toFixed(1)}s, Buffer: ${currentBuffer.toFixed(1)}s -> ${newBuffer.toFixed(1)}s`);
+
+      if (newBuffer <= 0) {
+        // Buffer depleted - mark as dropout
+        player.set("isDropout", true);
+        player.set("droppedOutAtRound", roundNumber);
+        player.set("droppedOutAtStage", stageNumber);
+        console.log(`Player ${player.get("gamePlayerId")} DROPPED OUT at round ${roundNumber}, stage ${stageNumber}`);
+      }
+    }
+
+    // Auto-submit for any non-submitter (dropout or buffer still remaining)
+    if (!playerSubmitted) {
+      const optimalRole = getOptimalRoleForDropout(player, roundConfig, game, round, stageNumber, isBotRound);
+      player.stage.set("selectedRole", optimalRole);
+      player.stage.set("roleSubmittedAt", Date.now());
+      player.stage.set("autoSubmitted", true);
+      player.stage.set("submit", true);
+      console.log(`Auto-submitted role ${ROLE_NAMES[optimalRole]} for player ${player.get("gamePlayerId")} (dropout: ${player.get("isDropout")})`);
+    }
+  });
+
   // Normal game stage ended - players have submitted their roles, resolve both turns
   console.log(`Stage ${stageNumber} role selection ended, resolving turns...`);
 
@@ -647,10 +839,7 @@ Empirica.onStageEnded(({ stage }) => {
   round.set("stageNumber", stageNumber);
 
   // Check if this is a bot round (each player plays independently with bots)
-  const shuffledRoundOrder = game.get("shuffledRoundOrder");
-  const roundSlot = shuffledRoundOrder[roundNumber - 1];
-  const isBotRound = roundSlot.type === "bot";
-
+  // (reuse roundSlot and isBotRound from dropout detection above)
   if (isBotRound) {
     // Bot round: resolve turns independently for each player
     console.log(`Bot round detected - resolving turns per-player`);
@@ -1424,10 +1613,19 @@ Empirica.onGameEnded(({ game }) => {
           .filter(a => a.round === roundNumber && a.stage === stageNum)
           .map(a => ({ turn: a.turn, action: a.action, enemyHealth: a.enemyHealth, teamHealth: a.teamHealth }));
 
+        // Determine if this stage was played by a bot replacement
+        const droppedOutAtRound = player.get("droppedOutAtRound");
+        const droppedOutAtStage = player.get("droppedOutAtStage");
+        const isBotStage = droppedOutAtRound !== null && (
+          roundNumber > droppedOutAtRound ||
+          (roundNumber === droppedOutAtRound && stageNum >= droppedOutAtStage)
+        );
+
         return {
           stage: stageNum,
           role: roleEntry.role,
           submittedAt: roleEntry.submittedAt,
+          isBot: isBotStage,
           inferredRoles: inference ? inference.inferences : null,
           turns
         };
@@ -1445,9 +1643,16 @@ Empirica.onGameEnded(({ game }) => {
       };
     });
 
+    const isDropout = player.get("isDropout") || false;
+    const bufferTimeUsed = BUFFER_TOTAL_SECONDS - (player.get("bufferTimeRemaining") || BUFFER_TOTAL_SECONDS);
+
     const gameSummary = {
       gamePlayerId,
       totalPoints: playerTotalPoints,
+      isDropout,
+      droppedOutAtRound: player.get("droppedOutAtRound"),
+      droppedOutAtStage: player.get("droppedOutAtStage"),
+      bufferTimeUsed: Math.round(bufferTimeUsed * 10) / 10,
       rounds
     };
 

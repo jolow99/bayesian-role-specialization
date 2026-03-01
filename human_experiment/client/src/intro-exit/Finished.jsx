@@ -9,9 +9,10 @@ export function Finished() {
   const game = useGame();
   const [countdown, setCountdown] = useState(5);
 
-  // Detect if player never got into a game (lobby timeout)
+  // Detect if player never got into a game (lobby timeout) or was dropped
   const isGameComplete = player?.get("game_complete");
-  const isLobbyTimeout = !game || !isGameComplete;
+  const isDropout = player?.get("isDropout");
+  const isLobbyTimeout = !game || (!isGameComplete && !isDropout);
 
   useEffect(() => {
     // Only auto-redirect for successful completions
@@ -30,6 +31,51 @@ export function Finished() {
 
     return () => clearInterval(timer);
   }, [isLobbyTimeout]);
+
+  // Show dropout message
+  if (isDropout) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-red-400 to-red-600 flex items-center justify-center p-4">
+        <div className="bg-white rounded-lg shadow-2xl border-4 border-gray-800 p-8 max-w-lg w-full">
+          <div className="text-center">
+            <div className="text-6xl mb-4">⏱️</div>
+            <h1 className="text-2xl font-bold text-gray-800 mb-4">
+              Removed Due to Inactivity
+            </h1>
+
+            <p className="text-gray-600 mb-6">
+              You were removed from the game because your buffer time ran out.
+              Your spot has been filled by an automated player so that other
+              participants can continue.
+            </p>
+
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+              <h2 className="font-semibold text-yellow-800 mb-2">
+                What to do next
+              </h2>
+              <p className="text-yellow-700 text-sm">
+                Please <strong>return the study on Prolific</strong>.
+              </p>
+            </div>
+
+            <div className="bg-gray-100 rounded-lg p-4 mb-6">
+              <h2 className="font-semibold text-gray-700 mb-2">
+                Questions or Issues?
+              </h2>
+              <p className="text-gray-600 text-sm">
+                If you have any questions, please reach out to us through
+                Prolific's messaging system.
+              </p>
+            </div>
+
+            <p className="text-sm text-gray-500">
+              Thank you for your participation.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // Show lobby timeout message
   if (isLobbyTimeout) {

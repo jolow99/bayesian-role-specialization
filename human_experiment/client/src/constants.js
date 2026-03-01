@@ -1,3 +1,7 @@
+// Timer constants (must match server callbacks.js)
+export const STAGE_TIMER_SECONDS = 90;
+export const BUFFER_TOTAL_SECONDS = 300;
+
 // Game constants - centralized to avoid duplication across files
 
 // Role identifiers
