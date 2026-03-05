@@ -1,6 +1,6 @@
 import React from "react";
 import { HealthBar } from "./HealthBar";
-import { ACTION_ICONS, STAT_ORDER } from "../constants";
+import { ACTION_ICONS } from "../constants";
 
 const actionIcons = ACTION_ICONS;
 
@@ -21,8 +21,7 @@ export const BattleField = React.memo(function BattleField({
   previousEnemyHealth,
   previousTeamHealth,
   bossDamage,
-  enemyAttackProbability,
-  statOrder = STAT_ORDER
+  enemyAttackProbability
 }) {
   return (
     <div className="bg-gradient-to-b from-green-200 to-green-300 p-6 relative h-full overflow-hidden" data-tutorial-id="battlefield">
@@ -96,21 +95,39 @@ export const BattleField = React.memo(function BattleField({
                   {/* Stats above player with bars */}
                   <div className="bg-white/90 rounded px-2 py-1 mb-1 border border-gray-400" style={{ width: '100px' }}>
                     <div className="space-y-1">
-                      {statOrder.map((statKey) => {
-                        const color = statKey === "STR" ? "bg-red-500" : statKey === "DEF" ? "bg-blue-500" : "bg-green-500";
-                        return (
-                          <div key={statKey} className="flex items-center gap-1">
-                            <span className="text-xs font-semibold w-6">{statKey}</span>
-                            <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
-                              <div
-                                className={`h-full ${color} transition-all`}
-                                style={{ width: `${(stats[statKey] / maxStat) * 100}%` }}
-                              />
-                            </div>
-                            <span className="text-xs font-bold w-3 text-right">{stats[statKey]}</span>
-                          </div>
-                        );
-                      })}
+                      {/* STR */}
+                      <div className="flex items-center gap-1">
+                        <span className="text-xs font-semibold w-6">STR</span>
+                        <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-red-500 transition-all"
+                            style={{ width: `${(stats.STR / maxStat) * 100}%` }}
+                          />
+                        </div>
+                        <span className="text-xs font-bold w-3 text-right">{stats.STR}</span>
+                      </div>
+                      {/* DEF */}
+                      <div className="flex items-center gap-1">
+                        <span className="text-xs font-semibold w-6">DEF</span>
+                        <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-blue-500 transition-all"
+                            style={{ width: `${(stats.DEF / maxStat) * 100}%` }}
+                          />
+                        </div>
+                        <span className="text-xs font-bold w-3 text-right">{stats.DEF}</span>
+                      </div>
+                      {/* SUP */}
+                      <div className="flex items-center gap-1">
+                        <span className="text-xs font-semibold w-6">SUP</span>
+                        <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-green-500 transition-all"
+                            style={{ width: `${(stats.SUP / maxStat) * 100}%` }}
+                          />
+                        </div>
+                        <span className="text-xs font-bold w-3 text-right">{stats.SUP}</span>
+                      </div>
                     </div>
                   </div>
                   {/* Player sprite */}

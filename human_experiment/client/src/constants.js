@@ -48,13 +48,6 @@ export const STATS = {
   SUP: "SUP"   // Support - determines healing effectiveness
 };
 
-// Default stat display order
-export const STAT_ORDER = ["STR", "DEF", "SUP"];
-
-// Maps role value to its corresponding stat key
-// Fighter(0) → STR, Tank(1) → DEF, Medic(2) → SUP
-export const ROLE_TO_STAT = ["STR", "DEF", "SUP"];
-
 // Role configurations for UI components
 export const ROLE_CONFIG = {
   FIGHTER: {
