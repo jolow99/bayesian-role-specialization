@@ -96,7 +96,7 @@ treatments:
         botRoundIds: [[2, 8], [3, 12], [7, 13]]
 
     - name: Treatment5
-      desc: Treatment 5 
+      desc: Treatment 5
       factors:
         maxRounds: 8
         maxStagesPerRound: 5
@@ -105,4 +105,16 @@ treatments:
         showTutorial: true
         gameSeed: 348989437
         humanRoundIds: [5, 8, 11, 14, 2, 13]
+        botRoundIds: [[4, 10], [5, 14], [9, 15]]
+
+    - name: PilotTreatment
+      desc: Pilot treatment same botRoundIds as treatment 5 with different human environments
+      factors:
+        maxRounds: 8
+        maxStagesPerRound: 5
+        playerCount: 3
+        totalPlayers: 3
+        showTutorial: true
+        gameSeed: 348989437
+        humanRoundIds: [1, 2, 3, 4, 5, 6]
         botRoundIds: [[4, 10], [5, 14], [9, 15]]

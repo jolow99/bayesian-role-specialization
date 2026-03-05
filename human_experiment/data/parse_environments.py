@@ -18,13 +18,18 @@ STAT_PROFILE_NAMES = {
     "411_141_114": "imbalanced-allunique",
 }
 
+
+def player_stats_to_profile_code(player_stats):
+    """Convert PLAYER_STATS rows to a stat profile code like '411_141_114'."""
+    return "_".join("".join(str(v) for v in row) for row in player_stats)
+
 # Role character to number mapping
 # F = Fighter (0), T = Tank (1), M = Medic (2)
 ROLE_MAPPING = {"F": 0, "T": 1, "M": 2}
 
 
 def parse_python_file_for_env_params(py_file_path):
-    """Extract TEAM_MAX_HP, ENEMY_MAX_HP, BOSS_DAMAGE, ENEMY_ATTACK_PROB from a python file."""
+    """Extract TEAM_MAX_HP, ENEMY_MAX_HP, BOSS_DAMAGE, ENEMY_ATTACK_PROB, and PLAYER_STATS from a python file."""
     with open(py_file_path, "r") as f:
         content = f.read()
 
@@ -32,12 +37,19 @@ def parse_python_file_for_env_params(py_file_path):
     enemy_max_hp = None
     boss_damage = None
     enemy_attack_prob = None
+    stat_profile_code = None
 
     # Search for the variable assignments
     team_match = re.search(r"TEAM_MAX_HP\s*=\s*(\d+)", content)
     enemy_match = re.search(r"ENEMY_MAX_HP\s*=\s*(\d+)", content)
     boss_match = re.search(r"BOSS_DAMAGE\s*=\s*(\d+)", content)
     attack_prob_match = re.search(r"ENEMY_ATTACK_PROB\s*=\s*([\d.]+)", content)
+
+    # Extract PLAYER_STATS to derive stat profile code
+    stats_match = re.search(
+        r"PLAYER_STATS\s*=\s*jnp\.array\(\[(\[[\d,\s]+\]),\s*(\[[\d,\s]+\]),\s*(\[[\d,\s]+\])\]\)",
+        content,
+    )
 
     if team_match:
         team_max_hp = int(team_match.group(1))
@@ -47,12 +59,19 @@ def parse_python_file_for_env_params(py_file_path):
         boss_damage = int(boss_match.group(1))
     if attack_prob_match:
         enemy_attack_prob = float(attack_prob_match.group(1))
+    if stats_match:
+        rows = []
+        for i in range(1, 4):
+            row = [int(x.strip()) for x in stats_match.group(i).strip("[]").split(",")]
+            rows.append(row)
+        stat_profile_code = player_stats_to_profile_code(rows)
 
     return {
         "maxTeamHealth": team_max_hp,
         "maxEnemyHealth": enemy_max_hp,
         "bossDamage": boss_damage,
         "enemyAttackProbability": enemy_attack_prob,
+        "statProfileCode": stat_profile_code,
     }
 
 
@@ -65,74 +84,55 @@ def find_python_file(folder_path):
 
 
 def parse_human_configs(data_dir):
-    """Parse optimal_case_envs for humanConfigs."""
+    """Parse optimal_case_envs for humanConfigs.
+
+    New format: each player config (e.g., FTM) has its own folder with
+    config.py and lds.txt directly under optimal_case_envs/.
+    """
     configs = []
-    lds_file = os.path.join(data_dir, "optimal_case_envs", "lds_arrays_human.txt")
+    optimal_dir = os.path.join(data_dir, "optimal_case_envs")
 
-    with open(lds_file, "r") as f:
-        for line in f:
-            line = line.strip()
-            if not line:
-                continue
+    for player_config in sorted(os.listdir(optimal_dir)):
+        env_folder = os.path.join(optimal_dir, player_config)
+        if not os.path.isdir(env_folder):
+            continue
 
-            # Format: statprofile_playerconfig,attackprob,intentsequence
-            # e.g., 114_222_222_MFF,0.8,1011111100
-            parts = line.split(",")
-            if len(parts) != 3:
-                continue
+        config_file = os.path.join(env_folder, "config.py")
+        lds_file = os.path.join(env_folder, "lds.txt")
 
-            full_id = parts[0]
-            intent_sequence = parts[2]
+        if not os.path.exists(config_file) or not os.path.exists(lds_file):
+            print(f"Warning: Missing config.py or lds.txt in {env_folder}")
+            continue
 
-            # Parse the stat profile and player config
-            # Format: XXX_XXX_XXX_YYY where YYY is player config
-            match = re.match(r"(\d+_\d+_\d+)_(\w+)", full_id)
-            if not match:
-                continue
+        env_params = parse_python_file_for_env_params(config_file)
 
-            stat_profile_code = match.group(1)
-            player_config = match.group(2)
+        # Read intent sequence from lds.txt
+        with open(lds_file, "r") as f:
+            intent_sequence = f.read().strip()
 
-            stat_profile_name = STAT_PROFILE_NAMES.get(stat_profile_code)
-            if not stat_profile_name:
-                print(f"Warning: Unknown stat profile {stat_profile_code}")
-                continue
+        stat_profile_code = env_params["statProfileCode"]
+        stat_profile_name = STAT_PROFILE_NAMES.get(stat_profile_code)
+        if not stat_profile_name:
+            print(f"Warning: Unknown stat profile {stat_profile_code} in {env_folder}")
+            continue
 
-            # Find the python file for this environment
-            env_folder = os.path.join(
-                data_dir, "optimal_case_envs", stat_profile_code, player_config
-            )
-            if not os.path.exists(env_folder):
-                print(f"Warning: Folder not found {env_folder}")
-                continue
+        # Convert player_config to optimal roles array (e.g., "TFF" -> [1, 0, 0])
+        optimal_roles = [ROLE_MAPPING[c] for c in player_config]
 
-            py_file = find_python_file(env_folder)
-            if not py_file:
-                print(f"Warning: No python file found in {env_folder}")
-                continue
-
-            env_params = parse_python_file_for_env_params(py_file)
-
-            # Extract the python filename (without extension)
-            py_filename = os.path.basename(py_file).replace(".py", "")
-
-            # Convert player_config to optimal roles array (e.g., "TFF" -> [1, 0, 0])
-            optimal_roles = [ROLE_MAPPING[c] for c in player_config]
-
-            config = {
-                "envId": py_filename,
-                "maxEnemyHealth": env_params["maxEnemyHealth"],
-                "maxTeamHealth": env_params["maxTeamHealth"],
-                "bossDamage": env_params["bossDamage"],
-                "statProfile": stat_profile_name,
-                "statProfileId": stat_profile_code,
-                "optimalRoles": optimal_roles,
-                "optimalRolesId": player_config,
-                "playerDeviateProbability": 0.00,
-                "enemyAttackProbability": env_params["enemyAttackProbability"],
-                "enemyIntentSequence": intent_sequence,
-            }
-            configs.append(config)
+        config = {
+            "envId": f"{stat_profile_code}_{player_config}",
+            "maxEnemyHealth": env_params["maxEnemyHealth"],
+            "maxTeamHealth": env_params["maxTeamHealth"],
+            "bossDamage": env_params["bossDamage"],
+            "statProfile": stat_profile_name,
+            "statProfileId": stat_profile_code,
+            "optimalRoles": optimal_roles,
+            "optimalRolesId": player_config,
+            "playerDeviateProbability": 0.00,
+            "enemyAttackProbability": env_params["enemyAttackProbability"],
+            "enemyIntentSequence": intent_sequence,
+        }
+        configs.append(config)
 
     # Add IDs
     for i, config in enumerate(configs, 1):
