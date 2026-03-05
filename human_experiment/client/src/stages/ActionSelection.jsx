@@ -5,7 +5,7 @@ import { ActionMenu } from "../components/ActionMenu";
 import { ResultsPanel } from "../components/ResultsPanel";
 import { ActionHistory } from "../components/ActionHistory";
 import { GameEndScreen } from "../components/GameEndScreen";
-import { ROLES, ROLE_LABELS, STAGE_TIMER_SECONDS, BUFFER_TOTAL_SECONDS } from "../constants";
+import { ROLES, ROLE_LABELS, STAGE_TIMER_SECONDS, BUFFER_TOTAL_SECONDS, ROLE_TO_STAT } from "../constants";
 import { useAfkReminder } from "../hooks/useAfkReminder";
 
 const EMPTY_ARRAY = []; // Stable reference to prevent unnecessary re-renders
@@ -123,6 +123,7 @@ function ActionSelection() {
   }, [player]);
 
   const roleOrder = player.get("roleOrder") || [ROLES.FIGHTER, ROLES.TANK, ROLES.MEDIC];
+  const statOrder = useMemo(() => roleOrder.map(role => ROLE_TO_STAT[role]), [roleOrder]);
   const submitted = player.stage.get("submit") || localSubmitted; // Use local state during delay period
 
   const stageNumber = stage.get("stageNumber");
@@ -508,6 +509,7 @@ function ActionSelection() {
                 previousTeamHealth={previousTeamHealth}
                 bossDamage={effectiveConfig?.bossDamage}
                 enemyAttackProbability={effectiveConfig?.enemyAttackProbability}
+                statOrder={statOrder}
               />
             </div>
 
