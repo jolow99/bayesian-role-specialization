@@ -772,6 +772,8 @@ Empirica.onStageEnded(({ stage }) => {
   const roundSlot = shuffledRoundOrder[roundNumber - 1];
   const isBotRound = roundSlot.type === "bot";
 
+  // Phase 1: Mark all new dropouts first (before auto-submission)
+  // This ensures getOptimalRoleForDropout sees the complete set of dropouts for deconfliction
   game.players.forEach(player => {
     const playerSubmitted = player.stage.get("submit");
     const isAlreadyDropout = player.get("isDropout");
@@ -795,8 +797,11 @@ Empirica.onStageEnded(({ stage }) => {
         console.log(`Player ${player.get("gamePlayerId")} DROPPED OUT at round ${roundNumber}, stage ${stageNumber}`);
       }
     }
+  });
 
-    // Auto-submit for any non-submitter (dropout or buffer still remaining)
+  // Phase 2: Auto-submit for all non-submitters (now that all dropouts are marked)
+  game.players.forEach(player => {
+    const playerSubmitted = player.stage.get("submit");
     if (!playerSubmitted) {
       const optimalRole = getOptimalRoleForDropout(player, roundConfig, game, round, stageNumber, isBotRound);
       player.stage.set("selectedRole", optimalRole);
