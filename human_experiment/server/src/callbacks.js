@@ -789,7 +789,7 @@ Empirica.onStageEnded(({ stage }) => {
 
       console.log(`Player ${player.get("gamePlayerId")} didn't submit. Overtime: ${overtimeSeconds.toFixed(1)}s, Buffer: ${currentBuffer.toFixed(1)}s -> ${newBuffer.toFixed(1)}s`);
 
-      if (newBuffer <= 0) {
+      if (newBuffer < 1) { // Use epsilon to avoid floating-point edge cases
         // Buffer depleted - mark as dropout
         player.set("isDropout", true);
         player.set("droppedOutAtRound", roundNumber);
@@ -893,7 +893,8 @@ function resolveBothTurns(game, round, stage, stageNumber) {
         round: roundNumber,
         stage: stageNumber,
         role: ROLE_NAMES[submittedRole],
-        submittedAt: roleSubmittedAt || Date.now()
+        submittedAt: roleSubmittedAt || Date.now(),
+        autoSubmitted: player.stage.get("autoSubmitted") || false
       });
       player.set("roleHistory", roleHistory);
 
@@ -1129,7 +1130,8 @@ function resolveBothTurnsPerPlayer(game, round, _stage, stageNumber) {
         round: roundNumber,
         stage: stageNumber,
         role: ROLE_NAMES[submittedRole],
-        submittedAt: roleSubmittedAt || Date.now()
+        submittedAt: roleSubmittedAt || Date.now(),
+        autoSubmitted: player.stage.get("autoSubmitted") || false
       });
       player.set("roleHistory", roleHistory);
       console.log(`Player ${playerId} selected role: ${ROLE_NAMES[submittedRole]} for stage ${stageNumber}`);
@@ -1618,19 +1620,11 @@ Empirica.onGameEnded(({ game }) => {
           .filter(a => a.round === roundNumber && a.stage === stageNum)
           .map(a => ({ turn: a.turn, action: a.action, enemyHealth: a.enemyHealth, teamHealth: a.teamHealth }));
 
-        // Determine if this stage was played by a bot replacement
-        const droppedOutAtRound = player.get("droppedOutAtRound");
-        const droppedOutAtStage = player.get("droppedOutAtStage");
-        const isBotStage = droppedOutAtRound !== null && (
-          roundNumber > droppedOutAtRound ||
-          (roundNumber === droppedOutAtRound && stageNum >= droppedOutAtStage)
-        );
-
         return {
           stage: stageNum,
           role: roleEntry.role,
           submittedAt: roleEntry.submittedAt,
-          isBot: isBotStage,
+          isBot: roleEntry.autoSubmitted || false,
           inferredRoles: inference ? inference.inferences : null,
           turns
         };
