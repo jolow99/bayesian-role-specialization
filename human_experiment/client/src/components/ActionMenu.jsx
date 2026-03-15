@@ -8,9 +8,10 @@ const InferenceRoleSelector = React.memo(function InferenceRoleSelector({
   playerId,
   selectedRole,
   onSelect,
-  disabled
+  disabled,
+  roleOrder = [ROLES.FIGHTER, ROLES.TANK, ROLES.MEDIC]
 }) {
-  const roles = [ROLES.FIGHTER, ROLES.TANK, ROLES.MEDIC];
+  const roles = roleOrder;
 
   return (
     <div className="flex flex-col items-center">
@@ -87,6 +88,7 @@ export const ActionMenu = React.memo(function ActionMenu({
                   selectedRole={inferredRoles[p.playerId]}
                   onSelect={onInferredRoleChange}
                   disabled={submitted}
+                  roleOrder={roleOrder}
                 />
               ))}
             </div>

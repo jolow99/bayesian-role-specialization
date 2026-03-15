@@ -524,20 +524,21 @@ export function Tutorial1({ next }) {
 
             {/* Outcome Overlay - covers left panel only, leaves history visible */}
             {showOutcome && outcome && (
-              <div className="absolute top-0 bottom-0 left-0 bg-black bg-opacity-60 flex items-center justify-center z-50" style={{ right: 'calc(22% + 4px)', minWidth: 'calc(100% - 354px)' }}>
-                <div className={`${outcome.success ? 'bg-green-50 border-green-400' : 'bg-red-50 border-red-400'} border-4 rounded-xl p-8 max-w-2xl w-full shadow-2xl mx-4`}>
+              <div className="absolute top-0 bottom-0 left-0 bg-black bg-opacity-60 z-50 overflow-y-auto" style={{ right: 'calc(22% + 4px)', minWidth: 'calc(100% - 354px)' }}>
+                <div className="min-h-full flex items-center justify-center py-4">
+                <div className={`${outcome.success ? 'bg-green-50 border-green-400' : 'bg-red-50 border-red-400'} border-4 rounded-xl p-6 max-w-2xl w-full shadow-2xl mx-4`}>
                   {/* Icon and Title */}
-                  <div className="text-center mb-6">
-                    <div className="text-8xl mb-4">{outcome.success ? '🎉' : '💀'}</div>
-                    <h1 className={`text-5xl font-bold ${outcome.success ? 'text-green-700' : 'text-red-700'} mb-2`}>
+                  <div className="text-center mb-4">
+                    <div className="text-6xl mb-2">{outcome.success ? '🎉' : '💀'}</div>
+                    <h1 className={`text-3xl font-bold ${outcome.success ? 'text-green-700' : 'text-red-700'} mb-2`}>
                       {outcome.success ? 'Victory!' : 'Defeat'}
                     </h1>
-                    <p className="text-xl text-gray-700">{outcome.message}</p>
+                    <p className="text-lg text-gray-700">{outcome.message}</p>
                   </div>
 
                   {/* Explanation based on role choice */}
-                  <div className="bg-white rounded-lg p-6 mb-6 border-2 border-gray-300">
-                    <h3 className="text-lg font-bold text-gray-800 mb-4 text-center">What Happened</h3>
+                  <div className="bg-white rounded-lg p-4 mb-4 border-2 border-gray-300">
+                    <h3 className="text-base font-bold text-gray-800 mb-3 text-center">What Happened</h3>
 
                     {selectedRole === ROLES.FIGHTER && (
                       <div className="text-gray-700 space-y-3">
@@ -595,7 +596,7 @@ export function Tutorial1({ next }) {
                   </div>
 
                   {/* Final Stats */}
-                  <div className="bg-gray-100 rounded-lg p-4 mb-6 border border-gray-300">
+                  <div className="bg-gray-100 rounded-lg p-3 mb-4 border border-gray-300">
                     <div className="grid grid-cols-2 gap-4">
                       <div className="text-center">
                         <div className="text-sm text-gray-600 mb-1">Team Health</div>
@@ -635,6 +636,7 @@ export function Tutorial1({ next }) {
                       </button>
                     )}
                   </div>
+                </div>
                 </div>
               </div>
             )}
