@@ -3,7 +3,7 @@ import { MockDataProvider, TutorialWrapper } from "../components/tutorial";
 import { BattleField } from "../components/BattleField";
 import { ActionMenu } from "../components/ActionMenu";
 import { ActionHistory } from "../components/ActionHistory";
-import { ROLES } from "../constants";
+import { ROLES, STAGE_TIMER_SECONDS, BUFFER_TOTAL_SECONDS } from "../constants";
 
 // Create mock data with placeholder battle history for the tutorial
 const createMockDataWithHistory = () => {
@@ -107,6 +107,27 @@ export function Introduction({ next }) {
           </p>
           <p className="text-sm text-gray-700">
             Let's take a tour of the interface to understand how to play!
+          </p>
+        </div>
+      )
+    },
+    {
+      targetId: "round-header",
+      tooltipPosition: "bottom",
+      content: (
+        <div>
+          <h4 className="text-lg font-bold text-gray-900 mb-2">Timers</h4>
+          <p className="text-sm text-gray-700 mb-3">
+            Each stage has a <strong>{Math.floor(STAGE_TIMER_SECONDS / 60)}-minute {STAGE_TIMER_SECONDS % 60 > 0 ? `${STAGE_TIMER_SECONDS % 60}-second ` : ""}timer</strong> to select your role.
+          </p>
+          <p className="text-sm text-gray-700 mb-3">
+            You also have a <strong>{Math.floor(BUFFER_TOTAL_SECONDS / 60)}-minute buffer</strong> shared across all rounds. If the stage timer runs out before you submit, the buffer starts counting down instead.
+          </p>
+          <p className="text-sm text-gray-700 mb-2">
+            If your buffer runs out completely, you will be <strong>removed from the game</strong>. So make sure to submit your role before time runs out!
+          </p>
+          <p className="text-sm text-gray-700 italic">
+            The buffer is there in case you need a short break — but use it wisely.
           </p>
         </div>
       )
@@ -321,9 +342,15 @@ export function Introduction({ next }) {
             <div className="bg-white rounded-lg shadow-2xl border-4 border-gray-800 w-full h-full flex overflow-hidden relative">
               {/* Left Column - Game Interface */}
               <div className="flex-1 flex flex-col min-w-0">
-                {/* Round Header */}
-                <div className="bg-gray-800 text-white text-center flex-shrink-0 rounded-tl-lg flex items-center justify-center" style={{ height: '40px' }}>
-                  <h1 className="text-lg font-bold">Round 1/5</h1>
+                {/* Round Header with Timer */}
+                <div className="bg-gray-800 text-white flex-shrink-0 rounded-tl-lg flex items-center justify-between px-4" style={{ height: '40px' }} data-tutorial-id="round-header">
+                  <h1 className="text-lg font-bold">
+                    Round 1/8 - Stage 1/5 | Points: 0
+                  </h1>
+                  <div className="flex items-center gap-3 tabular-nums text-sm font-mono">
+                    <span className="text-white">{Math.floor(STAGE_TIMER_SECONDS / 60)}:{(STAGE_TIMER_SECONDS % 60).toString().padStart(2, '0')}</span>
+                    <span className="text-gray-400">Buffer: {Math.floor(BUFFER_TOTAL_SECONDS / 60)}:{(BUFFER_TOTAL_SECONDS % 60).toString().padStart(2, '0')}</span>
+                  </div>
                 </div>
 
                 {/* Battle Field */}
