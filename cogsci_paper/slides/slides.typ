@@ -363,18 +363,18 @@
 ]
 
 #slide[
-  = 1 Human, 2 Bots (141_222_222) - Player 0 is a human
+  = 1 Human, 2 Bots (141_222_222) (Player 0 is a human)
 
   #align(center)[
-    #image("images/game_RAYSSF_round_8_player_XESM.png", height: 80%)
+    #image("images/game_NM9RTP_round_4_player_GE0E.png", height: 80%)
   ]
 ]
 
 #slide[
-  = 1 Human, 2 Bots (141_222_222) - Player 0 is a human
+  = 1 Human, 2 Bots (141_222_222) - Example 2
 
   #align(center)[
-    #image("images/game_NM9RTP_round_4_player_GE0E.png", height: 80%)
+    #image("images/game_RAYSSF_round_8_player_XESM.png", height: 80%)
   ]
 ]
 

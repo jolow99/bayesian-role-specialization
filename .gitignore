@@ -1,6 +1,9 @@
 lab_notebook
 human_experiment/bayesian-role-specialization.tar.zst
+human_experiment/data/
 .env
 .env.local
 .env.*.local
 *env*/
+.claude/
+.DS_Store
