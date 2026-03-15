@@ -1,4 +1,0 @@
-ENV_PARAMS,round_id=01KG1YT9SZQ3RW0RH0QP0SEHEK,max_team_hp=5,max_enemy_hp=15,enemy_attack_prob=0.80,enemy_damage=6,outcome=LOSE
-turn_number,stage_number,player0_role,player1_role,player2_role,player0_action,player1_action,player2_action,prev_team_health,new_team_health,prev_enemy_health,new_enemy_health,enemy_intent,team_damage_taken,enemy_damage_taken
-1,1,N/A,FIGHTER,TANK,ATTACK,ATTACK,BLOCK,5,1,15,12,WILL_ATTACK,4,3
-2,1,N/A,FIGHTER,TANK,ATTACK,ATTACK,BLOCK,1,0,12,9,WILL_ATTACK,1,3
