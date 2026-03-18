@@ -19,11 +19,17 @@ from scipy.stats import pearsonr
 # === Paths ===
 SCRIPT_DIR = Path(__file__).resolve().parent
 PROJECT_DIR = SCRIPT_DIR.parent
-DATA_DIR = PROJECT_DIR / "bayesian-role-specialization-2026-03-06-09-54-19"
+DEFAULT_DATA_DIR = PROJECT_DIR / "bayesian-role-specialization-2026-03-06-09-54-19"
 VALUE_MATRICES_DIR = PROJECT_DIR / "human_envs_value_matrices"
-HUMAN_DIST_FILE = SCRIPT_DIR / "stage_distributions.json"
+ENVS_DIR = PROJECT_DIR / "envs"
 OUTPUT_DIR = SCRIPT_DIR / "figures" / "model_comparison_online"
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+
+# Role combo → numeric env ID from envs/
+ROLE_COMBO_TO_ENV_NUM = {
+    "FFF": 82, "FFM": 5189, "FMM": 2712, "FTF": 157,
+    "FTM": 139, "MFF": 957, "MMM": 4915, "TFF": 855,
+}
 
 # === Constants ===
 F, T, M = 0, 1, 2
@@ -35,15 +41,16 @@ EPSILON = 1e-10
 MAX_STAGES = 5
 TURNS_PER_STAGE = 2
 TAU = 1.0
-
+TAU_PRIOR = 1.0
+TAU_SOFTMAX = 1.0
 DROPOUT_GAME_ID = "01KK14SSY8E64SK69715NN1TMW"
+ROLE_STAT_COL = {0: 0, 1: 1, 2: 2}
 
 ALL_ROLE_COMBOS = [
     ROLE_NAMES[r0] + ROLE_NAMES[r1] + ROLE_NAMES[r2]
     for r0 in range(3) for r1 in range(3) for r2 in range(3)
 ]
 
-# === Canonical combo handling ===
 SYMMETRIC_PROFILES = {
     "222_222_222": "all",
     "411_222_222": "last_two",
@@ -72,18 +79,11 @@ def get_canonical_combos(stat_profile):
     return canonical
 
 
-# === Utility-based prior ===
-
-# Role-to-stat mapping: Fighter uses STR (col 0), Tank uses DEF (col 1), Medic uses SUP (col 2)
-ROLE_STAT_COL = {0: 0, 1: 1, 2: 2}
+# === Core model ===
 
 
 def utility_based_prior(player_stats, tau=1.0):
-    """
-    P(r0, r1, r2) ∝ exp(1/τ * Σ_i u_i(r_i))
-    where u_i(r) = player i's stat for role r.
-    Factorizes into independent softmax per player.
-    """
+    """P(r0,r1,r2) ∝ exp(Σ_i stat_i(r_i) / τ)"""
     prior = np.zeros((3, 3, 3))
     for r0 in range(3):
         for r1 in range(3):
@@ -94,32 +94,13 @@ def utility_based_prior(player_stats, tau=1.0):
                     + float(player_stats[2, ROLE_STAT_COL[r2]])
                 )
                 prior[r0, r1, r2] = utility / tau
-
-    # Numerical stability: subtract max before exp
     prior -= prior.max()
     prior = np.exp(prior)
     prior /= prior.sum()
     return prior
 
 
-# === Policy functions ===
-
-
-def action_prob(role, action, intent, team_hp, team_max_hp):
-    if role == F:
-        preferred = ATTACK
-    elif role == T:
-        preferred = DEFEND if intent == 1 else ATTACK
-    else:
-        preferred = HEAL if team_hp < team_max_hp else ATTACK
-
-    if action == preferred:
-        return 1.0 - EPSILON
-    else:
-        return EPSILON / 2.0
-
-
-def get_action(role, intent, team_hp, team_max_hp):
+def _preferred_action(role, intent, team_hp, team_max_hp):
     if role == F:
         return ATTACK
     elif role == T:
@@ -128,21 +109,27 @@ def get_action(role, intent, team_hp, team_max_hp):
         return HEAL if team_hp < team_max_hp else ATTACK
 
 
-# === Bayesian inference ===
+def uniform_prior():
+    """Flat 1/27 prior over all role combinations."""
+    return np.ones((3, 3, 3)) / 27.0
 
 
-def bayesian_update(prior, actions, intent, team_hp, team_max_hp):
+def action_prob(role, action, intent, team_hp, team_max_hp, epsilon=EPSILON):
+    preferred = _preferred_action(role, intent, team_hp, team_max_hp)
+    return (1.0 - epsilon) if action == preferred else (epsilon / 2.0)
+
+
+def bayesian_update(prior, actions, intent, team_hp, team_max_hp, epsilon=EPSILON):
     posterior = np.copy(prior)
     for r0 in range(3):
         for r1 in range(3):
             for r2 in range(3):
                 likelihood = (
-                    action_prob(r0, actions[0], intent, team_hp, team_max_hp)
-                    * action_prob(r1, actions[1], intent, team_hp, team_max_hp)
-                    * action_prob(r2, actions[2], intent, team_hp, team_max_hp)
+                    action_prob(r0, actions[0], intent, team_hp, team_max_hp, epsilon)
+                    * action_prob(r1, actions[1], intent, team_hp, team_max_hp, epsilon)
+                    * action_prob(r2, actions[2], intent, team_hp, team_max_hp, epsilon)
                 )
                 posterior[r0, r1, r2] *= likelihood
-
     total = posterior.sum()
     if total > 0:
         posterior /= total
@@ -151,21 +138,13 @@ def bayesian_update(prior, actions, intent, team_hp, team_max_hp):
     return posterior
 
 
-# === Softmax role selection ===
-
-
 def softmax_role_dist(agent_i, intent, team_hp, enemy_hp, prior, values, tau=1.0):
     other_agents = [a for a in range(3) if a != agent_i]
-
     other_probs = np.sum(prior, axis=agent_i)
     total = other_probs.sum()
-    if total > 0:
-        other_probs /= total
-    else:
-        other_probs = np.ones((3, 3)) / 9.0
+    other_probs = other_probs / total if total > 0 else np.ones((3, 3)) / 9.0
 
     expected_values = np.zeros(3)
-
     for r_i in range(3):
         ev = 0.0
         for r_j in range(3):
@@ -174,11 +153,8 @@ def softmax_role_dist(agent_i, intent, team_hp, enemy_hp, prior, values, tau=1.0
                 roles[agent_i] = r_i
                 roles[other_agents[0]] = r_j
                 roles[other_agents[1]] = r_k
-
                 flat_idx = roles[0] * 9 + roles[1] * 3 + roles[2]
-                val = float(values[flat_idx, intent, team_hp, enemy_hp])
-                ev += other_probs[r_j, r_k] * val
-
+                ev += other_probs[r_j, r_k] * float(values[flat_idx, intent, team_hp, enemy_hp])
         expected_values[r_i] = ev
 
     ev_scaled = expected_values / tau
@@ -187,86 +163,49 @@ def softmax_role_dist(agent_i, intent, team_hp, enemy_hp, prior, values, tau=1.0
     return exp_ev / exp_ev.sum()
 
 
-def model_predicted_combo_dist(intent, team_hp, enemy_hp, prior, values, tau=1.0):
-    """
-    Compute the joint distribution over all 27 role combos predicted by the model.
-    Assumes agents independently sample from their softmax distributions.
-    Returns dict: combo_str -> probability.
-    """
-    per_agent = []
-    for i in range(3):
-        dist = softmax_role_dist(i, intent, team_hp, enemy_hp, prior, values, tau)
-        per_agent.append(dist)
-
-    combo_probs = {}
-    for r0 in range(3):
-        for r1 in range(3):
-            for r2 in range(3):
-                combo = ROLE_NAMES[r0] + ROLE_NAMES[r1] + ROLE_NAMES[r2]
-                prob = per_agent[0][r0] * per_agent[1][r1] * per_agent[2][r2]
-                combo_probs[combo] = float(prob)
-
-    return combo_probs
-
-
-# === Game step ===
-
-
 def game_step(intent, team_hp, enemy_hp, actions, player_stats, boss_damage, team_max_hp):
-    total_attack = sum(
-        float(player_stats[i, 0]) for i in range(3) if actions[i] == ATTACK
-    )
-    defenders = [
-        float(player_stats[i, 1]) for i in range(3) if actions[i] == DEFEND
-    ]
+    total_attack = sum(float(player_stats[i, 0]) for i in range(3) if actions[i] == ATTACK)
+    defenders = [float(player_stats[i, 1]) for i in range(3) if actions[i] == DEFEND]
     max_defense = max(defenders) if defenders else 0.0
-    total_heal = sum(
-        float(player_stats[i, 2]) for i in range(3) if actions[i] == HEAL
-    )
+    total_heal = sum(float(player_stats[i, 2]) for i in range(3) if actions[i] == HEAL)
 
     new_enemy_hp = max(0.0, enemy_hp - total_attack)
     damage = max(0.0, boss_damage - max_defense) if intent == 1 else 0.0
-    new_team_hp = team_hp - damage + total_heal
-    new_team_hp = max(0.0, min(float(team_max_hp), new_team_hp))
-
+    new_team_hp = max(0.0, min(float(team_max_hp), team_hp - damage + total_heal))
     return new_team_hp, new_enemy_hp
 
 
-# === Load config modules ===
+# === Data loading ===
 
 
 def load_config_module(config_path):
-    spec = importlib.util.spec_from_file_location(
-        f"config_{hash(str(config_path))}", config_path
-    )
+    spec = importlib.util.spec_from_file_location(f"config_{hash(str(config_path))}", config_path)
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
 
 
-# === Load per-team round data ===
+def load_team_rounds(data_dir=None, data_dirs=None):
+    if data_dirs:
+        dirs = [Path(d) for d in data_dirs]
+    else:
+        dirs = [Path(data_dir) if data_dir else DEFAULT_DATA_DIR]
 
+    games = {}
+    rounds = []
+    for d in dirs:
+        with open(d / "game.csv") as f:
+            games.update({r["id"]: r for r in csv.DictReader(f)})
+    for d in dirs:
+        with open(d / "round.csv") as f:
+            rounds.extend(csv.DictReader(f))
 
-def load_team_rounds():
-    """
-    Load per-team, per-round data: the actual human role choices at each stage,
-    plus the env config and LDS.
-    """
-    with open(DATA_DIR / "game.csv") as f:
-        games = {r["id"]: r for r in csv.DictReader(f)}
-
-    with open(DATA_DIR / "round.csv") as f:
-        rounds = list(csv.DictReader(f))
-
-    # Cache env configs
     env_cache = {}
     records = []
 
     for r in rounds:
         game = games.get(r["gameID"])
         if not game or game.get("status") != "ended":
-            continue
-        if r["gameID"] == DROPOUT_GAME_ID:
             continue
 
         rnum = r["roundNumber"]
@@ -282,12 +221,12 @@ def load_team_rounds():
         optimal_roles = cfg["optimalRoles"]
         role_combo = "".join(ROLE_NAMES[ri] for ri in optimal_roles)
         stat_profile = cfg.get("statProfileId", "")
-        lds_str = cfg["enemyIntentSequence"]
-        lds = [int(c) for c in lds_str]
+        lds = [int(c) for c in cfg["enemyIntentSequence"]]
 
-        # Load env config + values (cached)
         if env_id not in env_cache:
             val_dir = VALUE_MATRICES_DIR / role_combo
+            if not (val_dir / "values.npy").exists():
+                val_dir = ENVS_DIR / str(env_id)
             values = np.load(val_dir / "values.npy")
             config_mod = load_config_module(val_dir / "config.py")
             env_cache[env_id] = {
@@ -298,7 +237,6 @@ def load_team_rounds():
                 "enemy_max_hp": int(config_mod.ENEMY_MAX_HP),
             }
 
-        # Extract human role combos per stage
         stage_roles = []
         for s in range(1, MAX_STAGES + 1):
             turns_data = r.get(f"stage{s}Turns")
@@ -307,8 +245,10 @@ def load_team_rounds():
             turns = json.loads(turns_data)
             if not turns:
                 break
-            roles_str = turns[0]["roles"]
-            combo_str = "".join(ROLE_NAMES[GAME_ROLE_TO_IDX[rs]] for rs in roles_str)
+            roles = turns[0].get("roles", [])
+            if len(roles) != 3:
+                break
+            combo_str = "".join(ROLE_NAMES[GAME_ROLE_TO_IDX.get(rs, 0)] for rs in roles)
             stage_roles.append(combo_str)
 
         if not stage_roles:
@@ -319,10 +259,9 @@ def load_team_rounds():
             "round_id": r["id"],
             "env_id": env_id,
             "stat_profile": stat_profile,
-            "optimal_roles": "".join(ROLE_NAMES[ri] for ri in optimal_roles),
+            "optimal_roles": role_combo,
             "lds": lds,
             "stage_roles": stage_roles,
-            "outcome": r.get("outcome", ""),
             "env_config": env_cache[env_id],
         })
 
@@ -332,79 +271,70 @@ def load_team_rounds():
 # === Teacher-forced prediction ===
 
 
-def teacher_forced_predictions(record, tau=TAU):
-    """
-    For one team's round, predict the model's role combo distribution at each stage,
-    then feed it the actual human choices.
+def combo_marginal(combo):
+    """Role frequencies from a combo string. 'FTM' -> [1/3, 1/3, 1/3]."""
+    counts = np.zeros(3)
+    for c in combo:
+        counts[ROLE_CHAR_TO_IDX[c]] += 1
+    return counts / 3.0
 
-    Returns list of dicts, one per stage:
-        {"predicted_dist": {combo: prob}, "human_combo": str}
-    """
+
+def teacher_forced_predictions(record, tau_prior=TAU_PRIOR, tau_softmax=TAU_SOFTMAX, prior_type="utility", epsilon=EPSILON):
     env = record["env_config"]
-    values = env["values"]
-    player_stats = env["player_stats"]
+    values, player_stats = env["values"], env["player_stats"]
     boss_damage = env["boss_damage"]
-    team_max_hp = env["team_max_hp"]
-    enemy_max_hp = env["enemy_max_hp"]
-    lds = record["lds"]
-    human_stages = record["stage_roles"]
+    team_max_hp, enemy_max_hp = env["team_max_hp"], env["enemy_max_hp"]
 
-    team_hp = float(team_max_hp)
-    enemy_hp = float(enemy_max_hp)
-    prior = utility_based_prior(player_stats, tau=tau)
-
+    team_hp, enemy_hp = float(team_max_hp), float(enemy_max_hp)
+    if prior_type == "uniform":
+        prior = uniform_prior()
+    else:
+        prior = utility_based_prior(player_stats, tau=tau_prior)
     results = []
     turn_idx = 0
 
-    for stage_idx, human_combo in enumerate(human_stages):
-        if turn_idx >= len(lds):
-            break
-        if team_hp <= 0 or enemy_hp <= 0:
+    for human_combo in record["stage_roles"]:
+        if turn_idx >= len(record["lds"]) or team_hp <= 0 or enemy_hp <= 0:
             break
 
-        intent = lds[turn_idx]
+        intent = record["lds"][turn_idx]
         thp = int(min(max(0, team_hp), team_max_hp))
         ehp = int(min(max(0, enemy_hp), enemy_max_hp))
 
-        # PREDICT: model's distribution over combos at this state
-        predicted_dist = model_predicted_combo_dist(
-            intent, thp, ehp, prior, values, tau
-        )
+        # Per-agent softmax → joint combo dist + marginals
+        per_agent = [softmax_role_dist(i, intent, thp, ehp, prior, values, tau_softmax) for i in range(3)]
+
+        predicted_dist = {}
+        for r0 in range(3):
+            for r1 in range(3):
+                for r2 in range(3):
+                    combo = ROLE_NAMES[r0] + ROLE_NAMES[r1] + ROLE_NAMES[r2]
+                    predicted_dist[combo] = float(per_agent[0][r0] * per_agent[1][r1] * per_agent[2][r2])
 
         results.append({
             "predicted_dist": predicted_dist,
             "human_combo": human_combo,
+            "model_marginal": np.mean(per_agent, axis=0),
         })
 
-        # OBSERVE + EXECUTE: use human roles to advance the game
+        # Advance game with human roles
         human_roles = [ROLE_CHAR_TO_IDX[c] for c in human_combo]
-
-        for t in range(TURNS_PER_STAGE):
-            if turn_idx >= len(lds):
+        for _ in range(TURNS_PER_STAGE):
+            if turn_idx >= len(record["lds"]) or team_hp <= 0 or enemy_hp <= 0:
                 break
-            if team_hp <= 0 or enemy_hp <= 0:
-                break
-
-            intent = lds[turn_idx]
-            actions = [get_action(human_roles[i], intent, team_hp, team_max_hp) for i in range(3)]
-            prior = bayesian_update(prior, actions, intent, team_hp, team_max_hp)
-            team_hp, enemy_hp = game_step(
-                intent, team_hp, enemy_hp, actions, player_stats, boss_damage, team_max_hp
-            )
+            intent = record["lds"][turn_idx]
+            actions = [_preferred_action(human_roles[i], intent, team_hp, team_max_hp) for i in range(3)]
+            prior = bayesian_update(prior, actions, intent, team_hp, team_max_hp, epsilon)
+            team_hp, enemy_hp = game_step(intent, team_hp, enemy_hp, actions, player_stats, boss_damage, team_max_hp)
             turn_idx += 1
 
     return results
 
 
-# === Aggregate and compare ===
+# === Aggregation ===
 
 
-def run_all_predictions(records, tau=TAU):
-    """
-    Run teacher-forced predictions for all teams, aggregate per env.
-    Returns dict: env_id -> {stage_idx -> {canonical_combo -> total_prob}}
-    """
-    # Group records by env
+def run_all_predictions(records, tau_prior=TAU_PRIOR, tau_softmax=TAU_SOFTMAX, prior_type="utility", epsilon=EPSILON):
     by_env = defaultdict(list)
     for rec in records:
         by_env[rec["env_id"]].append(rec)
@@ -414,257 +344,306 @@ def run_all_predictions(records, tau=TAU):
     for env_id, env_records in by_env.items():
         stat_profile = env_records[0]["stat_profile"]
         optimal = env_records[0]["optimal_roles"]
-        canonical_optimal = canonical_combo(optimal, stat_profile)
         canon_combos = get_canonical_combos(stat_profile)
-        n_teams = len(env_records)
 
-        # Accumulate predicted distributions across teams
-        # For each stage, average the predicted distributions
         stage_predicted = defaultdict(lambda: defaultdict(float))
         stage_human = defaultdict(lambda: defaultdict(int))
+        stage_model_marg = defaultdict(lambda: np.zeros(3))
+        stage_human_marg = defaultdict(lambda: np.zeros(3))
         stage_counts = defaultdict(int)
-        max_stages_seen = 0
-
-        # Per-team predictions for logging
         team_predictions = []
+        max_stages = 0
 
         for rec in env_records:
-            preds = teacher_forced_predictions(rec, tau=tau)
+            preds = teacher_forced_predictions(rec, tau_prior=tau_prior, tau_softmax=tau_softmax, prior_type=prior_type, epsilon=epsilon)
             team_predictions.append(preds)
 
-            for stage_idx, pred in enumerate(preds):
-                stage_counts[stage_idx] += 1
-                max_stages_seen = max(max_stages_seen, stage_idx + 1)
+            for s, pred in enumerate(preds):
+                stage_counts[s] += 1
+                max_stages = max(max_stages, s + 1)
 
-                # Accumulate predicted probabilities
                 for combo, prob in pred["predicted_dist"].items():
-                    cc = canonical_combo(combo, stat_profile)
-                    stage_predicted[stage_idx][cc] += prob
+                    stage_predicted[s][canonical_combo(combo, stat_profile)] += prob
+                stage_human[s][canonical_combo(pred["human_combo"], stat_profile)] += 1
 
-                # Count actual human choices
-                hcc = canonical_combo(pred["human_combo"], stat_profile)
-                stage_human[stage_idx][hcc] += 1
+                stage_model_marg[s] += pred["model_marginal"]
+                stage_human_marg[s] += combo_marginal(pred["human_combo"])
 
-        # Average predicted distributions
-        stage_predicted_avg = {}
-        for stage_idx in range(max_stages_seen):
-            n = stage_counts[stage_idx]
+        # Average across teams
+        predicted_avg, model_marg_avg, human_marg_avg = {}, {}, {}
+        for s in range(max_stages):
+            n = stage_counts[s]
             if n > 0:
-                stage_predicted_avg[stage_idx] = {
-                    cc: stage_predicted[stage_idx].get(cc, 0.0) / n
-                    for cc in canon_combos
-                }
+                predicted_avg[s] = {cc: stage_predicted[s].get(cc, 0.0) / n for cc in canon_combos}
+                model_marg_avg[s] = stage_model_marg[s] / n
+                human_marg_avg[s] = stage_human_marg[s] / n
 
         all_results[env_id] = {
             "stat_profile": stat_profile,
             "optimal": optimal,
-            "canonical_optimal": canonical_optimal,
+            "canonical_optimal": canonical_combo(optimal, stat_profile),
             "canonical_combos": canon_combos,
-            "n_teams": n_teams,
-            "max_stages": max_stages_seen,
-            "stage_predicted": stage_predicted_avg,
+            "n_teams": len(env_records),
+            "max_stages": max_stages,
+            "stage_predicted": predicted_avg,
             "stage_human": dict(stage_human),
             "stage_counts": dict(stage_counts),
             "team_predictions": team_predictions,
+            "stage_model_marginal": model_marg_avg,
+            "stage_human_marginal": human_marg_avg,
         }
 
     return all_results
 
 
+# === Evaluation ===
+
+
 def compute_pearson(all_results):
-    """Pearson correlation between model predicted and human canonical distributions."""
     correlations = {}
+    global_combo_m, global_combo_h = [], []
+    global_marg_m, global_marg_h = [], []
 
     for env_id, data in all_results.items():
-        canon_combos = data["canonical_combos"]
+        combo_m, combo_h, marg_m, marg_h = [], [], [], []
 
-        model_vec = []
-        human_vec = []
-
-        for stage_idx in range(data["max_stages"]):
-            predicted = data["stage_predicted"].get(stage_idx)
-            human_counts = data["stage_human"].get(stage_idx, {})
-            n_teams = data["stage_counts"].get(stage_idx, 0)
-
-            if predicted is None or n_teams == 0:
+        for s in range(data["max_stages"]):
+            predicted = data["stage_predicted"].get(s)
+            human_counts = data["stage_human"].get(s, {})
+            n = data["stage_counts"].get(s, 0)
+            if predicted is None or n == 0:
                 continue
 
-            for cc in canon_combos:
-                model_vec.append(predicted.get(cc, 0.0))
-                human_vec.append(human_counts.get(cc, 0) / n_teams)
+            for cc in data["canonical_combos"]:
+                combo_m.append(predicted.get(cc, 0.0))
+                combo_h.append(human_counts.get(cc, 0) / n)
 
-        if len(model_vec) >= 2:
-            r, p = pearsonr(model_vec, human_vec)
-            correlations[env_id] = {"r": float(r), "p": float(p), "n_points": len(model_vec)}
-        else:
-            correlations[env_id] = {"r": float("nan"), "p": float("nan"), "n_points": len(model_vec)}
+            mm = data["stage_model_marginal"].get(s)
+            hm = data["stage_human_marginal"].get(s)
+            if mm is not None and hm is not None:
+                marg_m.extend(mm.tolist())
+                marg_h.extend(hm.tolist())
+
+        env_corr = {}
+        if len(combo_m) >= 2:
+            r, p = pearsonr(combo_m, combo_h)
+            env_corr["combo"] = {"r": float(r), "p": float(p), "n": len(combo_m)}
+        if len(marg_m) >= 2:
+            r, p = pearsonr(marg_m, marg_h)
+            env_corr["marginal"] = {"r": float(r), "p": float(p), "n": len(marg_m)}
+
+        correlations[env_id] = env_corr
+        global_combo_m.extend(combo_m)
+        global_combo_h.extend(combo_h)
+        global_marg_m.extend(marg_m)
+        global_marg_h.extend(marg_h)
+
+    # Global correlations
+    global_corr = {}
+    if len(global_combo_m) >= 2:
+        r, p = pearsonr(global_combo_m, global_combo_h)
+        global_corr["combo"] = {"r": float(r), "p": float(p), "n": len(global_combo_m)}
+    if len(global_marg_m) >= 2:
+        r, p = pearsonr(global_marg_m, global_marg_h)
+        global_corr["marginal"] = {"r": float(r), "p": float(p), "n": len(global_marg_m)}
+    correlations["__global__"] = global_corr
 
     return correlations
 
 
 def compute_log_likelihood(all_results):
-    """Average log-likelihood of human choices under the model's predictions."""
     ll_by_env = {}
-
     for env_id, data in all_results.items():
         log_liks = []
         for team_preds in data["team_predictions"]:
             for pred in team_preds:
-                human_combo = pred["human_combo"]
-                prob = pred["predicted_dist"].get(human_combo, 1e-20)
+                prob = pred["predicted_dist"].get(pred["human_combo"], 1e-20)
                 log_liks.append(np.log(max(prob, 1e-20)))
-
         if log_liks:
-            ll_by_env[env_id] = {
-                "mean_ll": float(np.mean(log_liks)),
-                "n_predictions": len(log_liks),
-            }
-
+            ll_by_env[env_id] = {"mean_ll": float(np.mean(log_liks)), "n": len(log_liks)}
     return ll_by_env
 
 
 # === Plotting ===
 
+ROLE_COLORS = {"F": "#e74c3c", "T": "#3498db", "M": "#2ecc71"}
 
-def plot_comparison(all_results, correlations):
+
+def plot_comparison(all_results, correlations, tau_prior=TAU_PRIOR, tau_softmax=TAU_SOFTMAX, epsilon=EPSILON):
     for env_id, data in all_results.items():
-        stat_profile = data["stat_profile"]
         canon_combos = data["canonical_combos"]
         optimal_canon = data["canonical_optimal"]
-
         max_stages = data["max_stages"]
         stages = list(range(1, max_stages + 1))
 
-        # Model predicted (averaged across teams)
+        # Build per-combo time series
         model_probs = {cc: [] for cc in canon_combos}
-        for stage_idx in range(max_stages):
-            predicted = data["stage_predicted"].get(stage_idx, {})
+        human_probs = {cc: [] for cc in canon_combos}
+        for s in range(max_stages):
+            predicted = data["stage_predicted"].get(s, {})
+            human_counts = data["stage_human"].get(s, {})
+            n = data["stage_counts"].get(s, 0)
             for cc in canon_combos:
                 model_probs[cc].append(predicted.get(cc, 0.0))
-
-        # Human empirical
-        human_probs = {cc: [] for cc in canon_combos}
-        for stage_idx in range(max_stages):
-            human_counts = data["stage_human"].get(stage_idx, {})
-            n = data["stage_counts"].get(stage_idx, 0)
-            for cc in canon_combos:
                 human_probs[cc].append(human_counts.get(cc, 0) / n if n > 0 else 0)
 
-        # Identify played combos
-        played_combos = [
+        played = [
             cc for cc in canon_combos
             if cc == optimal_canon
             or any(p > 0 for p in human_probs[cc])
             or any(p > 0.02 for p in model_probs[cc])
         ]
 
-        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 6), sharey=True)
+        fig, axes = plt.subplots(1, 3, figsize=(20, 5))
 
-        for cc in played_combos:
+        # Combo distributions
+        for cc in played:
             is_opt = cc == optimal_canon
-            color = "red" if is_opt else None
-            lw = 2.5 if is_opt else 1.2
-            ms = 8 if is_opt else 4
-            label = f"{cc} (optimal)" if is_opt else cc
+            kw = dict(linewidth=2.5 if is_opt else 1.2, markersize=8 if is_opt else 4,
+                       label=f"{cc} (optimal)" if is_opt else cc)
+            if is_opt:
+                kw["color"] = "red"
+            axes[0].plot(stages, human_probs[cc], "o-", **kw)
+            axes[1].plot(stages, model_probs[cc], "o-", **kw)
 
-            kwargs = dict(linewidth=lw, markersize=ms, label=label)
-            if color:
-                kwargs["color"] = color
+        # Marginals
+        for role_idx, role_name in ROLE_NAMES.items():
+            h_vals = [data["stage_human_marginal"].get(s, np.zeros(3))[role_idx] for s in range(max_stages)]
+            m_vals = [data["stage_model_marginal"].get(s, np.zeros(3))[role_idx] for s in range(max_stages)]
+            color = ROLE_COLORS[role_name]
+            axes[2].plot(stages, h_vals, "o-", color=color, linewidth=2, label=f"{role_name} human")
+            axes[2].plot(stages, m_vals, "s--", color=color, linewidth=2, alpha=0.7, label=f"{role_name} model")
 
-            ax1.plot(stages, human_probs[cc], "o-", **kwargs)
-            ax2.plot(stages, model_probs[cc], "o-", **kwargs)
+        env_corr = correlations.get(env_id, {})
+        combo_r = env_corr.get("combo", {}).get("r", float("nan"))
+        marg_r = env_corr.get("marginal", {}).get("r", float("nan"))
 
-        corr = correlations.get(env_id, {})
-        r_val = corr.get("r", float("nan"))
-        r_str = f"r={r_val:.3f}" if not np.isnan(r_val) else "r=N/A"
-
-        for ax, title in [
-            (ax1, f"Human ({data['n_teams']} teams)"),
-            (ax2, f"Model teacher-forced (τ={TAU})"),
-        ]:
+        for ax, title in [(axes[0], f"Human ({data['n_teams']} teams)"),
+                          (axes[1], f"Model (τ_p={tau_prior}, τ_s={tau_softmax}, ε={epsilon:.4g})")]:
             ax.set_xlabel("Stage")
-            ax.set_ylabel("P(canonical role combo)")
+            ax.set_ylabel("P(combo)")
             ax.set_title(title)
             ax.set_xticks(stages)
             ax.set_ylim(-0.05, 1.05)
-            ax.legend(fontsize=8)
+            ax.legend(fontsize=7)
             ax.grid(True, alpha=0.3)
 
+        axes[2].set_xlabel("Stage")
+        axes[2].set_ylabel("P(role)")
+        axes[2].set_title(f"Marginals (r={marg_r:.3f})" if not np.isnan(marg_r) else "Marginals")
+        axes[2].set_xticks(stages)
+        axes[2].set_ylim(-0.05, 1.05)
+        axes[2].legend(fontsize=7)
+        axes[2].grid(True, alpha=0.3)
+
+        r_str = f"combo r={combo_r:.3f}" if not np.isnan(combo_r) else "combo r=N/A"
         fig.suptitle(
-            f"{env_id} | Profile: {stat_profile} | Optimal: {optimal_canon} | {r_str}",
-            fontsize=12,
-            fontweight="bold",
+            f"{env_id} | {data['stat_profile']} | Optimal: {optimal_canon} | {r_str}",
+            fontsize=12, fontweight="bold",
         )
         plt.tight_layout()
-        fname = f"online_{env_id}.png"
-        fig.savefig(OUTPUT_DIR / fname, dpi=150, bbox_inches="tight")
+        role_combo = data["optimal"]
+        env_num = ROLE_COMBO_TO_ENV_NUM.get(role_combo, "")
+        folder_name = f"{env_num}_{env_id}" if env_num else env_id
+        env_dir = OUTPUT_DIR / folder_name
+        env_dir.mkdir(parents=True, exist_ok=True)
+        fig.savefig(env_dir / f"online_{env_id}.png", dpi=150, bbox_inches="tight")
         plt.close(fig)
-        print(f"  Saved {fname}")
+
+        # Bar chart: per-stage grouped bars (human vs model)
+        n_stages = max_stages
+        fig_bar, axes_bar = plt.subplots(1, n_stages, figsize=(5 * n_stages, 5), sharey=True)
+        if n_stages == 1:
+            axes_bar = [axes_bar]
+
+        bar_width = 0.35
+        for s in range(n_stages):
+            ax = axes_bar[s]
+            h_vals = [human_probs[cc][s] for cc in played]
+            m_vals = [model_probs[cc][s] for cc in played]
+            x = np.arange(len(played))
+
+            bars_h = ax.bar(x - bar_width / 2, h_vals, bar_width, label="Human", color="#3498db", alpha=0.8)
+            bars_m = ax.bar(x + bar_width / 2, m_vals, bar_width, label="Model", color="#e74c3c", alpha=0.8)
+
+            # Highlight optimal combo
+            for i, cc in enumerate(played):
+                if cc == optimal_canon:
+                    ax.bar(x[i] - bar_width / 2, h_vals[i], bar_width, color="#3498db", edgecolor="gold", linewidth=2.5)
+                    ax.bar(x[i] + bar_width / 2, m_vals[i], bar_width, color="#e74c3c", edgecolor="gold", linewidth=2.5)
+
+            ax.set_xlabel("Role combo")
+            ax.set_title(f"Stage {s + 1}")
+            ax.set_xticks(x)
+            ax.set_xticklabels([f"{cc}*" if cc == optimal_canon else cc for cc in played],
+                               rotation=45, ha="right", fontsize=7)
+            ax.set_ylim(0, 1.05)
+            ax.grid(True, alpha=0.3, axis="y")
+            if s == 0:
+                ax.set_ylabel("P(combo)")
+                ax.legend(fontsize=8)
+
+        r_str = f"combo r={combo_r:.3f}" if not np.isnan(combo_r) else "combo r=N/A"
+        fig_bar.suptitle(
+            f"{env_id} | {data['stat_profile']} | Optimal: {optimal_canon}* | {r_str} | τ_p={tau_prior}, τ_s={tau_softmax}, ε={epsilon:.4g}",
+            fontsize=12, fontweight="bold",
+        )
+        plt.tight_layout()
+        fig_bar.savefig(env_dir / f"online_{env_id}_bars.png", dpi=150, bbox_inches="tight")
+        plt.close(fig_bar)
 
 
 # === Main ===
 
 
 def main():
-    print("Loading per-team round data...")
-    records = load_team_rounds()
-    human_only = [r for r in records if not r.get("has_bots")]
-    print(f"Loaded {len(records)} team-rounds across {len(set(r['env_id'] for r in records))} envs")
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--tau-prior", type=float, default=TAU_PRIOR, help="Temperature for utility-based prior")
+    parser.add_argument("--tau-softmax", type=float, default=TAU_SOFTMAX, help="Temperature for softmax role selection")
+    parser.add_argument("--epsilon", type=float, default=EPSILON)
+    parser.add_argument("--data-dir", type=str, nargs="+", default=None, help="Path(s) to data directory (can specify multiple)")
+    args = parser.parse_args()
+    tau_prior, tau_softmax, epsilon = args.tau_prior, args.tau_softmax, args.epsilon
 
-    print(f"\nRunning teacher-forced predictions (τ={TAU})...")
-    all_results = run_all_predictions(records, tau=TAU)
+    records = load_team_rounds(data_dirs=args.data_dir)
+    n_envs = len(set(r["env_id"] for r in records))
+    print(f"Loaded {len(records)} team-rounds across {n_envs} envs")
 
-    # Print summary
-    for env_id in sorted(all_results.keys()):
-        data = all_results[env_id]
-        print(f"\n  {env_id} (optimal: {data['optimal']}, {data['n_teams']} teams):")
-        for stage_idx in range(data["max_stages"]):
-            predicted = data["stage_predicted"].get(stage_idx, {})
-            top = sorted(predicted.items(), key=lambda x: -x[1])[:5]
-            top_str = ", ".join(f"{c}={p:.2f}" for c, p in top)
-            print(f"    Stage {stage_idx+1}: {top_str}")
-
-    print("\nComputing Pearson correlations...")
+    all_results = run_all_predictions(records, tau_prior=tau_prior, tau_softmax=tau_softmax, epsilon=epsilon)
     correlations = compute_pearson(all_results)
-
-    print("\n" + "=" * 70)
-    print("PEARSON CORRELATION: Teacher-Forced Model vs Human")
-    print("=" * 70)
-
-    all_r = []
-    for env_id in sorted(correlations.keys()):
-        c = correlations[env_id]
-        r_str = f"{c['r']:.3f}" if not np.isnan(c["r"]) else "N/A"
-        p_str = f"{c['p']:.4f}" if not np.isnan(c["p"]) else "N/A"
-        print(f"  {env_id}: r={r_str}, p={p_str} (n={c['n_points']} points)")
-        if not np.isnan(c["r"]):
-            all_r.append(c["r"])
-
-    if all_r:
-        print(f"\n  Mean r:   {np.mean(all_r):.3f}")
-        print(f"  Median r: {np.median(all_r):.3f}")
-
-    print("\nComputing log-likelihood of human choices...")
     ll = compute_log_likelihood(all_results)
-    for env_id in sorted(ll.keys()):
-        info = ll[env_id]
-        print(f"  {env_id}: mean LL={info['mean_ll']:.3f} ({info['n_predictions']} predictions)")
 
-    print("\nGenerating comparison plots...")
-    plot_comparison(all_results, correlations)
+    print(f"\n{'='*60}")
+    print(f"RESULTS (τ_prior={tau_prior}, τ_softmax={tau_softmax}, ε={epsilon:.4g})")
+    print(f"{'='*60}")
 
-    # Save results
-    output = {
-        "params": {"tau": TAU},
-        "correlations": correlations,
-        "log_likelihood": ll,
-    }
+    for env_id in sorted(k for k in correlations if k != "__global__"):
+        c = correlations[env_id]
+        combo = c.get("combo", {})
+        marg = c.get("marginal", {})
+        ll_info = ll.get(env_id, {})
+        print(f"  {env_id}:")
+        if combo:
+            print(f"    combo  r={combo['r']:.3f}  p={combo['p']:.4f}  (n={combo['n']})")
+        if marg:
+            print(f"    marg   r={marg['r']:.3f}  p={marg['p']:.4f}  (n={marg['n']})")
+        if ll_info:
+            print(f"    LL={ll_info['mean_ll']:.3f}  ({ll_info['n']} predictions)")
+
+    g = correlations.get("__global__", {})
+    print(f"\n  Global:")
+    if g.get("combo"):
+        print(f"    combo  r={g['combo']['r']:.3f}  p={g['combo']['p']:.4f}")
+    if g.get("marginal"):
+        print(f"    marg   r={g['marginal']['r']:.3f}  p={g['marginal']['p']:.4f}")
+
+    output = {"params": {"tau_prior": tau_prior, "tau_softmax": tau_softmax, "epsilon": epsilon}, "correlations": correlations, "log_likelihood": ll}
     out_path = SCRIPT_DIR / "online_model_results.json"
     with open(out_path, "w") as f:
         json.dump(output, f, indent=2)
-    print(f"\nSaved results to {out_path}")
-
-    print("\nDone!")
+    print(f"\nSaved to {out_path}")
+    print("\nTo generate plots, run finetune_tau.py which plots with best-fit params.")
 
 
 if __name__ == "__main__":
