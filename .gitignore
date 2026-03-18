@@ -7,4 +7,10 @@ human_experiment/data/
 *env*/
 .claude/
 .DS_Store
+__pycache__/
+*.pyc
 cogsci_paper/slides/
+*.pdf
+*.html
+computational_model/bayesian-role-specialization-*/
+computational_model/analysis/figures
