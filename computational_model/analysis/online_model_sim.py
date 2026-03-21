@@ -20,6 +20,10 @@ from scipy.stats import pearsonr
 SCRIPT_DIR = Path(__file__).resolve().parent
 PROJECT_DIR = SCRIPT_DIR.parent
 DEFAULT_DATA_DIR = PROJECT_DIR / "bayesian-role-specialization-2026-03-06-09-54-19"
+DEFAULT_DATA_DIRS = [
+    PROJECT_DIR / "bayesian-role-specialization-2026-03-06-09-54-19",
+    PROJECT_DIR / "bayesian-role-specialization-2026-03-18-15-47-09",
+]
 VALUE_MATRICES_DIR = PROJECT_DIR / "human_envs_value_matrices"
 ENVS_DIR = PROJECT_DIR / "envs"
 OUTPUT_DIR = SCRIPT_DIR / "figures" / "model_comparison_online"
@@ -43,7 +47,12 @@ TURNS_PER_STAGE = 2
 TAU = 1.0
 TAU_PRIOR = 1.0
 TAU_SOFTMAX = 1.0
-DROPOUT_GAME_ID = "01KK14SSY8E64SK69715NN1TMW"
+DROPOUT_GAME_IDS = {
+    "01KK14SSY8E64SK69715NN1TMW",  # old dataset dropout
+    "01KKZZ4T8F90RB51JW9GHR3B9Q",  # 2 players dropped after R1S1
+    "01KKZZ4VRMJT8DA43K6G75XABM",  # 1 player dropped at R4S3
+    "01KKZZ54V188BNYZ0WCNNHNC13",  # game never started (batch terminated)
+}
 ROLE_STAT_COL = {0: 0, 1: 1, 2: 2}
 
 ALL_ROLE_COMBOS = [
@@ -206,6 +215,8 @@ def load_team_rounds(data_dir=None, data_dirs=None):
     for r in rounds:
         game = games.get(r["gameID"])
         if not game or game.get("status") != "ended":
+            continue
+        if r["gameID"] in DROPOUT_GAME_IDS:
             continue
 
         rnum = r["roundNumber"]
