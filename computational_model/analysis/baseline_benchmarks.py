@@ -431,8 +431,8 @@ def main():
     print(f"Loaded {len(records)} team-rounds across {n_envs} envs\n")
 
     # ── Main model (finetuned params) ──
-    MAIN_TAU_PRIOR = 0.9771
-    MAIN_TAU_SOFTMAX = 10.0
+    MAIN_TAU_PRIOR = 5.6
+    MAIN_TAU_SOFTMAX = 0.1
     MAIN_EPSILON = 0.2
     print("=" * 60)
     print(f"Main Model (τ_prior={MAIN_TAU_PRIOR}, τ_softmax={MAIN_TAU_SOFTMAX}, ε={MAIN_EPSILON})")

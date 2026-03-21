@@ -22,6 +22,7 @@ import numpy as np
 from scipy.optimize import minimize
 
 from online_model_sim import (
+    DEFAULT_DATA_DIRS,
     EPSILON,
     TAU_PRIOR,
     TAU_SOFTMAX,
@@ -130,7 +131,8 @@ def main():
     args = parser.parse_args()
 
     print("Loading human data ...")
-    records = load_team_rounds(data_dirs=args.data_dir)
+    data_dirs = args.data_dir if args.data_dir else [str(d) for d in DEFAULT_DATA_DIRS]
+    records = load_team_rounds(data_dirs=data_dirs)
     n_envs = len(set(r["env_id"] for r in records))
     print(f"Loaded {len(records)} team-rounds across {n_envs} envs\n")
 
