@@ -777,8 +777,9 @@ Empirica.onStageEnded(({ stage }) => {
   game.players.forEach(player => {
     const playerSubmitted = player.stage.get("submit");
     const isAlreadyDropout = player.get("isDropout");
+    const hasDropoutRound = player.get("droppedOutAtRound") != null;
 
-    if (!playerSubmitted && !isAlreadyDropout) {
+    if (!playerSubmitted && !hasDropoutRound) {
       // Player didn't submit - calculate overtime and deduct from buffer
       const stageDurationMs = stage.get("stageDurationMs") || (Date.now() - (stage.get("stageStartedAt") || Date.now()));
       const overtimeMs = Math.max(0, stageDurationMs - STAGE_TIMER_SECONDS * 1000);
@@ -789,8 +790,8 @@ Empirica.onStageEnded(({ stage }) => {
 
       console.log(`Player ${player.get("gamePlayerId")} didn't submit. Overtime: ${overtimeSeconds.toFixed(1)}s, Buffer: ${currentBuffer.toFixed(1)}s -> ${newBuffer.toFixed(1)}s`);
 
-      if (newBuffer < 1) { // Use epsilon to avoid floating-point edge cases
-        // Buffer depleted - mark as dropout
+      if (isAlreadyDropout || newBuffer < 1) { // Use epsilon to avoid floating-point edge cases
+        // Buffer depleted (or client already flagged dropout) - mark as dropout
         player.set("isDropout", true);
         player.set("droppedOutAtRound", roundNumber);
         player.set("droppedOutAtStage", stageNumber);
@@ -1645,12 +1646,26 @@ Empirica.onGameEnded(({ game }) => {
     const isDropout = player.get("isDropout") || false;
     const bufferTimeUsed = BUFFER_TOTAL_SECONDS - (player.get("bufferTimeRemaining") || BUFFER_TOTAL_SECONDS);
 
+    // Derive droppedOutAtRound/Stage from player properties, falling back to
+    // roleHistory if the properties weren't persisted (Empirica state race condition)
+    let droppedOutAtRound = player.get("droppedOutAtRound");
+    let droppedOutAtStage = player.get("droppedOutAtStage");
+    if (isDropout && droppedOutAtRound == null) {
+      // Find the first autoSubmitted entry in roleHistory as the dropout point
+      const firstAuto = roleHistory.find(r => r.autoSubmitted);
+      if (firstAuto) {
+        droppedOutAtRound = firstAuto.round;
+        droppedOutAtStage = firstAuto.stage;
+        console.log(`Derived dropout point from roleHistory: round ${droppedOutAtRound}, stage ${droppedOutAtStage}`);
+      }
+    }
+
     const gameSummary = {
       gamePlayerId,
       totalPoints: playerTotalPoints,
       isDropout,
-      droppedOutAtRound: player.get("droppedOutAtRound"),
-      droppedOutAtStage: player.get("droppedOutAtStage"),
+      droppedOutAtRound,
+      droppedOutAtStage,
       bufferTimeUsed: Math.round(bufferTimeUsed * 10) / 10,
       rounds
     };

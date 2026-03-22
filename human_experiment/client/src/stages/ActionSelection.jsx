@@ -422,6 +422,7 @@ function ActionSelection() {
   if (isDropout || (bufferDepleted && !hasSubmitted)) {
     if (!isDropout && bufferDepleted) {
       player.set("isDropout", true);
+      // Note: droppedOutAtRound/Stage are set server-side in onStageEnded
     }
 
     return (
