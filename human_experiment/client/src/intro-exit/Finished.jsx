@@ -15,8 +15,8 @@ export function Finished() {
   const isLobbyTimeout = !game || (!isGameComplete && !isDropout);
 
   useEffect(() => {
-    // Only auto-redirect for successful completions
-    if (!COMPLETION_CODE || isLobbyTimeout) return;
+    // Only auto-redirect for successful completions (not dropouts or lobby timeouts)
+    if (!COMPLETION_CODE || isLobbyTimeout || isDropout) return;
 
     const timer = setInterval(() => {
       setCountdown((prev) => {
