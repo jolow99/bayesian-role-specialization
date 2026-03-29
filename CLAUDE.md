@@ -1,5 +1,8 @@
 # Bayesian Role Specialization Experiment
 
+## Git Conventions
+- Do NOT add Co-Authored-By trailers to commits.
+
 ## Overview
 A multiplayer experiment (Empirica framework) studying how players learn and specialize into roles through Bayesian inference. Teams of 3 fight a boss enemy across rounds, choosing roles each stage.
 
