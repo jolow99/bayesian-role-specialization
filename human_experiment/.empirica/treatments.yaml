@@ -118,3 +118,15 @@ treatments:
         gameSeed: 348989437
         humanRoundIds: [1, 2, 3, 4, 5, 6]
         botRoundIds: [[4, 10], [5, 14], [9, 15]]
+
+    - name: PilotTreatment-notutorial
+      desc: Pilot treatment same botRoundIds as treatment 5 with different human environments
+      factors:
+        maxRounds: 8
+        maxStagesPerRound: 5
+        playerCount: 3
+        totalPlayers: 3
+        showTutorial: false
+        gameSeed: 348989437
+        humanRoundIds: [1, 2, 3, 4, 5, 6]
+        botRoundIds: [[4, 10], [5, 14], [9, 15]]

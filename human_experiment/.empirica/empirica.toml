@@ -1,9 +1,9 @@
 name = "bayesian-role-specialization"
 
 [tajriba.auth]
-srtoken = "IebXqaTwlrmKALol"
+srtoken = "CHANGE_ME"
 
 [[tajriba.auth.users]]
 name = "Admin"
 username = "admin"
-password = "ro1eInference"
+password = "CHANGE_ME"

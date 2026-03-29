@@ -9,9 +9,12 @@ human_experiment/data/
 .DS_Store
 __pycache__/
 *.pyc
+.ipynb_checkpoints/
 cogsci_paper/slides/
 *.pdf
 *.html
 computational_model/bayesian-role-specialization-*/
 computational_model/analysis/figures
-analysis
+analysis/data/
+analysis/legacy/
+analysis/.venv/
