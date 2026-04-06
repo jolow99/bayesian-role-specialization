@@ -18,3 +18,4 @@ computational_model/analysis/figures
 analysis/data/
 analysis/legacy/
 analysis/.venv/
+notebooks/
