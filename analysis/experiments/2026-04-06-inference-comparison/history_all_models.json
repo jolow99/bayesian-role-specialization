@@ -1,0 +1,338 @@
+[
+  {
+    "model":"Bayesian-Belief",
+    "strategy":"Full",
+    "acc":0.7526315789,
+    "ll":-1.0036541915,
+    "n":1140
+  },
+  {
+    "model":"Bayesian-Belief",
+    "strategy":"Last1",
+    "acc":0.7192982456,
+    "ll":-0.9444677612,
+    "n":1140
+  },
+  {
+    "model":"Bayesian-Belief",
+    "strategy":"Last2",
+    "acc":0.7605263158,
+    "ll":-0.9701224517,
+    "n":1140
+  },
+  {
+    "model":"Bayesian-Belief",
+    "strategy":"Drift0.1",
+    "acc":0.7824561404,
+    "ll":-0.9707966397,
+    "n":1140
+  },
+  {
+    "model":"Bayesian-Belief",
+    "strategy":"Drift0.3",
+    "acc":0.749122807,
+    "ll":-0.954887008,
+    "n":1140
+  },
+  {
+    "model":"Bayesian-Belief",
+    "strategy":"Drift0.5",
+    "acc":0.7307017544,
+    "ll":-0.9648435695,
+    "n":1140
+  },
+  {
+    "model":"Bayesian Walk PS",
+    "strategy":"Full",
+    "acc":0.7526315789,
+    "ll":-1.1262184875,
+    "n":1140
+  },
+  {
+    "model":"Bayesian Walk PS",
+    "strategy":"Last1",
+    "acc":0.7192982456,
+    "ll":-1.0058636114,
+    "n":1140
+  },
+  {
+    "model":"Bayesian Walk PS",
+    "strategy":"Last2",
+    "acc":0.7657894737,
+    "ll":-1.0711128468,
+    "n":1140
+  },
+  {
+    "model":"Bayesian Walk PS",
+    "strategy":"Drift0.1",
+    "acc":0.7824561404,
+    "ll":-1.0447518126,
+    "n":1140
+  },
+  {
+    "model":"Bayesian Walk PS",
+    "strategy":"Drift0.3",
+    "acc":0.749122807,
+    "ll":-0.9986778204,
+    "n":1140
+  },
+  {
+    "model":"Bayesian Walk PS",
+    "strategy":"Drift0.5",
+    "acc":0.7324561404,
+    "ll":-0.9977367378,
+    "n":1140
+  },
+  {
+    "model":"Bayesian Thresh PS",
+    "strategy":"Full",
+    "acc":0.8842105263,
+    "ll":-13.6645606538,
+    "n":1140
+  },
+  {
+    "model":"Bayesian Thresh PS",
+    "strategy":"Last1",
+    "acc":0.9377192982,
+    "ll":-14.3695023873,
+    "n":1140
+  },
+  {
+    "model":"Bayesian Thresh PS",
+    "strategy":"Last2",
+    "acc":0.8789473684,
+    "ll":-13.4416210418,
+    "n":1140
+  },
+  {
+    "model":"Bayesian Thresh PS",
+    "strategy":"Drift0.1",
+    "acc":0.95,
+    "ll":-1.437035326,
+    "n":1140
+  },
+  {
+    "model":"Bayesian Thresh PS",
+    "strategy":"Drift0.3",
+    "acc":0.95,
+    "ll":-1.1266489189,
+    "n":1140
+  },
+  {
+    "model":"Bayesian Thresh PS",
+    "strategy":"Drift0.5",
+    "acc":0.9473684211,
+    "ll":-1.0330447069,
+    "n":1140
+  },
+  {
+    "model":"Mixture PS",
+    "strategy":"Full",
+    "acc":0.8403508772,
+    "ll":-4.8830465535,
+    "n":1140
+  },
+  {
+    "model":"Mixture PS",
+    "strategy":"Last1",
+    "acc":0.9377192982,
+    "ll":-3.1650259724,
+    "n":1140
+  },
+  {
+    "model":"Mixture PS",
+    "strategy":"Last2",
+    "acc":0.8666666667,
+    "ll":-4.3718479195,
+    "n":1140
+  },
+  {
+    "model":"Mixture PS",
+    "strategy":"Drift0.1",
+    "acc":0.95,
+    "ll":-1.3767524409,
+    "n":1140
+  },
+  {
+    "model":"Mixture PS",
+    "strategy":"Drift0.3",
+    "acc":0.95,
+    "ll":-1.0829316471,
+    "n":1140
+  },
+  {
+    "model":"Mixture PS",
+    "strategy":"Drift0.5",
+    "acc":0.9473684211,
+    "ll":-0.9947465266,
+    "n":1140
+  },
+  {
+    "model":"Bayesian Walk",
+    "strategy":"Full",
+    "acc":0.0131578947,
+    "ll":-2.7821149994,
+    "n":1140
+  },
+  {
+    "model":"Bayesian Walk",
+    "strategy":"Last1",
+    "acc":0.0245614035,
+    "ll":-2.0626039076,
+    "n":1140
+  },
+  {
+    "model":"Bayesian Walk",
+    "strategy":"Last2",
+    "acc":0.0070175439,
+    "ll":-2.5741549774,
+    "n":1140
+  },
+  {
+    "model":"Bayesian Walk",
+    "strategy":"Drift0.1",
+    "acc":0.0052631579,
+    "ll":-2.0583624711,
+    "n":1140
+  },
+  {
+    "model":"Bayesian Walk",
+    "strategy":"Drift0.3",
+    "acc":0.001754386,
+    "ll":-1.6104045411,
+    "n":1140
+  },
+  {
+    "model":"Bayesian Walk",
+    "strategy":"Drift0.5",
+    "acc":0.0070175439,
+    "ll":-1.3666745537,
+    "n":1140
+  },
+  {
+    "model":"Bayesian Threshold",
+    "strategy":"Full",
+    "acc":0.0131578947,
+    "ll":-3.8489811679,
+    "n":1140
+  },
+  {
+    "model":"Bayesian Threshold",
+    "strategy":"Last1",
+    "acc":0.0245614035,
+    "ll":-2.7122503829,
+    "n":1140
+  },
+  {
+    "model":"Bayesian Threshold",
+    "strategy":"Last2",
+    "acc":0.0070175439,
+    "ll":-3.5295351706,
+    "n":1140
+  },
+  {
+    "model":"Bayesian Threshold",
+    "strategy":"Drift0.1",
+    "acc":0.0035087719,
+    "ll":-2.337353758,
+    "n":1140
+  },
+  {
+    "model":"Bayesian Threshold",
+    "strategy":"Drift0.3",
+    "acc":0.001754386,
+    "ll":-1.7246148917,
+    "n":1140
+  },
+  {
+    "model":"Bayesian Threshold",
+    "strategy":"Drift0.5",
+    "acc":0.0070175439,
+    "ll":-1.4197472244,
+    "n":1140
+  },
+  {
+    "model":"Bayesian-Value",
+    "strategy":"Full",
+    "acc":0.0131578947,
+    "ll":-1.8747306455,
+    "n":1140
+  },
+  {
+    "model":"Bayesian-Value",
+    "strategy":"Last1",
+    "acc":0.0245614035,
+    "ll":-1.527162234,
+    "n":1140
+  },
+  {
+    "model":"Bayesian-Value",
+    "strategy":"Last2",
+    "acc":0.0087719298,
+    "ll":-1.771050201,
+    "n":1140
+  },
+  {
+    "model":"Bayesian-Value",
+    "strategy":"Drift0.1",
+    "acc":0.0087719298,
+    "ll":-1.6354543711,
+    "n":1140
+  },
+  {
+    "model":"Bayesian-Value",
+    "strategy":"Drift0.3",
+    "acc":0.0078947368,
+    "ll":-1.3968329979,
+    "n":1140
+  },
+  {
+    "model":"Bayesian-Value",
+    "strategy":"Drift0.5",
+    "acc":0.05,
+    "ll":-1.2497472861,
+    "n":1140
+  },
+  {
+    "model":"Random Walk",
+    "strategy":"Full",
+    "acc":0.7526315789,
+    "ll":-1.1262184875,
+    "n":1140
+  },
+  {
+    "model":"Random Walk",
+    "strategy":"Last1",
+    "acc":0.7192982456,
+    "ll":-1.0058636114,
+    "n":1140
+  },
+  {
+    "model":"Random Walk",
+    "strategy":"Last2",
+    "acc":0.7657894737,
+    "ll":-1.0711128468,
+    "n":1140
+  },
+  {
+    "model":"Random Walk",
+    "strategy":"Drift0.1",
+    "acc":0.7824561404,
+    "ll":-1.0447518126,
+    "n":1140
+  },
+  {
+    "model":"Random Walk",
+    "strategy":"Drift0.3",
+    "acc":0.749122807,
+    "ll":-0.9986778204,
+    "n":1140
+  },
+  {
+    "model":"Random Walk",
+    "strategy":"Drift0.5",
+    "acc":0.7324561404,
+    "ll":-0.9977367378,
+    "n":1140
+  }
+]
