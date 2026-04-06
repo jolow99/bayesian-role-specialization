@@ -1,0 +1,17 @@
+{
+  "metric_optimized": "combo_r",
+  "aggregate_tuned": {
+    "tau_prior": 2.5329620514938,
+    "epsilon": 0.5398790489920662,
+    "combo_r": 0.484759578734252,
+    "marg_r": 0.40438947417668447,
+    "mean_ll": -2.6200474279292982
+  },
+  "switch_stage_tuned": {
+    "tau_prior": 20.0,
+    "epsilon": 0.4866017196491444,
+    "combo_r": 0.4308031448634344,
+    "marg_r": 0.5624062698272309,
+    "mean_ll": -3.0720064552721227
+  }
+}
