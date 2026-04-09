@@ -1,0 +1,13 @@
+{
+  "metric_optimized": "combo_r",
+  "stage1_params": null,
+  "aggregate_tuned": {
+    "eps": 0.2569667234309674,
+    "combo_r": 0.4510453172272016,
+    "marg_r": 0.5274508153914093,
+    "mean_ll": -2.876308481702137,
+    "switch_combo_r": 0.12934204453271606,
+    "switch_marg_r": 0.35881447385566323,
+    "switch_mean_ll": -3.695712875993556
+  }
+}

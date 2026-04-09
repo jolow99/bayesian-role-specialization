@@ -1,0 +1,1212 @@
+[
+  {
+    "accuracy": 0.9264919941775837,
+    "inference_ll": -1.02673979809509,
+    "n": 1374,
+    "tau_prior": 6.384210526315789,
+    "epsilon": 0.5005,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.9264919941775837,
+    "inference_ll": -1.02175145764845,
+    "n": 1374,
+    "tau_prior": 6.384210526315789,
+    "epsilon": 0.51049,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.9264919941775837,
+    "inference_ll": -1.0175869833393554,
+    "n": 1374,
+    "tau_prior": 6.384210526315789,
+    "epsilon": 0.5204799999999999,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.9264919941775837,
+    "inference_ll": -1.0142679156755905,
+    "n": 1374,
+    "tau_prior": 6.384210526315789,
+    "epsilon": 0.53047,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.9264919941775837,
+    "inference_ll": -1.0118177198355998,
+    "n": 1374,
+    "tau_prior": 6.384210526315789,
+    "epsilon": 0.5404599999999999,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.9264919941775837,
+    "inference_ll": -1.010261838530351,
+    "n": 1374,
+    "tau_prior": 6.384210526315789,
+    "epsilon": 0.55045,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.8500727802037845,
+    "inference_ll": -1.0096277593692895,
+    "n": 1374,
+    "tau_prior": 6.384210526315789,
+    "epsilon": 0.56044,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.8500727802037845,
+    "inference_ll": -1.0099450982297304,
+    "n": 1374,
+    "tau_prior": 6.384210526315789,
+    "epsilon": 0.57043,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.8500727802037845,
+    "inference_ll": -1.011245700445764,
+    "n": 1374,
+    "tau_prior": 6.384210526315789,
+    "epsilon": 0.58042,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.8500727802037845,
+    "inference_ll": -1.013563761987758,
+    "n": 1374,
+    "tau_prior": 6.384210526315789,
+    "epsilon": 0.59041,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.8500727802037845,
+    "inference_ll": -1.0169359732077468,
+    "n": 1374,
+    "tau_prior": 6.384210526315789,
+    "epsilon": 0.6004,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.9264919941775837,
+    "inference_ll": -1.0265116773037675,
+    "n": 1374,
+    "tau_prior": 6.593684210526315,
+    "epsilon": 0.5005,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.9264919941775837,
+    "inference_ll": -1.0215519306386622,
+    "n": 1374,
+    "tau_prior": 6.593684210526315,
+    "epsilon": 0.51049,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.9264919941775837,
+    "inference_ll": -1.0174175148387503,
+    "n": 1374,
+    "tau_prior": 6.593684210526315,
+    "epsilon": 0.5204799999999999,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.9264919941775837,
+    "inference_ll": -1.0141300222192011,
+    "n": 1374,
+    "tau_prior": 6.593684210526315,
+    "epsilon": 0.53047,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.9264919941775837,
+    "inference_ll": -1.0117129668646279,
+    "n": 1374,
+    "tau_prior": 6.593684210526315,
+    "epsilon": 0.5404599999999999,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.9264919941775837,
+    "inference_ll": -1.0101918367649003,
+    "n": 1374,
+    "tau_prior": 6.593684210526315,
+    "epsilon": 0.55045,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.8500727802037845,
+    "inference_ll": -1.009594160428097,
+    "n": 1374,
+    "tau_prior": 6.593684210526315,
+    "epsilon": 0.56044,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.8500727802037845,
+    "inference_ll": -1.009949589480455,
+    "n": 1374,
+    "tau_prior": 6.593684210526315,
+    "epsilon": 0.57043,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.8500727802037845,
+    "inference_ll": -1.011289999081219,
+    "n": 1374,
+    "tau_prior": 6.593684210526315,
+    "epsilon": 0.58042,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.8500727802037845,
+    "inference_ll": -1.0136496083363313,
+    "n": 1374,
+    "tau_prior": 6.593684210526315,
+    "epsilon": 0.59041,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.8500727802037845,
+    "inference_ll": -1.0170651232997368,
+    "n": 1374,
+    "tau_prior": 6.593684210526315,
+    "epsilon": 0.6004,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.9264919941775837,
+    "inference_ll": -1.026322453831252,
+    "n": 1374,
+    "tau_prior": 6.803157894736842,
+    "epsilon": 0.5005,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.9264919941775837,
+    "inference_ll": -1.0213900092628019,
+    "n": 1374,
+    "tau_prior": 6.803157894736842,
+    "epsilon": 0.51049,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.9264919941775837,
+    "inference_ll": -1.0172842552392596,
+    "n": 1374,
+    "tau_prior": 6.803157894736842,
+    "epsilon": 0.5204799999999999,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.9264919941775837,
+    "inference_ll": -1.0140268302460527,
+    "n": 1374,
+    "tau_prior": 6.803157894736842,
+    "epsilon": 0.53047,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.9264919941775837,
+    "inference_ll": -1.0116412917121482,
+    "n": 1374,
+    "tau_prior": 6.803157894736842,
+    "epsilon": 0.5404599999999999,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.9264919941775837,
+    "inference_ll": -1.010153167478818,
+    "n": 1374,
+    "tau_prior": 6.803157894736842,
+    "epsilon": 0.55045,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.9264919941775837,
+    "inference_ll": -1.0095900217230307,
+    "n": 1374,
+    "tau_prior": 6.803157894736842,
+    "epsilon": 0.56044,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.8500727802037845,
+    "inference_ll": -1.0099815368552514,
+    "n": 1374,
+    "tau_prior": 6.803157894736842,
+    "epsilon": 0.57043,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.8500727802037845,
+    "inference_ll": -1.0113596132306597,
+    "n": 1374,
+    "tau_prior": 6.803157894736842,
+    "epsilon": 0.58042,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.8500727802037845,
+    "inference_ll": -1.0137584888697098,
+    "n": 1374,
+    "tau_prior": 6.803157894736842,
+    "epsilon": 0.59041,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.8500727802037845,
+    "inference_ll": -1.0172148817893096,
+    "n": 1374,
+    "tau_prior": 6.803157894736842,
+    "epsilon": 0.6004,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.9264919941775837,
+    "inference_ll": -1.026166497239879,
+    "n": 1374,
+    "tau_prior": 7.012631578947367,
+    "epsilon": 0.5005,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.9264919941775837,
+    "inference_ll": -1.0212601361187799,
+    "n": 1374,
+    "tau_prior": 7.012631578947367,
+    "epsilon": 0.51049,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.9264919941775837,
+    "inference_ll": -1.0171817306513395,
+    "n": 1374,
+    "tau_prior": 7.012631578947367,
+    "epsilon": 0.5204799999999999,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.9264919941775837,
+    "inference_ll": -1.013952960565802,
+    "n": 1374,
+    "tau_prior": 7.012631578947367,
+    "epsilon": 0.53047,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.9264919941775837,
+    "inference_ll": -1.0115974217878227,
+    "n": 1374,
+    "tau_prior": 7.012631578947367,
+    "epsilon": 0.5404599999999999,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.9264919941775837,
+    "inference_ll": -1.0101406772951882,
+    "n": 1374,
+    "tau_prior": 7.012631578947367,
+    "epsilon": 0.55045,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.9264919941775837,
+    "inference_ll": -1.0096103224084618,
+    "n": 1374,
+    "tau_prior": 7.012631578947367,
+    "epsilon": 0.56044,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.8500727802037845,
+    "inference_ll": -1.010036066046709,
+    "n": 1374,
+    "tau_prior": 7.012631578947367,
+    "epsilon": 0.57043,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.8500727802037845,
+    "inference_ll": -1.0114498297977184,
+    "n": 1374,
+    "tau_prior": 7.012631578947367,
+    "epsilon": 0.58042,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.8500727802037845,
+    "inference_ll": -1.0138858670098314,
+    "n": 1374,
+    "tau_prior": 7.012631578947367,
+    "epsilon": 0.59041,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.8500727802037845,
+    "inference_ll": -1.0173809045182445,
+    "n": 1374,
+    "tau_prior": 7.012631578947367,
+    "epsilon": 0.6004,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.9264919941775837,
+    "inference_ll": -1.026039069219417,
+    "n": 1374,
+    "tau_prior": 7.222105263157894,
+    "epsilon": 0.5005,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.9264919941775837,
+    "inference_ll": -1.0211576423927782,
+    "n": 1374,
+    "tau_prior": 7.222105263157894,
+    "epsilon": 0.51049,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.9264919941775837,
+    "inference_ll": -1.017105350923031,
+    "n": 1374,
+    "tau_prior": 7.222105263157894,
+    "epsilon": 0.5204799999999999,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.9264919941775837,
+    "inference_ll": -1.0139039114598707,
+    "n": 1374,
+    "tau_prior": 7.222105263157894,
+    "epsilon": 0.53047,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.9264919941775837,
+    "inference_ll": -1.0115769541865893,
+    "n": 1374,
+    "tau_prior": 7.222105263157894,
+    "epsilon": 0.5404599999999999,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.9264919941775837,
+    "inference_ll": -1.0101500731084667,
+    "n": 1374,
+    "tau_prior": 7.222105263157894,
+    "epsilon": 0.55045,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.9264919941775837,
+    "inference_ll": -1.0096508907616684,
+    "n": 1374,
+    "tau_prior": 7.222105263157894,
+    "epsilon": 0.56044,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.8500727802037845,
+    "inference_ll": -1.0101091388806354,
+    "n": 1374,
+    "tau_prior": 7.222105263157894,
+    "epsilon": 0.57043,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.8500727802037845,
+    "inference_ll": -1.0115567568831565,
+    "n": 1374,
+    "tau_prior": 7.222105263157894,
+    "epsilon": 0.58042,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.8500727802037845,
+    "inference_ll": -1.0140280103906665,
+    "n": 1374,
+    "tau_prior": 7.222105263157894,
+    "epsilon": 0.59041,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.8500727802037845,
+    "inference_ll": -1.0175596324073928,
+    "n": 1374,
+    "tau_prior": 7.222105263157894,
+    "epsilon": 0.6004,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.9264919941775837,
+    "inference_ll": -1.0259361656248986,
+    "n": 1374,
+    "tau_prior": 7.43157894736842,
+    "epsilon": 0.5005,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.9264919941775837,
+    "inference_ll": -1.0210785897155572,
+    "n": 1374,
+    "tau_prior": 7.43157894736842,
+    "epsilon": 0.51049,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.9264919941775837,
+    "inference_ll": -1.0170512515097936,
+    "n": 1374,
+    "tau_prior": 7.43157894736842,
+    "epsilon": 0.5204799999999999,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.9264919941775837,
+    "inference_ll": -1.0138759007770235,
+    "n": 1374,
+    "tau_prior": 7.43157894736842,
+    "epsilon": 0.53047,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.9264919941775837,
+    "inference_ll": -1.011576198239847,
+    "n": 1374,
+    "tau_prior": 7.43157894736842,
+    "epsilon": 0.5404599999999999,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.9264919941775837,
+    "inference_ll": -1.010177765339158,
+    "n": 1374,
+    "tau_prior": 7.43157894736842,
+    "epsilon": 0.55045,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.9264919941775837,
+    "inference_ll": -1.0097082484071633,
+    "n": 1374,
+    "tau_prior": 7.43157894736842,
+    "epsilon": 0.56044,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.9264919941775837,
+    "inference_ll": -1.0101973987946267,
+    "n": 1374,
+    "tau_prior": 7.43157894736842,
+    "epsilon": 0.57043,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.8500727802037845,
+    "inference_ll": -1.011677170820699,
+    "n": 1374,
+    "tau_prior": 7.43157894736842,
+    "epsilon": 0.58042,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.8500727802037845,
+    "inference_ll": -1.0141818397726212,
+    "n": 1374,
+    "tau_prior": 7.43157894736842,
+    "epsilon": 0.59041,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.8500727802037845,
+    "inference_ll": -1.0177481425888908,
+    "n": 1374,
+    "tau_prior": 7.43157894736842,
+    "epsilon": 0.6004,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.9264919941775837,
+    "inference_ll": -1.0258543895581815,
+    "n": 1374,
+    "tau_prior": 7.641052631578947,
+    "epsilon": 0.5005,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.9264919941775837,
+    "inference_ll": -1.0210196432000895,
+    "n": 1374,
+    "tau_prior": 7.641052631578947,
+    "epsilon": 0.51049,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.9264919941775837,
+    "inference_ll": -1.0170161666299535,
+    "n": 1374,
+    "tau_prior": 7.641052631578947,
+    "epsilon": 0.5204799999999999,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.9264919941775837,
+    "inference_ll": -1.0138657393823836,
+    "n": 1374,
+    "tau_prior": 7.641052631578947,
+    "epsilon": 0.53047,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.9264919941775837,
+    "inference_ll": -1.0115920494481576,
+    "n": 1374,
+    "tau_prior": 7.641052631578947,
+    "epsilon": 0.5404599999999999,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.9264919941775837,
+    "inference_ll": -1.010220742554967,
+    "n": 1374,
+    "tau_prior": 7.641052631578947,
+    "epsilon": 0.55045,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.9264919941775837,
+    "inference_ll": -1.0097794858458997,
+    "n": 1374,
+    "tau_prior": 7.641052631578947,
+    "epsilon": 0.56044,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.9264919941775837,
+    "inference_ll": -1.010298047509846,
+    "n": 1374,
+    "tau_prior": 7.641052631578947,
+    "epsilon": 0.57043,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.8500727802037845,
+    "inference_ll": -1.0118083942407892,
+    "n": 1374,
+    "tau_prior": 7.641052631578947,
+    "epsilon": 0.58042,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.8500727802037845,
+    "inference_ll": -1.0143448087623719,
+    "n": 1374,
+    "tau_prior": 7.641052631578947,
+    "epsilon": 0.59041,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.8500727802037845,
+    "inference_ll": -1.0179440300605889,
+    "n": 1374,
+    "tau_prior": 7.641052631578947,
+    "epsilon": 0.6004,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.9264919941775837,
+    "inference_ll": -1.0257908487946916,
+    "n": 1374,
+    "tau_prior": 7.850526315789473,
+    "epsilon": 0.5005,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.9264919941775837,
+    "inference_ll": -1.0209779689171867,
+    "n": 1374,
+    "tau_prior": 7.850526315789473,
+    "epsilon": 0.51049,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.9264919941775837,
+    "inference_ll": -1.0169973269240338,
+    "n": 1374,
+    "tau_prior": 7.850526315789473,
+    "epsilon": 0.5204799999999999,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.9264919941775837,
+    "inference_ll": -1.0138707291467632,
+    "n": 1374,
+    "tau_prior": 7.850526315789473,
+    "epsilon": 0.53047,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.9264919941775837,
+    "inference_ll": -1.0116218879586347,
+    "n": 1374,
+    "tau_prior": 7.850526315789473,
+    "epsilon": 0.5404599999999999,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.9264919941775837,
+    "inference_ll": -1.0102764706062677,
+    "n": 1374,
+    "tau_prior": 7.850526315789473,
+    "epsilon": 0.55045,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.9264919941775837,
+    "inference_ll": -1.009862162430937,
+    "n": 1374,
+    "tau_prior": 7.850526315789473,
+    "epsilon": 0.56044,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.9264919941775837,
+    "inference_ll": -1.0104087460411377,
+    "n": 1374,
+    "tau_prior": 7.850526315789473,
+    "epsilon": 0.57043,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.8500727802037845,
+    "inference_ll": -1.0119481983214749,
+    "n": 1374,
+    "tau_prior": 7.850526315789473,
+    "epsilon": 0.58042,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.8500727802037845,
+    "inference_ll": -1.0145148075227564,
+    "n": 1374,
+    "tau_prior": 7.850526315789473,
+    "epsilon": 0.59041,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.8500727802037845,
+    "inference_ll": -1.018145313084767,
+    "n": 1374,
+    "tau_prior": 7.850526315789473,
+    "epsilon": 0.6004,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.9264919941775837,
+    "inference_ll": -1.0257430724273342,
+    "n": 1374,
+    "tau_prior": 8.059999999999999,
+    "epsilon": 0.5005,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.9264919941775837,
+    "inference_ll": -1.0209511506493385,
+    "n": 1374,
+    "tau_prior": 8.059999999999999,
+    "epsilon": 0.51049,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.9264919941775837,
+    "inference_ll": -1.0169923764314492,
+    "n": 1374,
+    "tau_prior": 8.059999999999999,
+    "epsilon": 0.5204799999999999,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.9264919941775837,
+    "inference_ll": -1.0138885802685942,
+    "n": 1374,
+    "tau_prior": 8.059999999999999,
+    "epsilon": 0.53047,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.9264919941775837,
+    "inference_ll": -1.0116634963641487,
+    "n": 1374,
+    "tau_prior": 8.059999999999999,
+    "epsilon": 0.5404599999999999,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.9264919941775837,
+    "inference_ll": -1.010342811044447,
+    "n": 1374,
+    "tau_prior": 8.059999999999999,
+    "epsilon": 0.55045,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.9264919941775837,
+    "inference_ll": -1.0099542255566911,
+    "n": 1374,
+    "tau_prior": 8.059999999999999,
+    "epsilon": 0.56044,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.9264919941775837,
+    "inference_ll": -1.0105275348188776,
+    "n": 1374,
+    "tau_prior": 8.059999999999999,
+    "epsilon": 0.57043,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.8500727802037845,
+    "inference_ll": -1.012094724014389,
+    "n": 1374,
+    "tau_prior": 8.059999999999999,
+    "epsilon": 0.58042,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.8500727802037845,
+    "inference_ll": -1.0146900852840837,
+    "n": 1374,
+    "tau_prior": 8.059999999999999,
+    "epsilon": 0.59041,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.8500727802037845,
+    "inference_ll": -1.0183503571753725,
+    "n": 1374,
+    "tau_prior": 8.059999999999999,
+    "epsilon": 0.6004,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.9264919941775837,
+    "inference_ll": -1.0257089427736186,
+    "n": 1374,
+    "tau_prior": 8.269473684210526,
+    "epsilon": 0.5005,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.9264919941775837,
+    "inference_ll": -1.02093712194632,
+    "n": 1374,
+    "tau_prior": 8.269473684210526,
+    "epsilon": 0.51049,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.9264919941775837,
+    "inference_ll": -1.0169993048896253,
+    "n": 1374,
+    "tau_prior": 8.269473684210526,
+    "epsilon": 0.5204799999999999,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.9264919941775837,
+    "inference_ll": -1.013917343919397,
+    "n": 1374,
+    "tau_prior": 8.269473684210526,
+    "epsilon": 0.53047,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.9264919941775837,
+    "inference_ll": -1.011714992805972,
+    "n": 1374,
+    "tau_prior": 8.269473684210526,
+    "epsilon": 0.5404599999999999,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.9264919941775837,
+    "inference_ll": -1.0104179548006424,
+    "n": 1374,
+    "tau_prior": 8.269473684210526,
+    "epsilon": 0.55045,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.9264919941775837,
+    "inference_ll": -1.0100539450408395,
+    "n": 1374,
+    "tau_prior": 8.269473684210526,
+    "epsilon": 0.56044,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.9264919941775837,
+    "inference_ll": -1.0106527689092526,
+    "n": 1374,
+    "tau_prior": 8.269473684210526,
+    "epsilon": 0.57043,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.9264919941775837,
+    "inference_ll": -1.0122464182466802,
+    "n": 1374,
+    "tau_prior": 8.269473684210526,
+    "epsilon": 0.58042,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.8500727802037845,
+    "inference_ll": -1.0148691876788842,
+    "n": 1374,
+    "tau_prior": 8.269473684210526,
+    "epsilon": 0.59041,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.8500727802037845,
+    "inference_ll": -1.0185578137244005,
+    "n": 1374,
+    "tau_prior": 8.269473684210526,
+    "epsilon": 0.6004,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.9264919941775837,
+    "inference_ll": -1.0256866394765616,
+    "n": 1374,
+    "tau_prior": 8.478947368421052,
+    "epsilon": 0.5005,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.9264919941775837,
+    "inference_ll": -1.0209341103972684,
+    "n": 1374,
+    "tau_prior": 8.478947368421052,
+    "epsilon": 0.51049,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.9264919941775837,
+    "inference_ll": -1.0170163922575617,
+    "n": 1374,
+    "tau_prior": 8.478947368421052,
+    "epsilon": 0.5204799999999999,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.9264919941775837,
+    "inference_ll": -1.0139553571056406,
+    "n": 1374,
+    "tau_prior": 8.478947368421052,
+    "epsilon": 0.53047,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.9264919941775837,
+    "inference_ll": -1.0117747762673548,
+    "n": 1374,
+    "tau_prior": 8.478947368421052,
+    "epsilon": 0.5404599999999999,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.9264919941775837,
+    "inference_ll": -1.0105003680111637,
+    "n": 1374,
+    "tau_prior": 8.478947368421052,
+    "epsilon": 0.55045,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.9264919941775837,
+    "inference_ll": -1.0101598595884498,
+    "n": 1374,
+    "tau_prior": 8.478947368421052,
+    "epsilon": 0.56044,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.9264919941775837,
+    "inference_ll": -1.0107830652306782,
+    "n": 1374,
+    "tau_prior": 8.478947368421052,
+    "epsilon": 0.57043,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.9264919941775837,
+    "inference_ll": -1.0124019820099224,
+    "n": 1374,
+    "tau_prior": 8.478947368421052,
+    "epsilon": 0.58042,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.8500727802037845,
+    "inference_ll": -1.015050905829993,
+    "n": 1374,
+    "tau_prior": 8.478947368421052,
+    "epsilon": 0.59041,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  {
+    "accuracy": 0.8500727802037845,
+    "inference_ll": -1.0187665702220776,
+    "n": 1374,
+    "tau_prior": 8.478947368421052,
+    "epsilon": 0.6004,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  }
+]
