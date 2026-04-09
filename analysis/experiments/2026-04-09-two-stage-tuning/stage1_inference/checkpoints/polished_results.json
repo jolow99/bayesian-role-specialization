@@ -1,0 +1,12 @@
+[
+  {
+    "accuracy": 0.9264919941775837,
+    "inference_ll": -1.0095856929487868,
+    "n": 1374,
+    "tau_prior": 6.8031474490610035,
+    "epsilon": 0.5613904443735597,
+    "strategy_name": "window_1",
+    "window": 1,
+    "drift_delta": 0.0
+  }
+]

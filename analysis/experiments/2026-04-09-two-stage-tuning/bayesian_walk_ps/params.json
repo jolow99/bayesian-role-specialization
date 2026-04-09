@@ -1,0 +1,18 @@
+{
+  "metric_optimized": "combo_r",
+  "stage1_params": {
+    "tau_prior": 6.8031474490610035,
+    "epsilon": 0.5613904443735597,
+    "window": 1,
+    "drift_delta": 0.0
+  },
+  "aggregate_tuned": {
+    "epsilon_switch": 0.6208278711008427,
+    "combo_r": 0.4980006510313722,
+    "marg_r": 0.5425496984580447,
+    "mean_ll": -2.73000248103536,
+    "switch_combo_r": 0.19625317777706028,
+    "switch_marg_r": 0.39250266558739333,
+    "switch_mean_ll": -3.3697172964165762
+  }
+}
