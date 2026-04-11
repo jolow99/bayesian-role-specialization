@@ -1,0 +1,542 @@
+[
+  {
+    "strategy": "temper_0.450",
+    "kind": "temper",
+    "param": 0.44999999999999996,
+    "tau_prior": 3.4,
+    "epsilon": 0.42000000000000004,
+    "accuracy": 0.9352256186317321,
+    "inference_ll": -1.0058433408226293,
+    "n": 1374
+  },
+  {
+    "strategy": "temper_0.400",
+    "kind": "temper",
+    "param": 0.39999999999999997,
+    "tau_prior": 3.4,
+    "epsilon": 0.42000000000000004,
+    "accuracy": 0.9366812227074236,
+    "inference_ll": -1.006414634113477,
+    "n": 1374
+  },
+  {
+    "strategy": "temper_0.500",
+    "kind": "temper",
+    "param": 0.49999999999999994,
+    "tau_prior": 3.4,
+    "epsilon": 0.42000000000000004,
+    "accuracy": 0.9323144104803494,
+    "inference_ll": -1.0092036002223888,
+    "n": 1374
+  },
+  {
+    "strategy": "temper_0.300",
+    "kind": "temper",
+    "param": 0.3,
+    "tau_prior": 3.4,
+    "epsilon": 0.26,
+    "accuracy": 0.9410480349344978,
+    "inference_ll": -1.0092657277144979,
+    "n": 1374
+  },
+  {
+    "strategy": "temper_0.150",
+    "kind": "temper",
+    "param": 0.15,
+    "tau_prior": 0.5,
+    "epsilon": 0.1,
+    "accuracy": 0.8668122270742358,
+    "inference_ll": -1.0098145462916295,
+    "n": 1374
+  },
+  {
+    "strategy": "temper_0.350",
+    "kind": "temper",
+    "param": 0.35,
+    "tau_prior": 3.4,
+    "epsilon": 0.42000000000000004,
+    "accuracy": 0.9366812227074236,
+    "inference_ll": -1.010374598536446,
+    "n": 1374
+  },
+  {
+    "strategy": "temper_0.250",
+    "kind": "temper",
+    "param": 0.25,
+    "tau_prior": 3.4,
+    "epsilon": 0.26,
+    "accuracy": 0.9410480349344978,
+    "inference_ll": -1.0103868670284168,
+    "n": 1374
+  },
+  {
+    "strategy": "drift_prior_0.650",
+    "kind": "drift_prior",
+    "param": 0.65,
+    "tau_prior": 6.3,
+    "epsilon": 0.26,
+    "accuracy": 0.9250363901018923,
+    "inference_ll": -1.010702125276338,
+    "n": 1374
+  },
+  {
+    "strategy": "drift_prior_0.550",
+    "kind": "drift_prior",
+    "param": 0.55,
+    "tau_prior": 6.3,
+    "epsilon": 0.42000000000000004,
+    "accuracy": 0.9068413391557496,
+    "inference_ll": -1.0107594169487002,
+    "n": 1374
+  },
+  {
+    "strategy": "drift_prior_0.700",
+    "kind": "drift_prior",
+    "param": 0.7000000000000001,
+    "tau_prior": 6.3,
+    "epsilon": 0.1,
+    "accuracy": 0.9330422125181951,
+    "inference_ll": -1.011057552558966,
+    "n": 1374
+  },
+  {
+    "strategy": "window_1",
+    "kind": "window",
+    "param": 1,
+    "tau_prior": 6.3,
+    "epsilon": 0.58,
+    "accuracy": 0.8500727802037845,
+    "inference_ll": -1.0111620724011516,
+    "n": 1374
+  },
+  {
+    "strategy": "drift_prior_0.600",
+    "kind": "drift_prior",
+    "param": 0.6000000000000001,
+    "tau_prior": 6.3,
+    "epsilon": 0.42000000000000004,
+    "accuracy": 0.8784570596797671,
+    "inference_ll": -1.0114242467379062,
+    "n": 1374
+  },
+  {
+    "strategy": "temper_0.700",
+    "kind": "temper",
+    "param": 0.7,
+    "tau_prior": 3.4,
+    "epsilon": 0.58,
+    "accuracy": 0.8078602620087336,
+    "inference_ll": -1.0118655521684405,
+    "n": 1374
+  },
+  {
+    "strategy": "drift_prior_0.500",
+    "kind": "drift_prior",
+    "param": 0.5,
+    "tau_prior": 6.3,
+    "epsilon": 0.42000000000000004,
+    "accuracy": 0.9053857350800583,
+    "inference_ll": -1.011940581330074,
+    "n": 1374
+  },
+  {
+    "strategy": "drift_uniform_0.500",
+    "kind": "drift_uniform",
+    "param": 0.5,
+    "tau_prior": 3.4,
+    "epsilon": 0.42000000000000004,
+    "accuracy": 0.9213973799126638,
+    "inference_ll": -1.0121488653288229,
+    "n": 1374
+  },
+  {
+    "strategy": "temper_0.750",
+    "kind": "temper",
+    "param": 0.75,
+    "tau_prior": 3.4,
+    "epsilon": 0.58,
+    "accuracy": 0.7962154294032023,
+    "inference_ll": -1.0122785421907432,
+    "n": 1374
+  },
+  {
+    "strategy": "drift_prior_0.750",
+    "kind": "drift_prior",
+    "param": 0.75,
+    "tau_prior": 6.3,
+    "epsilon": 0.1,
+    "accuracy": 0.9323144104803494,
+    "inference_ll": -1.0127355412992383,
+    "n": 1374
+  },
+  {
+    "strategy": "window_2",
+    "kind": "window",
+    "param": 2,
+    "tau_prior": 9.2,
+    "epsilon": 0.58,
+    "accuracy": 0.8442503639010189,
+    "inference_ll": -1.0127602033523195,
+    "n": 1374
+  },
+  {
+    "strategy": "temper_0.650",
+    "kind": "temper",
+    "param": 0.65,
+    "tau_prior": 3.4,
+    "epsilon": 0.58,
+    "accuracy": 0.8100436681222707,
+    "inference_ll": -1.0133719028327832,
+    "n": 1374
+  },
+  {
+    "strategy": "temper_0.200",
+    "kind": "temper",
+    "param": 0.2,
+    "tau_prior": 3.4,
+    "epsilon": 0.1,
+    "accuracy": 0.9410480349344978,
+    "inference_ll": -1.0145058719574318,
+    "n": 1374
+  },
+  {
+    "strategy": "temper_0.800",
+    "kind": "temper",
+    "param": 0.7999999999999999,
+    "tau_prior": 6.3,
+    "epsilon": 0.58,
+    "accuracy": 0.8500727802037845,
+    "inference_ll": -1.0147920581900802,
+    "n": 1374
+  },
+  {
+    "strategy": "drift_prior_0.450",
+    "kind": "drift_prior",
+    "param": 0.45,
+    "tau_prior": 9.2,
+    "epsilon": 0.42000000000000004,
+    "accuracy": 0.9119359534206696,
+    "inference_ll": -1.0150860017762344,
+    "n": 1374
+  },
+  {
+    "strategy": "drift_uniform_0.300",
+    "kind": "drift_uniform",
+    "param": 0.30000000000000004,
+    "tau_prior": 3.4,
+    "epsilon": 0.58,
+    "accuracy": 0.8020378457059679,
+    "inference_ll": -1.0153228261580312,
+    "n": 1374
+  },
+  {
+    "strategy": "drift_uniform_0.600",
+    "kind": "drift_uniform",
+    "param": 0.6000000000000001,
+    "tau_prior": 3.4,
+    "epsilon": 0.26,
+    "accuracy": 0.9337700145560408,
+    "inference_ll": -1.015629455879068,
+    "n": 1374
+  },
+  {
+    "strategy": "temper_0.600",
+    "kind": "temper",
+    "param": 0.6,
+    "tau_prior": 3.4,
+    "epsilon": 0.58,
+    "accuracy": 0.8158660844250364,
+    "inference_ll": -1.0164350630686882,
+    "n": 1374
+  },
+  {
+    "strategy": "drift_uniform_0.200",
+    "kind": "drift_uniform",
+    "param": 0.2,
+    "tau_prior": 3.4,
+    "epsilon": 0.58,
+    "accuracy": 0.7903930131004366,
+    "inference_ll": -1.0168936623366793,
+    "n": 1374
+  },
+  {
+    "strategy": "temper_0.850",
+    "kind": "temper",
+    "param": 0.85,
+    "tau_prior": 6.3,
+    "epsilon": 0.58,
+    "accuracy": 0.8471615720524017,
+    "inference_ll": -1.0169883427565352,
+    "n": 1374
+  },
+  {
+    "strategy": "temper_0.550",
+    "kind": "temper",
+    "param": 0.5499999999999999,
+    "tau_prior": 3.4,
+    "epsilon": 0.42000000000000004,
+    "accuracy": 0.9119359534206696,
+    "inference_ll": -1.0170687168617811,
+    "n": 1374
+  },
+  {
+    "strategy": "drift_prior_0.250",
+    "kind": "drift_prior",
+    "param": 0.25,
+    "tau_prior": 6.3,
+    "epsilon": 0.58,
+    "accuracy": 0.8377001455604076,
+    "inference_ll": -1.0170907857018587,
+    "n": 1374
+  },
+  {
+    "strategy": "drift_prior_0.300",
+    "kind": "drift_prior",
+    "param": 0.30000000000000004,
+    "tau_prior": 6.3,
+    "epsilon": 0.58,
+    "accuracy": 0.8362445414847162,
+    "inference_ll": -1.0172980060636931,
+    "n": 1374
+  },
+  {
+    "strategy": "drift_prior_0.800",
+    "kind": "drift_prior",
+    "param": 0.8,
+    "tau_prior": 6.3,
+    "epsilon": 0.1,
+    "accuracy": 0.9264919941775837,
+    "inference_ll": -1.0175507185282016,
+    "n": 1374
+  },
+  {
+    "strategy": "drift_uniform_0.400",
+    "kind": "drift_uniform",
+    "param": 0.4,
+    "tau_prior": 3.4,
+    "epsilon": 0.42000000000000004,
+    "accuracy": 0.9104803493449781,
+    "inference_ll": -1.0178239702487621,
+    "n": 1374
+  },
+  {
+    "strategy": "drift_prior_0.200",
+    "kind": "drift_prior",
+    "param": 0.2,
+    "tau_prior": 6.3,
+    "epsilon": 0.58,
+    "accuracy": 0.8406113537117904,
+    "inference_ll": -1.017948845675924,
+    "n": 1374
+  },
+  {
+    "strategy": "drift_prior_0.350",
+    "kind": "drift_prior",
+    "param": 0.35000000000000003,
+    "tau_prior": 6.3,
+    "epsilon": 0.58,
+    "accuracy": 0.8347889374090247,
+    "inference_ll": -1.018381433233356,
+    "n": 1374
+  },
+  {
+    "strategy": "temper_0.100",
+    "kind": "temper",
+    "param": 0.1,
+    "tau_prior": 0.5,
+    "epsilon": 0.1,
+    "accuracy": 0.8668122270742358,
+    "inference_ll": -1.020001666401768,
+    "n": 1374
+  },
+  {
+    "strategy": "drift_uniform_0.700",
+    "kind": "drift_uniform",
+    "param": 0.7000000000000001,
+    "tau_prior": 3.4,
+    "epsilon": 0.1,
+    "accuracy": 0.9410480349344978,
+    "inference_ll": -1.0200307803988564,
+    "n": 1374
+  },
+  {
+    "strategy": "drift_prior_0.150",
+    "kind": "drift_prior",
+    "param": 0.15000000000000002,
+    "tau_prior": 9.2,
+    "epsilon": 0.58,
+    "accuracy": 0.8471615720524017,
+    "inference_ll": -1.020087979882367,
+    "n": 1374
+  },
+  {
+    "strategy": "drift_prior_0.400",
+    "kind": "drift_prior",
+    "param": 0.4,
+    "tau_prior": 6.3,
+    "epsilon": 0.58,
+    "accuracy": 0.7903930131004366,
+    "inference_ll": -1.020191466303432,
+    "n": 1374
+  },
+  {
+    "strategy": "temper_0.900",
+    "kind": "temper",
+    "param": 0.9,
+    "tau_prior": 6.3,
+    "epsilon": 0.58,
+    "accuracy": 0.8413391557496361,
+    "inference_ll": -1.0214932533783248,
+    "n": 1374
+  },
+  {
+    "strategy": "drift_uniform_0.100",
+    "kind": "drift_uniform",
+    "param": 0.1,
+    "tau_prior": 6.3,
+    "epsilon": 0.58,
+    "accuracy": 0.8413391557496361,
+    "inference_ll": -1.022076564924695,
+    "n": 1374
+  },
+  {
+    "strategy": "drift_prior_0.100",
+    "kind": "drift_prior",
+    "param": 0.1,
+    "tau_prior": 9.2,
+    "epsilon": 0.58,
+    "accuracy": 0.8777292576419214,
+    "inference_ll": -1.0233534737126457,
+    "n": 1374
+  },
+  {
+    "strategy": "drift_prior_0.850",
+    "kind": "drift_prior",
+    "param": 0.8500000000000001,
+    "tau_prior": 6.3,
+    "epsilon": 0.1,
+    "accuracy": 0.8144104803493449,
+    "inference_ll": -1.0254940417831555,
+    "n": 1374
+  },
+  {
+    "strategy": "window_3",
+    "kind": "window",
+    "param": 3,
+    "tau_prior": 9.2,
+    "epsilon": 0.58,
+    "accuracy": 0.8347889374090247,
+    "inference_ll": -1.0267104002795053,
+    "n": 1374
+  },
+  {
+    "strategy": "temper_0.950",
+    "kind": "temper",
+    "param": 0.95,
+    "tau_prior": 9.2,
+    "epsilon": 0.58,
+    "accuracy": 0.8646288209606987,
+    "inference_ll": -1.0282425167809113,
+    "n": 1374
+  },
+  {
+    "strategy": "drift_prior_0.050",
+    "kind": "drift_prior",
+    "param": 0.05,
+    "tau_prior": 9.2,
+    "epsilon": 0.58,
+    "accuracy": 0.8748180494905385,
+    "inference_ll": -1.0287006740251488,
+    "n": 1374
+  },
+  {
+    "strategy": "drift_uniform_0.800",
+    "kind": "drift_uniform",
+    "param": 0.8,
+    "tau_prior": 3.4,
+    "epsilon": 0.1,
+    "accuracy": 0.9410480349344978,
+    "inference_ll": -1.0324727776667069,
+    "n": 1374
+  },
+  {
+    "strategy": "drift_prior_0.900",
+    "kind": "drift_prior",
+    "param": 0.9,
+    "tau_prior": 6.3,
+    "epsilon": 0.1,
+    "accuracy": 0.74235807860262,
+    "inference_ll": -1.0366246194628506,
+    "n": 1374
+  },
+  {
+    "strategy": "full",
+    "kind": "full",
+    "param": null,
+    "tau_prior": 9.2,
+    "epsilon": 0.58,
+    "accuracy": 0.8384279475982532,
+    "inference_ll": -1.0369371036019575,
+    "n": 1374
+  },
+  {
+    "strategy": "window_4",
+    "kind": "window",
+    "param": 4,
+    "tau_prior": 9.2,
+    "epsilon": 0.58,
+    "accuracy": 0.8289665211062591,
+    "inference_ll": -1.0369371036019575,
+    "n": 1374
+  },
+  {
+    "strategy": "temper_0.050",
+    "kind": "temper",
+    "param": 0.05,
+    "tau_prior": 0.5,
+    "epsilon": 0.1,
+    "accuracy": 0.8668122270742358,
+    "inference_ll": -1.0499151980255783,
+    "n": 1374
+  },
+  {
+    "strategy": "drift_prior_0.950",
+    "kind": "drift_prior",
+    "param": 0.9500000000000001,
+    "tau_prior": 6.3,
+    "epsilon": 0.1,
+    "accuracy": 0.74235807860262,
+    "inference_ll": -1.0510667333277137,
+    "n": 1374
+  },
+  {
+    "strategy": "drift_uniform_0.900",
+    "kind": "drift_uniform",
+    "param": 0.9,
+    "tau_prior": 3.4,
+    "epsilon": 0.1,
+    "accuracy": 0.9410480349344978,
+    "inference_ll": -1.0584044407474789,
+    "n": 1374
+  },
+  {
+    "strategy": "drift_prior_1.000",
+    "kind": "drift_prior",
+    "param": 1.0,
+    "tau_prior": 6.3,
+    "epsilon": 0.1,
+    "accuracy": 0.5305676855895196,
+    "inference_ll": -1.0689938679879336,
+    "n": 1374
+  },
+  {
+    "strategy": "drift_uniform_1.000",
+    "kind": "drift_uniform",
+    "param": 1.0,
+    "tau_prior": 0.5,
+    "epsilon": 0.1,
+    "accuracy": 0.3748180494905386,
+    "inference_ll": -1.0986122886681093,
+    "n": 1374
+  }
+]
