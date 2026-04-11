@@ -1,0 +1,40 @@
+{
+  "grid_best": {
+    "strategy": "temper_0.400",
+    "kind": "temper",
+    "param": 0.4,
+    "tau_prior": 2.0,
+    "epsilon": 0.4,
+    "accuracy": 0.9090247452692868,
+    "inference_ll": -1.0035904798636912,
+    "n": 1374
+  },
+  "polished": {
+    "strategy": "temper_0.4067_polished",
+    "kind": "temper",
+    "param": 0.4067367766434395,
+    "tau_prior": 1.8370254773659878,
+    "epsilon": 0.4163593226018529,
+    "accuracy": 0.9061135371179039,
+    "inference_ll": -1.003396392017698,
+    "n": 1374
+  },
+  "final": {
+    "strategy": "temper_0.4067_polished",
+    "kind": "temper",
+    "param": 0.4067367766434395,
+    "tau_prior": 1.8370254773659878,
+    "epsilon": 0.4163593226018529,
+    "accuracy": 0.9061135371179039,
+    "inference_ll": -1.003396392017698,
+    "n": 1374
+  },
+  "coarse_stage1_winner_reference": {
+    "strategy": "window_1",
+    "tau_prior": 6.8031,
+    "epsilon": 0.5614,
+    "inference_ll": -1.00959,
+    "accuracy": 0.9265,
+    "n": 1374
+  }
+}
