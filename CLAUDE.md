@@ -27,11 +27,36 @@ The TRUE optimal role the human should play in a bot round. Different from stat-
 Format: `ABC_XYZ` (e.g., `FMT_TMM`)
 - **First group** (`ABC`): stat-optimal roles — **1st letter = human**, 2nd & 3rd = bots
 - **Second group** (`XYZ`): deviate-optimal roles — **1st letter = human**, 2nd & 3rd = bots
-- The bots are hard-coded to stubbornly play their stat-optimal roles (2nd & 3rd letters of first group)
-- **IMPORTANT**: Index 0 in `optimalRoles[]` and `deviateRoles[]` arrays is ALWAYS the human player, regardless of `humanRole` value. `humanRole` is the in-game position (0-2), not the array index.
+- The bots are hard-coded to play their **deviate-optimal** roles (2nd & 3rd letters of the *second* group). Verified empirically: `botPlayers[i].strategy.role == deviateRoles[i+1]` in 104/104 bot rounds. The human then has to deviate from stat-optimal to fill the remaining deviate-optimal slot.
+- **IMPORTANT**: Index 0 in `optimalRoles[]`, `deviateRoles[]`, and the groups inside `optimalDeviateRolesId` / `statProfileId` is ALWAYS the human (logical order). This is **not** the same as the human's in-game position — see "Bot Round Ground Truth" below.
 
 ### Stat Profile ID
-Format: `STR_DEF_SUP` per player (e.g., `411_222_222`). First group = human's stats.
+Format: `STR_DEF_SUP` per player (e.g., `411_222_222`). In bot rounds the first group is the human (logical index 0); in human rounds the first group is the player at in-game position 0. Bot rounds always use symmetric bot stats (`H_222_222`).
+
+### Bot Round Ground Truth
+
+**CRITICAL for any code that computes Bayesian posteriors or inference ground truth on bot rounds.** The config fields are logical-order (human first), but everything else — `stage.inferred_roles` keys, turn actions, `gamePlayerId` — is keyed by **in-game position**. Getting the mapping wrong silently corrupts posteriors and compares inferences against the wrong targets.
+
+- **Human's in-game position** = `pr.player_id` (aka `gamePlayerId`). Do **not** use `config.humanRole` — it is a stored config value that does not reliably match the Empirica-assigned game position (only matches in ~27% of cases).
+- **Bot in-game positions** = `sorted({0, 1, 2} - {pr.player_id})`. `botPlayers[0]` goes to the **lower** non-human position, `botPlayers[1]` to the **higher**. Verified via stable late-game inference agreement (A_ascending 70% vs A_reversed 22% vs cyclic ~50%, chance = 33%).
+- **Bot role** = `botPlayers[i]["strategy"]["role"]` — already an `int` in {0, 1, 2}. Use it directly; do **not** look it up in `GAME_ROLE_TO_IDX` (that dict is keyed by role-name strings, so the lookup silently fails and produces an empty bot-role map).
+- **`botPlayers` has no `position` / `playerIndex` field.** Each entry is just `{"strategy": {"type": "fixed", "role": <int>}}`. Order in the list is the only position signal.
+- **Permute `player_stats` from logical to position order** before passing to `utility_based_prior` / `game_step` in bot rounds:
+  ```python
+  pid = pr.player_id
+  others = sorted(i for i in range(3) if i != pid)
+  logical_stats = np.array([[int(c) for c in part]
+                            for part in rnd.stat_profile_id.split('_')])
+  player_stats = np.zeros((3, 3), dtype=int)
+  player_stats[pid]       = logical_stats[0]
+  player_stats[others[0]] = logical_stats[1]
+  player_stats[others[1]] = logical_stats[2]
+  bot_role_map = {
+      others[0]: int(pr.round.config['botPlayers'][0]['strategy']['role']),
+      others[1]: int(pr.round.config['botPlayers'][1]['strategy']['role']),
+  }
+  ```
+- **Inference targets** in bot rounds: `stage.inferred_roles` keys are 0-indexed in-game positions, and the human's own position (`pr.player_id`) is always absent. Compare each target against `bot_role_map[target_pos]` (constant across stages — bots never switch).
 
 ## Data Structure
 
@@ -48,8 +73,8 @@ gameSummary.rounds[] → each round:
   config:
     optimalDeviateRolesId, statProfileId
     optimalRoles[3], deviateRoles[3]  ← index 0 = human
-    humanRole                          ← in-game position (0-2), NOT array index
-    botPlayers[2]                      ← bot rounds only, each has strategy.role
+    humanRole                          ← stored config value, NOT reliably the in-game position — use gamePlayerId (pr.player_id) instead
+    botPlayers[2]                      ← bot rounds only, each is {strategy:{type,role:<int>}}; no position field
     enemyIntentSequence                ← "1"=attack, "0"=no attack per turn
   stages[] → each stage:
     stage (number), role (chosen role name, UPPERCASE)
