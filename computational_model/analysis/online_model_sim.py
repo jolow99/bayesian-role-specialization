@@ -194,7 +194,27 @@ def load_config_module(config_path):
     return module
 
 
-def load_team_rounds(data_dir=None, data_dirs=None):
+def load_team_rounds(data_dir=None, data_dirs=None, include_bot_rounds=False):
+    """Load team-round records (one per team × round).
+
+    Args:
+        data_dir / data_dirs: Export directories to load.
+        include_bot_rounds: If True, also emit one record per bot round (per
+            human player). Bot-round records carry ``round_type="bot"`` and a
+            ``player_round`` field containing the PlayerRound object parsed
+            from gameSummary, which downstream code can feed into
+            ``shared.data_loading.build_bot_round_layout`` to resolve the
+            in-game position mapping correctly (see CLAUDE.md → "Bot Round
+            Ground Truth"). Human-round records are tagged
+            ``round_type="human"``.
+
+    Returns:
+        list[dict]: each record has ``game_id``, ``round_id``, ``round_type``,
+        ``env_id``, ``stat_profile``, ``optimal_roles``, ``lds``,
+        ``stage_roles``, ``env_config``; bot-round records additionally have
+        ``player_round`` (a shared.data_loading.PlayerRound) and
+        ``round_number``.
+    """
     if data_dirs:
         dirs = [Path(d) for d in data_dirs]
     else:
@@ -212,6 +232,23 @@ def load_team_rounds(data_dir=None, data_dirs=None):
     env_cache = {}
     records = []
 
+    def _load_env(env_id, role_combo):
+        if env_id in env_cache:
+            return env_cache[env_id]
+        val_dir = VALUE_MATRICES_DIR / role_combo
+        if not (val_dir / "values.npy").exists():
+            val_dir = ENVS_DIR / str(env_id)
+        values = np.load(val_dir / "values.npy")
+        config_mod = load_config_module(val_dir / "config.py")
+        env_cache[env_id] = {
+            "values": values,
+            "player_stats": np.array(config_mod.PLAYER_STATS, dtype=float),
+            "boss_damage": float(config_mod.BOSS_DAMAGE),
+            "team_max_hp": int(config_mod.TEAM_MAX_HP),
+            "enemy_max_hp": int(config_mod.ENEMY_MAX_HP),
+        }
+        return env_cache[env_id]
+
     for r in rounds:
         game = games.get(r["gameID"])
         if not game or game.get("status") != "ended":
@@ -226,6 +263,9 @@ def load_team_rounds(data_dir=None, data_dirs=None):
 
         cfg = json.loads(game[cfg_key])
         if cfg.get("botPlayers"):
+            # Bot rounds are handled in the second pass via shared.data_loading
+            # so that the human's in-game position comes from gameSummary
+            # (pr.player_id) rather than the unreliable config.humanRole.
             continue
 
         env_id = cfg["envId"]
@@ -234,19 +274,7 @@ def load_team_rounds(data_dir=None, data_dirs=None):
         stat_profile = cfg.get("statProfileId", "")
         lds = [int(c) for c in cfg["enemyIntentSequence"]]
 
-        if env_id not in env_cache:
-            val_dir = VALUE_MATRICES_DIR / role_combo
-            if not (val_dir / "values.npy").exists():
-                val_dir = ENVS_DIR / str(env_id)
-            values = np.load(val_dir / "values.npy")
-            config_mod = load_config_module(val_dir / "config.py")
-            env_cache[env_id] = {
-                "values": values,
-                "player_stats": np.array(config_mod.PLAYER_STATS, dtype=float),
-                "boss_damage": float(config_mod.BOSS_DAMAGE),
-                "team_max_hp": int(config_mod.TEAM_MAX_HP),
-                "enemy_max_hp": int(config_mod.ENEMY_MAX_HP),
-            }
+        _load_env(env_id, role_combo)
 
         stage_roles = []
         for s in range(1, MAX_STAGES + 1):
@@ -268,6 +296,8 @@ def load_team_rounds(data_dir=None, data_dirs=None):
         records.append({
             "game_id": r["gameID"],
             "round_id": r["id"],
+            "round_type": "human",
+            "round_number": int(rnum),
             "env_id": env_id,
             "stat_profile": stat_profile,
             "optimal_roles": role_combo,
@@ -275,6 +305,83 @@ def load_team_rounds(data_dir=None, data_dirs=None):
             "stage_roles": stage_roles,
             "env_config": env_cache[env_id],
         })
+
+    if include_bot_rounds:
+        # Import locally to avoid a hard dependency on the shared package when
+        # callers don't need bot rounds.
+        import importlib.util as _ilu
+        from pathlib import Path as _Path
+        _sdl_path = _Path(__file__).resolve().parents[2] / "analysis" / "shared" / "data_loading.py"
+        _spec = _ilu.spec_from_file_location("_sdl", str(_sdl_path))
+        # Defer to the package-level import so the shared module is reusable.
+        import sys as _sys
+        _analysis_root = _Path(__file__).resolve().parents[2] / "analysis"
+        if str(_analysis_root) not in _sys.path:
+            _sys.path.insert(0, str(_analysis_root))
+        from shared.data_loading import load_export
+
+        for d in dirs:
+            try:
+                prs = load_export(d, include_bot_rounds=True, include_dropout_games=True)
+            except ValueError as e:
+                # v1/v1.5 exports — skip.
+                print(f"  load_team_rounds: skipping {d.name}: {e}")
+                continue
+
+            for pr in prs:
+                if pr.round.round_type != "bot":
+                    continue
+                if pr.is_dropout:
+                    continue
+                if pr.game_id in DROPOUT_GAME_IDS:
+                    continue
+
+                cfg = pr.round.config
+                env_id = str(cfg.get("envId", ""))
+                if not env_id:
+                    continue
+                optimal_roles = cfg.get("optimalRoles") or []
+                role_combo = "".join(ROLE_NAMES[int(ri)] for ri in optimal_roles)
+                stat_profile = cfg.get("statProfileId", "")
+                lds = [int(c) for c in pr.round.enemy_intent_sequence]
+
+                try:
+                    _load_env(env_id, role_combo)
+                except FileNotFoundError:
+                    print(f"  load_team_rounds: no values.npy for bot env {env_id}; skipping")
+                    continue
+
+                # Bot-round stage_roles: human's chosen role letter at each stage.
+                # Downstream code uses record['player_round'] +
+                # build_bot_round_layout to place roles at in-game positions.
+                stage_roles = [
+                    ROLE_NAMES[int(s.role_idx)] if s.role_idx in (0, 1, 2) else "F"
+                    for s in pr.round.stages
+                ]
+                if not stage_roles:
+                    continue
+
+                records.append({
+                    "game_id": pr.game_id,
+                    "round_id": f"{pr.game_id}_r{pr.round.round_number}_p{pr.player_id}",
+                    "round_type": "bot",
+                    "round_number": int(pr.round.round_number),
+                    "env_id": env_id,
+                    "stat_profile": stat_profile,
+                    "optimal_roles": role_combo,
+                    "lds": lds,
+                    "stage_roles": stage_roles,
+                    "env_config": env_cache[env_id],
+                    "player_round": pr,
+                })
+
+        # Sanity assertion per the plan.
+        bot_records = [r for r in records if r.get("round_type") == "bot"]
+        assert bot_records, \
+            "include_bot_rounds=True but no bot records loaded"
+        for br in bot_records:
+            assert br["player_round"].round.config.get("botPlayers"), \
+                f"bot record {br['round_id']} has empty botPlayers"
 
     return records
 
