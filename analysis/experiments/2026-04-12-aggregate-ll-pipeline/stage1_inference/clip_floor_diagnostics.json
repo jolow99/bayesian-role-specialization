@@ -1,0 +1,94 @@
+{
+  "winner": {
+    "strategy_name": "window_1",
+    "tau_prior": 5.056147202041001,
+    "epsilon": 0.5469284811781511,
+    "inference_ll": -0.9809255160887599,
+    "human_inference_ll": -0.9717748469257955,
+    "bot_inference_ll": -0.9993535072750755,
+    "accuracy": 0.8714121699196326,
+    "human_accuracy": 0.8591065292096219,
+    "bot_accuracy": 0.8961937716262975,
+    "n": 1742,
+    "n_human": 1164,
+    "n_bot": 578,
+    "floor_hits": 0,
+    "floor_hits_human": 0,
+    "floor_hits_bot": 0,
+    "per_query_ll_histogram": [
+      {
+        "hi": 0.0,
+        "lo": -0.5,
+        "count": 186
+      },
+      {
+        "hi": -0.5,
+        "lo": -1.0,
+        "count": 836
+      },
+      {
+        "hi": -1.0,
+        "lo": -2.0,
+        "count": 705
+      },
+      {
+        "hi": -2.0,
+        "lo": -5.0,
+        "count": 15
+      },
+      {
+        "hi": -5.0,
+        "lo": -10.0,
+        "count": 0
+      },
+      {
+        "hi": -10.0,
+        "lo": -46.0,
+        "count": 0
+      },
+      {
+        "hi": -46.0,
+        "lo": -Infinity,
+        "count": 0
+      }
+    ]
+  },
+  "prior_winners_under_fix": [
+    {
+      "label": "04-09 winner (window_1, tau=6.80, eps=0.56)",
+      "strategy_name": "window_1",
+      "tau_prior": 6.8,
+      "epsilon": 0.56,
+      "inference_ll": -0.9837378435079069,
+      "human_inference_ll": -0.9753157694391652,
+      "bot_inference_ll": -1.0006985601446114,
+      "accuracy": 0.9270952927669346,
+      "human_accuracy": 0.9424398625429553,
+      "bot_accuracy": 0.8961937716262975,
+      "n": 1742,
+      "n_human": 1164,
+      "n_bot": 578,
+      "floor_hits": 0,
+      "floor_hits_human": 0,
+      "floor_hits_bot": 0
+    },
+    {
+      "label": "04-11 winner (temper_0.410, tau=1.84, eps=0.42)",
+      "strategy_name": "temper_0.410",
+      "tau_prior": 1.84,
+      "epsilon": 0.42,
+      "inference_ll": -0.980623826849865,
+      "human_inference_ll": -0.9698505625734959,
+      "bot_inference_ll": -1.0023194663268433,
+      "accuracy": 0.9431687715269805,
+      "human_accuracy": 0.9201030927835051,
+      "bot_accuracy": 0.9896193771626297,
+      "n": 1742,
+      "n_human": 1164,
+      "n_bot": 578,
+      "floor_hits": 0,
+      "floor_hits_human": 0,
+      "floor_hits_bot": 0
+    }
+  ]
+}

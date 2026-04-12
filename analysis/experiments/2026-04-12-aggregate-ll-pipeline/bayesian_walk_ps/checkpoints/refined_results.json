@@ -1,0 +1,46 @@
+[
+  {
+    "epsilon_switch": 0.2,
+    "agg_ll": -2.144074212664534
+  },
+  {
+    "epsilon_switch": 0.21000000000000002,
+    "agg_ll": -2.1430518184476477
+  },
+  {
+    "epsilon_switch": 0.22,
+    "agg_ll": -2.1423921835982136
+  },
+  {
+    "epsilon_switch": 0.23,
+    "agg_ll": -2.1420657777126437
+  },
+  {
+    "epsilon_switch": 0.24,
+    "agg_ll": -2.1420468289095362
+  },
+  {
+    "epsilon_switch": 0.25,
+    "agg_ll": -2.142312710820237
+  },
+  {
+    "epsilon_switch": 0.26,
+    "agg_ll": -2.1428434497884195
+  },
+  {
+    "epsilon_switch": 0.27,
+    "agg_ll": -2.1436213250429343
+  },
+  {
+    "epsilon_switch": 0.28,
+    "agg_ll": -2.1446305415470213
+  },
+  {
+    "epsilon_switch": 0.29,
+    "agg_ll": -2.1458569602161
+  },
+  {
+    "epsilon_switch": 0.3,
+    "agg_ll": -2.147287873831181
+  }
+]

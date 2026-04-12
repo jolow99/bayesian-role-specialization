@@ -1,0 +1,17 @@
+{
+  "tau_prior": 5.056147202041001,
+  "epsilon": 0.5469284811781511,
+  "memory_strategy": "window_1",
+  "kind": "window",
+  "param": 1,
+  "window": 1,
+  "drift_delta": 0.0,
+  "accuracy": 0.8714121699196326,
+  "inference_ll": -0.9809255160887599,
+  "human_inference_ll": -0.9717748469257955,
+  "bot_inference_ll": -0.9993535072750755,
+  "n": 1742,
+  "n_human": 1164,
+  "n_bot": 578,
+  "floor_hits": 0
+}
