@@ -17,6 +17,8 @@ from . import EXPORTS_DIR
 from .constants import GAME_ROLE_TO_IDX, DROPOUT_GAME_IDS
 from .parsing import parse_inferred_roles, parse_deviate_roles
 
+import numpy as np
+
 
 # ---------------------------------------------------------------------------
 # Output dataclasses
@@ -61,6 +63,75 @@ class PlayerRound:
     participant_id: str | None
     round: RoundRecord
     is_dropout: bool
+
+
+@dataclass
+class BotRoundLayout:
+    """Permuted bot-round state: logical fields mapped to in-game-position order.
+
+    CLAUDE.md "Bot Round Ground Truth" documents the three-bug trap around
+    resolving the human's in-game position, bot roles, and stats in bot rounds.
+    This helper is the single authoritative resolver for that mapping.
+    """
+    pid: int                           # human's in-game position (= pr.player_id)
+    others: list[int]                  # sorted in-game positions of the two bots
+    player_stats: "np.ndarray"         # (3, 3) int, permuted to in-game-position order
+    bot_role_map: dict[int, int]       # {in-game-position: role_idx in {0,1,2}}
+    human_logical_stats: "np.ndarray"  # (3,) logical-order stats for the human (debug)
+
+
+def build_bot_round_layout(pr: PlayerRound) -> BotRoundLayout:
+    """Resolve the bot-round layout for one PlayerRound.
+
+    Implements the recipe from CLAUDE.md → "Bot Round Ground Truth". For any
+    bot round, this returns:
+      - the human's in-game position (pr.player_id; NOT config.humanRole)
+      - the two bot positions (in-game ordering, not logical ordering)
+      - player_stats permuted from logical order (statProfileId) to in-game order
+      - a bot_role_map using botPlayers[i].strategy.role (which is already an int)
+
+    Note: botPlayers has NO position/playerIndex field. The ONLY position signal
+    is list order: botPlayers[0] -> the lower non-human position, botPlayers[1]
+    -> the higher.
+    """
+    if pr.round.round_type != "bot":
+        raise ValueError(
+            f"build_bot_round_layout called on a {pr.round.round_type} round"
+        )
+
+    pid = int(pr.player_id)
+    others = sorted(i for i in range(3) if i != pid)
+
+    parts = pr.round.stat_profile_id.split("_")
+    if len(parts) != 3:
+        raise ValueError(
+            f"Unexpected stat_profile_id {pr.round.stat_profile_id!r} — "
+            "need three underscore-separated groups"
+        )
+    logical_stats = np.array([[int(c) for c in part] for part in parts], dtype=int)
+
+    player_stats = np.zeros((3, 3), dtype=int)
+    player_stats[pid] = logical_stats[0]
+    player_stats[others[0]] = logical_stats[1]
+    player_stats[others[1]] = logical_stats[2]
+
+    bot_players = pr.round.config.get("botPlayers") or []
+    if len(bot_players) != 2:
+        raise ValueError(
+            f"bot round has {len(bot_players)} botPlayers entries, expected 2"
+        )
+    bot_role_map = {
+        others[0]: int(bot_players[0]["strategy"]["role"]),
+        others[1]: int(bot_players[1]["strategy"]["role"]),
+    }
+
+    return BotRoundLayout(
+        pid=pid,
+        others=others,
+        player_stats=player_stats,
+        bot_role_map=bot_role_map,
+        human_logical_stats=logical_stats[0],
+    )
 
 
 # ---------------------------------------------------------------------------
