@@ -1,0 +1,21 @@
+[
+  {
+    "inference_ll": -0.9809255160887599,
+    "human_inference_ll": -0.9717748469257955,
+    "bot_inference_ll": -0.9993535072750755,
+    "accuracy": 0.8714121699196326,
+    "human_accuracy": 0.8591065292096219,
+    "bot_accuracy": 0.8961937716262975,
+    "n": 1742,
+    "n_human": 1164,
+    "n_bot": 578,
+    "floor_hits": 0,
+    "floor_hits_human": 0,
+    "floor_hits_bot": 0,
+    "strategy_name": "window_1",
+    "kind": "window",
+    "param": 1,
+    "tau_prior": 5.056147202041001,
+    "epsilon": 0.5469284811781511
+  }
+]
