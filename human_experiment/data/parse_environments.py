@@ -83,56 +83,69 @@ def find_python_file(folder_path):
     return None
 
 
-def parse_human_configs(data_dir):
-    """Parse optimal_case_envs for humanConfigs.
+def parse_human_configs(data_dir, human_envs_subdir="human-envs-big-pilot"):
+    """Parse human-envs-big-pilot for humanConfigs.
 
-    New format: each player config (e.g., FTM) has its own folder with
-    config.py and lds.txt directly under optimal_case_envs/.
+    Expected layout: <human_envs_subdir>/<stat_profile>/<role_combo>/config.py, lds.txt
+    e.g. human-envs-big-pilot/411_141_114/FTM/config.py
     """
     configs = []
-    optimal_dir = os.path.join(data_dir, "optimal_case_envs")
+    optimal_dir = os.path.join(data_dir, human_envs_subdir)
 
-    for player_config in sorted(os.listdir(optimal_dir)):
-        env_folder = os.path.join(optimal_dir, player_config)
-        if not os.path.isdir(env_folder):
+    for stat_profile_dir in sorted(os.listdir(optimal_dir)):
+        stat_profile_path = os.path.join(optimal_dir, stat_profile_dir)
+        if not os.path.isdir(stat_profile_path):
+            continue
+        if stat_profile_dir not in STAT_PROFILE_NAMES:
+            print(f"Warning: Unknown stat profile folder {stat_profile_dir}")
             continue
 
-        config_file = os.path.join(env_folder, "config.py")
-        lds_file = os.path.join(env_folder, "lds.txt")
+        for player_config in sorted(os.listdir(stat_profile_path)):
+            env_folder = os.path.join(stat_profile_path, player_config)
+            if not os.path.isdir(env_folder):
+                continue
 
-        if not os.path.exists(config_file) or not os.path.exists(lds_file):
-            print(f"Warning: Missing config.py or lds.txt in {env_folder}")
-            continue
+            config_file = os.path.join(env_folder, "config.py")
+            lds_file = os.path.join(env_folder, "lds.txt")
 
-        env_params = parse_python_file_for_env_params(config_file)
+            if not os.path.exists(config_file) or not os.path.exists(lds_file):
+                print(f"Warning: Missing config.py or lds.txt in {env_folder}")
+                continue
 
-        # Read intent sequence from lds.txt
-        with open(lds_file, "r") as f:
-            intent_sequence = f.read().strip()
+            env_params = parse_python_file_for_env_params(config_file)
 
-        stat_profile_code = env_params["statProfileCode"]
-        stat_profile_name = STAT_PROFILE_NAMES.get(stat_profile_code)
-        if not stat_profile_name:
-            print(f"Warning: Unknown stat profile {stat_profile_code} in {env_folder}")
-            continue
+            # Read intent sequence from lds.txt
+            with open(lds_file, "r") as f:
+                intent_sequence = f.read().strip()
 
-        # Convert player_config to optimal roles array (e.g., "TFF" -> [1, 0, 0])
-        optimal_roles = [ROLE_MAPPING[c] for c in player_config]
+            stat_profile_code = env_params["statProfileCode"]
+            if stat_profile_code != stat_profile_dir:
+                print(
+                    f"Warning: PLAYER_STATS profile {stat_profile_code} does not match "
+                    f"folder {stat_profile_dir} in {env_folder}"
+                )
+            stat_profile_name = STAT_PROFILE_NAMES.get(stat_profile_code)
+            if not stat_profile_name:
+                print(f"Warning: Unknown stat profile {stat_profile_code} in {env_folder}")
+                continue
 
-        config = {
-            "envId": f"{stat_profile_code}_{player_config}",
-            "maxEnemyHealth": env_params["maxEnemyHealth"],
-            "maxTeamHealth": env_params["maxTeamHealth"],
-            "bossDamage": env_params["bossDamage"],
-            "statProfile": stat_profile_name,
-            "statProfileId": stat_profile_code,
-            "optimalRoles": optimal_roles,
-            "optimalRolesId": player_config,
-            "playerDeviateProbability": 0.00,
-            "enemyAttackProbability": env_params["enemyAttackProbability"],
-            "enemyIntentSequence": intent_sequence,
-        }
-        configs.append(config)
+            # Convert player_config to optimal roles array (e.g., "TFF" -> [1, 0, 0])
+            optimal_roles = [ROLE_MAPPING[c] for c in player_config]
+
+            config = {
+                "envId": f"{stat_profile_code}_{player_config}",
+                "maxEnemyHealth": env_params["maxEnemyHealth"],
+                "maxTeamHealth": env_params["maxTeamHealth"],
+                "bossDamage": env_params["bossDamage"],
+                "statProfile": stat_profile_name,
+                "statProfileId": stat_profile_code,
+                "optimalRoles": optimal_roles,
+                "optimalRolesId": player_config,
+                "playerDeviateProbability": 0.00,
+                "enemyAttackProbability": env_params["enemyAttackProbability"],
+                "enemyIntentSequence": intent_sequence,
+            }
+            configs.append(config)
 
     # Add IDs
     for i, config in enumerate(configs, 1):
@@ -281,7 +294,7 @@ def main():
     script_dir = Path(__file__).parent
     data_dir = script_dir
 
-    print("Parsing human configs from optimal_case_envs...")
+    print("Parsing human configs from human-envs-big-pilot...")
     human_configs = parse_human_configs(data_dir)
     print(f"Found {len(human_configs)} human configs")
 
