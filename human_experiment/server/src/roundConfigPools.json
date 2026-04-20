@@ -2,12 +2,12 @@
   "humanConfigs": [
     {
       "id": 1,
-      "envId": "222_222_222_FFF",
+      "envId": "114_222_222_FFF",
       "maxEnemyHealth": 30,
       "maxTeamHealth": 15,
-      "bossDamage": 2,
-      "statProfile": "balanced",
-      "statProfileId": "222_222_222",
+      "bossDamage": 3,
+      "statProfile": "imbalanced-oneunique-sup",
+      "statProfileId": "114_222_222",
       "optimalRoles": [
         0,
         0,
@@ -15,101 +15,29 @@
       ],
       "optimalRolesId": "FFF",
       "playerDeviateProbability": 0.0,
-      "enemyAttackProbability": 0.25,
-      "enemyIntentSequence": "1100000011"
+      "enemyAttackProbability": 0.2,
+      "enemyIntentSequence": "1000000011"
     },
     {
       "id": 2,
-      "envId": "411_141_114_FFM",
-      "maxEnemyHealth": 30,
-      "maxTeamHealth": 5,
-      "bossDamage": 2,
-      "statProfile": "imbalanced-allunique",
-      "statProfileId": "411_141_114",
-      "optimalRoles": [
-        0,
-        0,
-        2
-      ],
-      "optimalRolesId": "FFM",
-      "playerDeviateProbability": 0.0,
-      "enemyAttackProbability": 0.8,
-      "enemyIntentSequence": "1110110111"
-    },
-    {
-      "id": 3,
-      "envId": "411_222_222_FMM",
-      "maxEnemyHealth": 30,
-      "maxTeamHealth": 10,
-      "bossDamage": 9,
-      "statProfile": "imbalanced-oneunique-str",
-      "statProfileId": "411_222_222",
-      "optimalRoles": [
-        0,
-        2,
-        2
-      ],
-      "optimalRolesId": "FMM",
-      "playerDeviateProbability": 0.0,
-      "enemyAttackProbability": 0.25,
-      "enemyIntentSequence": "1000010000"
-    },
-    {
-      "id": 4,
-      "envId": "411_141_114_FTF",
-      "maxEnemyHealth": 30,
-      "maxTeamHealth": 15,
-      "bossDamage": 5,
-      "statProfile": "imbalanced-allunique",
-      "statProfileId": "411_141_114",
-      "optimalRoles": [
-        0,
-        1,
-        0
-      ],
-      "optimalRolesId": "FTF",
-      "playerDeviateProbability": 0.0,
-      "enemyAttackProbability": 0.66,
-      "enemyIntentSequence": "1100110011"
-    },
-    {
-      "id": 5,
-      "envId": "411_141_114_FTM",
-      "maxEnemyHealth": 30,
-      "maxTeamHealth": 15,
-      "bossDamage": 7,
-      "statProfile": "imbalanced-allunique",
-      "statProfileId": "411_141_114",
-      "optimalRoles": [
-        0,
-        1,
-        2
-      ],
-      "optimalRolesId": "FTM",
-      "playerDeviateProbability": 0.0,
-      "enemyAttackProbability": 0.8,
-      "enemyIntentSequence": "1110110111"
-    },
-    {
-      "id": 6,
-      "envId": "114_222_222_MFF",
+      "envId": "114_222_222_MFT",
       "maxEnemyHealth": 25,
-      "maxTeamHealth": 15,
-      "bossDamage": 5,
+      "maxTeamHealth": 10,
+      "bossDamage": 7,
       "statProfile": "imbalanced-oneunique-sup",
       "statProfileId": "114_222_222",
       "optimalRoles": [
         2,
         0,
-        0
+        1
       ],
-      "optimalRolesId": "MFF",
+      "optimalRolesId": "MFT",
       "playerDeviateProbability": 0.0,
-      "enemyAttackProbability": 0.66,
-      "enemyIntentSequence": "1100110011"
+      "enemyAttackProbability": 0.5,
+      "enemyIntentSequence": "1000110011"
     },
     {
-      "id": 7,
+      "id": 3,
       "envId": "114_222_222_MMM",
       "maxEnemyHealth": 10,
       "maxTeamHealth": 10,
@@ -127,7 +55,25 @@
       "enemyIntentSequence": "1011001100"
     },
     {
-      "id": 8,
+      "id": 4,
+      "envId": "141_222_222_MFF",
+      "maxEnemyHealth": 30,
+      "maxTeamHealth": 5,
+      "bossDamage": 1,
+      "statProfile": "imbalanced-oneunique-def",
+      "statProfileId": "141_222_222",
+      "optimalRoles": [
+        2,
+        0,
+        0
+      ],
+      "optimalRolesId": "MFF",
+      "playerDeviateProbability": 0.0,
+      "enemyAttackProbability": 0.75,
+      "enemyIntentSequence": "1110110111"
+    },
+    {
+      "id": 5,
       "envId": "141_222_222_TFF",
       "maxEnemyHealth": 25,
       "maxTeamHealth": 15,
@@ -143,6 +89,186 @@
       "playerDeviateProbability": 0.0,
       "enemyAttackProbability": 0.5,
       "enemyIntentSequence": "1100100011"
+    },
+    {
+      "id": 6,
+      "envId": "141_222_222_TFM",
+      "maxEnemyHealth": 25,
+      "maxTeamHealth": 10,
+      "bossDamage": 7,
+      "statProfile": "imbalanced-oneunique-def",
+      "statProfileId": "141_222_222",
+      "optimalRoles": [
+        1,
+        0,
+        2
+      ],
+      "optimalRolesId": "TFM",
+      "playerDeviateProbability": 0.0,
+      "enemyAttackProbability": 0.66,
+      "enemyIntentSequence": "1011001111"
+    },
+    {
+      "id": 7,
+      "envId": "222_222_222_FFF",
+      "maxEnemyHealth": 30,
+      "maxTeamHealth": 15,
+      "bossDamage": 2,
+      "statProfile": "balanced",
+      "statProfileId": "222_222_222",
+      "optimalRoles": [
+        0,
+        0,
+        0
+      ],
+      "optimalRolesId": "FFF",
+      "playerDeviateProbability": 0.0,
+      "enemyAttackProbability": 0.25,
+      "enemyIntentSequence": "1100000011"
+    },
+    {
+      "id": 8,
+      "envId": "222_222_222_FFT",
+      "maxEnemyHealth": 30,
+      "maxTeamHealth": 15,
+      "bossDamage": 5,
+      "statProfile": "balanced",
+      "statProfileId": "222_222_222",
+      "optimalRoles": [
+        0,
+        0,
+        1
+      ],
+      "optimalRolesId": "FFT",
+      "playerDeviateProbability": 0.0,
+      "enemyAttackProbability": 0.4,
+      "enemyIntentSequence": "1011001000"
+    },
+    {
+      "id": 9,
+      "envId": "222_222_222_FTM",
+      "maxEnemyHealth": 20,
+      "maxTeamHealth": 15,
+      "bossDamage": 6,
+      "statProfile": "balanced",
+      "statProfileId": "222_222_222",
+      "optimalRoles": [
+        0,
+        1,
+        2
+      ],
+      "optimalRolesId": "FTM",
+      "playerDeviateProbability": 0.0,
+      "enemyAttackProbability": 0.8,
+      "enemyIntentSequence": "1110110111"
+    },
+    {
+      "id": 10,
+      "envId": "411_141_114_FFM",
+      "maxEnemyHealth": 30,
+      "maxTeamHealth": 5,
+      "bossDamage": 2,
+      "statProfile": "imbalanced-allunique",
+      "statProfileId": "411_141_114",
+      "optimalRoles": [
+        0,
+        0,
+        2
+      ],
+      "optimalRolesId": "FFM",
+      "playerDeviateProbability": 0.0,
+      "enemyAttackProbability": 0.8,
+      "enemyIntentSequence": "1110110111"
+    },
+    {
+      "id": 11,
+      "envId": "411_141_114_FTF",
+      "maxEnemyHealth": 30,
+      "maxTeamHealth": 15,
+      "bossDamage": 5,
+      "statProfile": "imbalanced-allunique",
+      "statProfileId": "411_141_114",
+      "optimalRoles": [
+        0,
+        1,
+        0
+      ],
+      "optimalRolesId": "FTF",
+      "playerDeviateProbability": 0.0,
+      "enemyAttackProbability": 0.66,
+      "enemyIntentSequence": "1100110011"
+    },
+    {
+      "id": 12,
+      "envId": "411_141_114_FTM",
+      "maxEnemyHealth": 30,
+      "maxTeamHealth": 15,
+      "bossDamage": 7,
+      "statProfile": "imbalanced-allunique",
+      "statProfileId": "411_141_114",
+      "optimalRoles": [
+        0,
+        1,
+        2
+      ],
+      "optimalRolesId": "FTM",
+      "playerDeviateProbability": 0.0,
+      "enemyAttackProbability": 0.8,
+      "enemyIntentSequence": "1110110111"
+    },
+    {
+      "id": 13,
+      "envId": "411_222_222_FFT",
+      "maxEnemyHealth": 30,
+      "maxTeamHealth": 5,
+      "bossDamage": 3,
+      "statProfile": "imbalanced-oneunique-str",
+      "statProfileId": "411_222_222",
+      "optimalRoles": [
+        0,
+        0,
+        1
+      ],
+      "optimalRolesId": "FFT",
+      "playerDeviateProbability": 0.0,
+      "enemyAttackProbability": 0.2,
+      "enemyIntentSequence": "1010000000"
+    },
+    {
+      "id": 14,
+      "envId": "411_222_222_FMM",
+      "maxEnemyHealth": 30,
+      "maxTeamHealth": 10,
+      "bossDamage": 9,
+      "statProfile": "imbalanced-oneunique-str",
+      "statProfileId": "411_222_222",
+      "optimalRoles": [
+        0,
+        2,
+        2
+      ],
+      "optimalRolesId": "FMM",
+      "playerDeviateProbability": 0.0,
+      "enemyAttackProbability": 0.25,
+      "enemyIntentSequence": "1000010000"
+    },
+    {
+      "id": 15,
+      "envId": "411_222_222_FTM",
+      "maxEnemyHealth": 30,
+      "maxTeamHealth": 10,
+      "bossDamage": 6,
+      "statProfile": "imbalanced-oneunique-str",
+      "statProfileId": "411_222_222",
+      "optimalRoles": [
+        0,
+        1,
+        2
+      ],
+      "optimalRolesId": "FTM",
+      "playerDeviateProbability": 0.0,
+      "enemyAttackProbability": 0.33,
+      "enemyIntentSequence": "1010000100"
     }
   ],
   "botConfigs": [
