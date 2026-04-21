@@ -772,24 +772,41 @@ Empirica.onStageEnded(({ stage }) => {
   const roundSlot = shuffledRoundOrder[roundNumber - 1];
   const isBotRound = roundSlot.type === "bot";
 
-  // Phase 1: Mark all new dropouts first (before auto-submission)
-  // This ensures getOptimalRoleForDropout sees the complete set of dropouts for deconfliction
+  // Phase 1: Deduct buffer overtime for every player, then mark new dropouts
+  // Buffer is deducted based on how much of the stage each player used beyond
+  // STAGE_TIMER_SECONDS — submitters pay for the time between stage start and
+  // their submit, non-submitters pay for the full stage duration.
+  const stageDurationMs = stage.get("stageDurationMs") || (Date.now() - (stageStartedAt || Date.now()));
   game.players.forEach(player => {
     const playerSubmitted = player.stage.get("submit");
     const isAlreadyDropout = player.get("isDropout");
     const hasDropoutRound = player.get("droppedOutAtRound") != null;
 
-    if (!playerSubmitted && !hasDropoutRound) {
-      // Player didn't submit - calculate overtime and deduct from buffer
-      const stageDurationMs = stage.get("stageDurationMs") || (Date.now() - (stage.get("stageStartedAt") || Date.now()));
-      const overtimeMs = Math.max(0, stageDurationMs - STAGE_TIMER_SECONDS * 1000);
-      const overtimeSeconds = overtimeMs / 1000;
-      const currentBuffer = player.get("bufferTimeRemaining") || 0;
-      const newBuffer = Math.max(0, currentBuffer - overtimeSeconds);
+    // Compute time the player actually used in this stage
+    let timeUsedMs;
+    if (playerSubmitted) {
+      // Skip pre-existing dropouts whose role was auto-submitted at stage start
+      // (already charged for prior rounds; don't double-charge)
+      if (isAlreadyDropout && hasDropoutRound) return;
+      const roleSubmittedAt = player.stage.get("roleSubmittedAt");
+      if (!stageStartedAt || !roleSubmittedAt) return;
+      timeUsedMs = roleSubmittedAt - stageStartedAt;
+    } else {
+      timeUsedMs = stageDurationMs;
+    }
+
+    const overtimeMs = Math.max(0, timeUsedMs - STAGE_TIMER_SECONDS * 1000);
+    const overtimeSeconds = overtimeMs / 1000;
+    const currentBuffer = player.get("bufferTimeRemaining") || 0;
+    const newBuffer = Math.max(0, currentBuffer - overtimeSeconds);
+
+    if (overtimeSeconds > 0) {
       player.set("bufferTimeRemaining", newBuffer);
+      const action = playerSubmitted ? "submitted late" : "didn't submit";
+      console.log(`Player ${player.get("gamePlayerId")} ${action}. Overtime: ${overtimeSeconds.toFixed(1)}s, Buffer: ${currentBuffer.toFixed(1)}s -> ${newBuffer.toFixed(1)}s`);
+    }
 
-      console.log(`Player ${player.get("gamePlayerId")} didn't submit. Overtime: ${overtimeSeconds.toFixed(1)}s, Buffer: ${currentBuffer.toFixed(1)}s -> ${newBuffer.toFixed(1)}s`);
-
+    if (!playerSubmitted && !hasDropoutRound) {
       if (isAlreadyDropout || newBuffer < 1) { // Use epsilon to avoid floating-point edge cases
         // Buffer depleted (or client already flagged dropout) - mark as dropout
         player.set("isDropout", true);

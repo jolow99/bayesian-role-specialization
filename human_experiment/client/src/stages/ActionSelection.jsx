@@ -18,7 +18,7 @@ function formatTime(seconds) {
   return `${min < 10 ? "0" + min : min}:${sec < 10 ? "0" + sec : sec}`;
 }
 
-function StageBufferTimer({ player, submitted }) {
+function StageBufferTimer({ player, stage, submitted }) {
   const stageTimer = useStageTimer();
   const bufferTimeRemaining = player?.get("bufferTimeRemaining") ?? BUFFER_TOTAL_SECONDS;
 
@@ -26,11 +26,28 @@ function StageBufferTimer({ player, submitted }) {
   const stageSeconds = totalRemaining !== null ? Math.max(0, totalRemaining - BUFFER_TOTAL_SECONDS) : null;
   const stageExpired = stageSeconds === 0 && totalRemaining !== null;
 
-  // Buffer only counts down if stage timer expired AND player hasn't submitted
-  // Once submitted, buffer freezes at stored value
-  const bufferSeconds = (stageExpired && !submitted)
-    ? Math.min(totalRemaining, bufferTimeRemaining)
-    : Math.round(bufferTimeRemaining);
+  // Determine displayed buffer:
+  // - Pre-submit, pre-expiry: stored value (no overtime yet)
+  // - Pre-submit, post-expiry: live countdown via Empirica timer
+  // - Post-submit: stored value minus the overtime this player incurred
+  //   before submitting. The server deducts on stage end, but we estimate
+  //   client-side so the user sees the correct deducted value immediately.
+  let bufferSeconds;
+  if (submitted) {
+    const stageStartedAt = stage?.get("stageStartedAt");
+    const roleSubmittedAt = player?.stage?.get("roleSubmittedAt");
+    if (stageStartedAt && roleSubmittedAt) {
+      const timeUsedSec = (roleSubmittedAt - stageStartedAt) / 1000;
+      const overtimeSec = Math.max(0, timeUsedSec - STAGE_TIMER_SECONDS);
+      bufferSeconds = Math.max(0, Math.round(bufferTimeRemaining - overtimeSec));
+    } else {
+      bufferSeconds = Math.round(bufferTimeRemaining);
+    }
+  } else if (stageExpired) {
+    bufferSeconds = Math.min(totalRemaining, bufferTimeRemaining);
+  } else {
+    bufferSeconds = Math.round(bufferTimeRemaining);
+  }
   const bufferLow = bufferSeconds < 60;
   const bufferCritical = bufferSeconds < 30;
 
@@ -486,7 +503,7 @@ function ActionSelection() {
                 {totalPoints !== undefined && ` | Points: ${totalPoints}`}
               </h1>
               {/* Inline Timer */}
-              <StageBufferTimer player={player} submitted={submitted} />
+              <StageBufferTimer player={player} stage={stage} submitted={submitted} />
             </div>
 
             {/* Battle Field */}
