@@ -28,7 +28,7 @@ function StageBufferTimer({ player, stage, submitted }) {
 
   // Determine displayed buffer:
   // - Pre-submit, pre-expiry: stored value (no overtime yet)
-  // - Pre-submit, post-expiry: live countdown via Empirica timer
+  // - Pre-submit, post-expiry: live countdown = stored minus time already spent in buffer
   // - Post-submit: stored value minus the overtime this player incurred
   //   before submitting. The server deducts on stage end, but we estimate
   //   client-side so the user sees the correct deducted value immediately.
@@ -44,7 +44,8 @@ function StageBufferTimer({ player, stage, submitted }) {
       bufferSeconds = Math.round(bufferTimeRemaining);
     }
   } else if (stageExpired) {
-    bufferSeconds = Math.min(totalRemaining, bufferTimeRemaining);
+    const secondsSpentInBuffer = BUFFER_TOTAL_SECONDS - totalRemaining;
+    bufferSeconds = Math.max(0, Math.round(bufferTimeRemaining - secondsSpentInBuffer));
   } else {
     bufferSeconds = Math.round(bufferTimeRemaining);
   }
