@@ -14,7 +14,13 @@ export function Timer() {
   }
 
   const submitted = player?.stage?.get("submit");
+  const isDropout = player?.get("isDropout");
   const bufferTimeRemaining = player?.get("bufferTimeRemaining") ?? BUFFER_TOTAL_SECONDS;
+
+  // Dropped-out players are off the stage flow — don't render a timer for them
+  if (isDropout) {
+    return null;
+  }
 
   // Stage timer: first STAGE_TIMER_SECONDS of the Empirica stage duration
   // Buffer zone starts at BUFFER_TOTAL_SECONDS remaining on the Empirica timer
@@ -37,13 +43,17 @@ export function Timer() {
 
   // Buffer display: how much buffer the player actually has left
   // When stage timer is running (stageSeconds > 0), buffer is not active
-  // When stage timer expired and not submitted, buffer counts down live
+  // When stage timer expired and not submitted, buffer counts down live =
+  //   stored value minus seconds already spent in the buffer window
   // When submitted, show stored value minus estimated overtime
   let bufferSeconds = null;
   if (totalRemaining !== undefined && stageSeconds === 0) {
-    bufferSeconds = submitted
-      ? Math.round(effectiveBufferRemaining)
-      : Math.min(totalRemaining, bufferTimeRemaining);
+    if (submitted) {
+      bufferSeconds = Math.round(effectiveBufferRemaining);
+    } else {
+      const secondsSpentInBuffer = BUFFER_TOTAL_SECONDS - totalRemaining;
+      bufferSeconds = Math.max(0, Math.round(bufferTimeRemaining - secondsSpentInBuffer));
+    }
   }
 
   const stageExpired = stageSeconds === 0 && totalRemaining !== null;
