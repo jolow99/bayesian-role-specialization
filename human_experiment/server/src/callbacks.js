@@ -97,8 +97,8 @@ function updateLobbyCount(ctx, game) {
 
 // Game configuration constants
 const TURNS_PER_STAGE = 2; // Each stage (role commitment) lasts for 2 turns
-const STAGE_TIMER_SECONDS = 90; // Primary stage timer (seconds)
-const BUFFER_TOTAL_SECONDS = 300; // Shared buffer across all rounds (seconds)
+const STAGE_TIMER_SECONDS = 20; // Primary stage timer (seconds)
+const BUFFER_TOTAL_SECONDS = 20; // Shared buffer across all rounds (seconds)
 const STAGE_DURATION = STAGE_TIMER_SECONDS + BUFFER_TOTAL_SECONDS; // Total Empirica stage duration
 
 // Helper function to generate player stats
@@ -709,6 +709,35 @@ Empirica.onStageStart(({ stage }) => {
       console.log(`Dropout player ${player.get("gamePlayerId")} auto-submitted role ${ROLE_NAMES[optimalRole]} at stage start`);
     }
   });
+});
+
+// Safety net for early stage advance: end the stage as soon as every live
+// player has submitted. Empirica's built-in check reads p.stage.submit for
+// every player, which can miss dropouts whose submit is set server-side in
+// onStageStart (timing/propagation edge cases). Treating isDropout as
+// implicitly submitted keeps the stage from running out its full timer when
+// the only thing "missing" is a dropout's auto-submit.
+Empirica.on("playerStage", "submit", (_ctx, { playerStage, submit }) => {
+  if (!submit) return;
+  const stage = playerStage.stage;
+  if (!stage || !stage.isCurrent()) return;
+  if (stage.get("ended")) return;
+
+  const stageType = stage.get("stageType");
+  if (stageType === "roundEnd" || stageType === "gameEnd") return;
+
+  const game = playerStage.player?.currentGame;
+  if (!game) return;
+
+  const allReady = game.players.every(p =>
+    p.get("ended") || p.get("isDropout") || p.stage?.get("submit")
+  );
+  if (allReady) {
+    const roundNumber = stage.round?.get("roundNumber");
+    const stageNumber = stage.get("stageNumber");
+    console.log(`All live players submitted on Round ${roundNumber}, Stage ${stageNumber} — ending stage early`);
+    stage.set("ended", true);
+  }
 });
 
 Empirica.onStageEnded(({ stage }) => {
