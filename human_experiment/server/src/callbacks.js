@@ -97,8 +97,8 @@ function updateLobbyCount(ctx, game) {
 
 // Game configuration constants
 const TURNS_PER_STAGE = 2; // Each stage (role commitment) lasts for 2 turns
-const STAGE_TIMER_SECONDS = 20; // Primary stage timer (seconds)
-const BUFFER_TOTAL_SECONDS = 20; // Shared buffer across all rounds (seconds)
+const STAGE_TIMER_SECONDS = 90; // Primary stage timer (seconds)
+const BUFFER_TOTAL_SECONDS = 300; // Shared buffer across all rounds (seconds)
 const STAGE_DURATION = STAGE_TIMER_SECONDS + BUFFER_TOTAL_SECONDS; // Total Empirica stage duration
 
 // Helper function to generate player stats
