@@ -1,4 +1,4 @@
-import { useStageTimer } from "@empirica/core/player/classic/react";
+import { useStageTimer, useStage } from "@empirica/core/player/classic/react";
 import { usePlayer } from "@empirica/core/player/classic/react";
 import React from "react";
 import { STAGE_TIMER_SECONDS, BUFFER_TOTAL_SECONDS } from "../constants";
@@ -6,6 +6,7 @@ import { STAGE_TIMER_SECONDS, BUFFER_TOTAL_SECONDS } from "../constants";
 export function Timer() {
   const timer = useStageTimer();
   const player = usePlayer();
+  const stage = useStage();
 
   let totalRemaining;
   if (timer?.remaining || timer?.remaining === 0) {
@@ -15,18 +16,35 @@ export function Timer() {
   const submitted = player?.stage?.get("submit");
   const bufferTimeRemaining = player?.get("bufferTimeRemaining") ?? BUFFER_TOTAL_SECONDS;
 
-  // Stage timer: first 90s of the Empirica stage duration
+  // Stage timer: first STAGE_TIMER_SECONDS of the Empirica stage duration
   // Buffer zone starts at BUFFER_TOTAL_SECONDS remaining on the Empirica timer
   const stageSeconds = totalRemaining !== undefined
     ? Math.max(0, totalRemaining - BUFFER_TOTAL_SECONDS)
     : null;
 
+  // Estimate overtime this player has already incurred by submitting during buffer.
+  // Server deducts on stage end — we mirror that client-side so the display
+  // matches what will be persisted.
+  let submittedOvertimeSec = 0;
+  if (submitted) {
+    const stageStartedAt = stage?.get("stageStartedAt");
+    const roleSubmittedAt = player?.stage?.get("roleSubmittedAt");
+    if (stageStartedAt && roleSubmittedAt) {
+      submittedOvertimeSec = Math.max(0, (roleSubmittedAt - stageStartedAt) / 1000 - STAGE_TIMER_SECONDS);
+    }
+  }
+  const effectiveBufferRemaining = Math.max(0, bufferTimeRemaining - submittedOvertimeSec);
+
   // Buffer display: how much buffer the player actually has left
   // When stage timer is running (stageSeconds > 0), buffer is not active
-  // When stage timer expired, buffer counts down
-  const bufferSeconds = totalRemaining !== undefined && stageSeconds === 0
-    ? Math.min(totalRemaining, bufferTimeRemaining)
-    : null;
+  // When stage timer expired and not submitted, buffer counts down live
+  // When submitted, show stored value minus estimated overtime
+  let bufferSeconds = null;
+  if (totalRemaining !== undefined && stageSeconds === 0) {
+    bufferSeconds = submitted
+      ? Math.round(effectiveBufferRemaining)
+      : Math.min(totalRemaining, bufferTimeRemaining);
+  }
 
   const stageExpired = stageSeconds === 0 && totalRemaining !== null;
   const bufferLow = bufferSeconds !== null && bufferSeconds < 60;
@@ -67,9 +85,9 @@ export function Timer() {
       )}
 
       {/* Buffer remaining indicator (always visible, small) */}
-      {!stageExpired && bufferTimeRemaining < BUFFER_TOTAL_SECONDS && (
+      {!stageExpired && effectiveBufferRemaining < BUFFER_TOTAL_SECONDS && (
         <div className="text-xs text-gray-400 tabular-nums">
-          Buffer: {humanTimer(Math.round(bufferTimeRemaining))}
+          Buffer: {humanTimer(Math.round(effectiveBufferRemaining))}
         </div>
       )}
     </div>
