@@ -1,0 +1,13 @@
+[
+  {
+    "inference_ll": -0.8225401146120249,
+    "accuracy": 0.9114391143911439,
+    "n": 542,
+    "floor_hits": 0,
+    "strategy_name": "drift_prior_0.400",
+    "kind": "drift_prior",
+    "param": 0.4,
+    "tau_prior": 5.057028015672493,
+    "epsilon": 0.001
+  }
+]
