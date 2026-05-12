@@ -1,0 +1,7 @@
+export,player_rounds,games,dropout_player_rounds,dropout_games,auto_submitted_stages,human_player_rounds,bot_player_rounds
+04-23,240,10,40,3,151,180,60
+04-27a,264,11,56,5,212,198,66
+04-27b,216,9,24,3,93,162,54
+05-11a,240,10,16,2,65,180,60
+05-11b,240,10,32,3,114,180,60
+All,1200,50,168,16,635,900,300
