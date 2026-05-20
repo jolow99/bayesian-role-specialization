@@ -21,3 +21,6 @@
 
 # Built PDF — regenerate from source
 Research_report.pdf
+
+# Out-of-tree build directory
+build/
