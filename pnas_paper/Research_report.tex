@@ -1,6 +1,8 @@
 \documentclass[9pt,twocolumn,twoside]{pnas-new}
 % Use the lineno option to display guide line numbers if required.
 
+\usetikzlibrary{matrix, arrows.meta, positioning}
+
 \articletype{SOCIAL SCIENCES / PSYCHOLOGICAL AND COGNITIVE SCIENCES}
 
 \templatetype{pnasresearcharticle}
@@ -139,115 +141,340 @@ assignments is biased by a strong preference for behavioural continuity.
 
 \section*{An Ad-Hoc Role Specialization Task}\label{sec:task}
 
-\subsection*{Game structure.} Three players form a team that fights a
-shared boss enemy across multiple stages within a round (Fig.~1A). At the
-start of each stage, every player privately selects one of three
-\textbf{roles}: \textit{Fighter} (attack-focused), \textit{Tank}
-(damage-blocking), or \textit{Medic} (healing). The role determines the
-action the player takes on each of the two turns within the stage: a
-Fighter attacks; a Tank blocks if the boss is telegraphed to attack,
-otherwise attacks; a Medic heals when the team is hurt and otherwise
-attacks. After each stage, every player guesses which role each of their
-teammates was playing (the \emph{inference query}). A round terminates when
-the team kills the boss (WIN), is wiped out (LOSE), or runs out of stages
-(TIMEOUT, capped at 5 stages).
+We introduce a three-player browser-based cooperative game implemented in
+the Empirica framework \cite{empirica2021}. Teammates cannot
+communicate, so coordination must proceed by inferring others' roles
+from actions and choosing one's own role accordingly. We first describe
+the task as a player encounters it, then give the formal MDP that
+underlies it. The MDP supplies both the ground-truth labels used in
+our behavioural analyses (\emph{stat-optimal} and
+\emph{deviate-optimal} role assignments) and the value function that
+will be plugged into the value-aware computational models below.
+Neither of these is itself a cognitive hypothesis: they are properties
+of the task.
 
-\subsection*{Stat profiles and role asymmetry.} Each player is assigned a
-\textbf{stat profile} $\theta_i = (\mathrm{STR}_i,\mathrm{DEF}_i,\mathrm{SUP}_i)$
-that scales the effectiveness of each role's signature action.
-Profiles are sampled to break symmetry: in a profile like $\theta_i =
-(4,1,1)$ the player is a much better Fighter than Tank or Medic, whereas
-$(2,2,2)$ is symmetric. The team's stat profile thus suggests a
-\emph{stat-optimal} role assignment, but players are free to deviate. In
-some configurations the truly optimal assignment (computed by
-value-iteration on the underlying Markov decision process; see Methods)
-differs from the stat-suggested one---the \emph{deviate-optimal} role
-assignment.
+\subsection*{Game as encountered by players.}\label{sec:task:structure}
+Three players form a team that fights a single boss enemy across at
+most five \emph{stages} per round (Fig.~\ref{fig:game}A). Each stage
+unfolds in three phases. First, every player privately selects one of
+three \textbf{roles}---\textit{Fighter}, \textit{Tank}, or
+\textit{Medic}---which is revealed only through subsequent
+actions. Second, two \textbf{turns} resolve in sequence; on each turn,
+the chosen role determines the player's action through a deterministic
+role policy (Fig.~\ref{fig:game}B): a Fighter always attacks; a Tank
+blocks if the boss telegraphs an attack on this turn and otherwise
+attacks; a Medic heals if the team has lost HP and otherwise attacks.
+All three actions resolve simultaneously and update the team's and
+boss's hit points (Fig.~\ref{fig:game}C). Third, an \textbf{inference
+query} asks each player to guess which role each teammate was just
+playing; these guesses are an explicit measurement of beliefs and do
+not influence game dynamics. A round terminates when the team defeats
+the boss (WIN), is reduced to zero HP (LOSE), or runs out of stages
+(TIMEOUT, capped at five stages).
 
-\subsection*{Round types.} A game consists of six rounds, divided between
-two types. In \textbf{human rounds} all three players are real humans;
-the team must coordinate a role assignment without communication. In
-\textbf{bot rounds} the human plays alongside two AI bots whose roles are
-fixed in advance. Crucially, the bots' roles are set to the
-\emph{deviate-optimal} assignment, so the human must abandon their
-stat-suggested role to fill the missing slot. Bot rounds test whether
-humans can override a strong prior cue (their own stat profile) when the
-joint optimum requires it.
+Each player is assigned a \textbf{stat profile}
+$\theta_i = (\mathrm{STR}_i,\mathrm{DEF}_i,\mathrm{SUP}_i)$ that scales
+the effectiveness of each role's signature action: STR scales Fighter
+attacks, DEF scales Tank blocking, and SUP scales Medic healing.
+Profiles are drawn from $\{(4,1,1),(1,4,1),(1,1,4),(2,2,2)\}$ and are
+visible to all players throughout the round. Each profile therefore
+suggests a \emph{stat-optimal} role---the role with the largest
+signature stat---but players are free to deviate.
 
-\subsection*{Game state and observability.} The team and the boss each
-have a hit-point pool. Player stats and the upcoming boss-attack
-intent (whether the boss will attack or pause on the next turn) are
-common knowledge; teammates' role choices and their per-turn actions are
-observed only after each turn resolves. This makes role inference a
-non-trivial Bayesian problem: the observed action history is the
-likelihood signal, and the stat profile provides a structured prior.
+A game consists of six rounds split into two types
+(Fig.~\ref{fig:game}D). In \textbf{human rounds} all three players are
+real humans and the team must coordinate without communication. In
+\textbf{bot rounds} the human plays alongside two AI bots whose roles
+are fixed in advance to the team's \emph{deviate-optimal} assignment
+(defined below), so the human must abandon their stat-suggested role to
+fill the missing slot. Bot rounds isolate the question of whether
+humans can override a strong prior cue when the joint optimum requires
+it.
+
+\begin{figure*}[t!]
+\centering
+\begin{tikzpicture}[
+  every node/.style={font=\sffamily\small},
+  panel/.style={draw=gray!40, rounded corners=3pt, inner sep=8pt},
+  ptitle/.style={font=\sffamily\bfseries},
+  stage/.style={draw=blue!50, fill=blue!8, rounded corners=2pt,
+                minimum width=1.45cm, minimum height=0.65cm,
+                font=\sffamily\footnotesize},
+  outc/.style={draw=green!55!black, fill=green!10, rounded corners=2pt,
+               minimum width=1.55cm, minimum height=0.65cm,
+               font=\sffamily\footnotesize},
+  sub/.style={draw=gray!60, rounded corners=2pt,
+              minimum height=0.6cm, font=\sffamily\footnotesize,
+              inner xsep=4pt},
+  arr/.style={->, >=stealth, gray!75, line width=0.5pt},
+  fighter/.style={fill=red!12, draw=red!55},
+  tank/.style={fill=blue!12, draw=blue!55},
+  medic/.style={fill=green!15, draw=green!55!black},
+  human/.style={draw=black, fill=blue!10,
+                minimum width=0.85cm, minimum height=0.7cm,
+                font=\sffamily\footnotesize\bfseries},
+  bot/.style={draw=gray!70, fill=gray!25,
+              minimum width=0.85cm, minimum height=0.7cm,
+              font=\sffamily\footnotesize\bfseries},
+]
+
+% =================================================================
+% Panel A: Round / stage / turn structure
+% =================================================================
+\node[ptitle, anchor=west] (Atitle) at (0,0) {\textbf{A}\ \ Round structure};
+
+% Stage timeline
+\foreach \i/\x in {1/0.3, 2/2.0, 3/3.7, 4/5.4, 5/7.1} {
+  \node[stage] (S\i) at (\x,-0.95) {Stage \i};
+}
+\foreach \i/\nx in {1/2, 2/3, 3/4, 4/5} {
+  \draw[arr] (S\i.east) -- (S\nx.west);
+}
+\node[outc] (out) at (8.95,-0.95) {Outcome};
+\draw[arr] (S5.east) -- (out.west);
+\node[anchor=west, font=\sffamily\scriptsize, gray!60!black]
+     at (8.05,-1.55) {WIN / LOSE / TIMEOUT};
+
+% Expanded stage detail (zoom-in)
+\draw[dashed, gray!55] (S2.south west) -- (-0.05,-2.25);
+\draw[dashed, gray!55] (S2.south east) -- (8.7,-2.25);
+\node[anchor=west, font=\sffamily\footnotesize, gray!60!black]
+     at (0, -2.05) {one stage:};
+
+\node[sub, fill=yellow!22] (rc)  at (1.0,-2.7) {Role choice};
+\node[sub, fill=red!15]    (t1)  at (3.0,-2.7) {Turn 1};
+\node[sub, fill=red!15]    (t2)  at (4.7,-2.7) {Turn 2};
+\node[sub, fill=purple!15, inner xsep=6pt] (inf) at (7.0,-2.7) {Inference query};
+\draw[arr] (rc.east) -- (t1.west);
+\draw[arr] (t1.east) -- (t2.west);
+\draw[arr] (t2.east) -- (inf.west);
+
+% =================================================================
+% Panel B: Role policies
+% =================================================================
+\node[ptitle, anchor=west] at (10.7,0) {\textbf{B}\ \ Role $\to$ action};
+
+\matrix (M) [matrix of nodes,
+             anchor=north west,
+             nodes={anchor=center, font=\sffamily\footnotesize,
+                    minimum height=0.55cm, inner xsep=3pt},
+             row sep=2pt, column sep=4pt,
+             column 1/.style={nodes={font=\sffamily\footnotesize\itshape}},
+             row 1/.style={nodes={font=\sffamily\scriptsize\bfseries}},
+            ] at (10.7,-0.55)
+{
+                  & boss attacks & boss pauses \\
+  Fighter (F)     & |[fighter]| ATTACK & |[fighter]| ATTACK \\
+  Tank (T)        & |[tank]|    BLOCK  & |[fighter]| ATTACK \\
+  Medic (M)       & |[medic]|   HEAL$^{*}$  & |[medic]| HEAL$^{*}$ \\
+};
+\node[anchor=north west, font=\sffamily\scriptsize, gray!60!black,
+      text width=6cm]
+     at (10.7,-3.4)
+     {$^{*}$ Medic attacks instead if team HP is full. Boss intent is
+      announced before each turn.};
+
+% =================================================================
+% Panel C: One turn's mechanics
+% =================================================================
+\node[ptitle, anchor=west] at (0,-4.55) {\textbf{C}\ \ One turn};
+
+% Joint action panel
+\node[draw=red!55,  fill=red!12,  rounded corners=2pt,
+      minimum width=0.95cm, minimum height=0.65cm,
+      font=\sffamily\footnotesize] (P1) at (0.6,-5.4) {P$_1$: A};
+\node[draw=blue!55, fill=blue!12, rounded corners=2pt,
+      minimum width=0.95cm, minimum height=0.65cm,
+      font=\sffamily\footnotesize] (P2) at (1.7,-5.4) {P$_2$: B};
+\node[draw=green!55!black, fill=green!15, rounded corners=2pt,
+      minimum width=0.95cm, minimum height=0.65cm,
+      font=\sffamily\footnotesize] (P3) at (2.8,-5.4) {P$_3$: H};
+
+\node[anchor=east, font=\sffamily\scriptsize, gray!60!black]
+     at (P1.west) {joint action:};
+
+% Arrow
+\draw[arr, line width=0.7pt] (3.45,-5.4) -- (4.4,-5.4);
+
+% Mechanics
+\node[anchor=west, font=\sffamily\scriptsize, text width=5.6cm]
+     at (4.4,-5.4)
+     {\,$h_E \!\leftarrow\! h_E - \sum_{i:\,a_i=A}\!\mathrm{STR}_i$ \\[1pt]
+      $h_T \!\leftarrow\! h_T - \max\!\big(0,\, d_E - \max_{i:\,a_i=B}\!\mathrm{DEF}_i\big)$ \\[1pt]
+      $\hphantom{h_T \!\leftarrow\! h_T} + \sum_{i:\,a_i=H}\!\mathrm{SUP}_i$\,};
+
+\node[anchor=north west, font=\sffamily\scriptsize, gray!60!black, text width=10cm]
+     at (0,-6.85)
+     {Attacks add (STR); only the strongest blocker counts (max DEF); heals add (SUP).
+      Damage applies only if the boss attacks ($\iota=1$).};
+
+% =================================================================
+% Panel D: Round types
+% =================================================================
+\node[ptitle, anchor=west] at (10.7,-4.55) {\textbf{D}\ \ Round types};
+
+% Human round
+\node[anchor=west, font=\sffamily\footnotesize] at (10.7,-5.1) {Human round:};
+\node[human] (H1) at (10.95,-5.7) {H};
+\node[human] (H2) at (11.95,-5.7) {H};
+\node[human] (H3) at (12.95,-5.7) {H};
+\node[anchor=west, font=\sffamily\scriptsize, gray!60!black,
+      text width=4.3cm]
+     at (13.6,-5.7) {3 humans; team must coordinate.};
+
+% Bot round
+\node[anchor=west, font=\sffamily\footnotesize] at (10.7,-6.35) {Bot round:};
+\node[human] (HB) at (10.95,-6.95) {H};
+\node[bot]   (B1) at (11.95,-6.95) {Bot};
+\node[bot]   (B2) at (12.95,-6.95) {Bot};
+\node[anchor=west, font=\sffamily\scriptsize, gray!60!black,
+      text width=4.3cm]
+     at (13.6,-6.95)
+     {Bots fixed to the deviate-optimal roles; human must
+      abandon their stat-suggested role.};
+
+\end{tikzpicture}
+\caption{Overview of the ad-hoc role specialization task. (\textbf{A})
+A round consists of up to five stages, each comprising a private role
+choice, two turns of joint action, and an inference query in which the
+player guesses each teammate's current role. (\textbf{B}) Roles map
+deterministically to actions through a role-conditioned policy that
+depends on the announced boss intent and current team HP.
+(\textbf{C}) On each turn the three players' actions resolve
+simultaneously: attacks (A) are additive in STR, blocks (B) are
+sub-additive in DEF (only the strongest blocker counts), and heals
+(H) are additive in SUP. (\textbf{D}) Human rounds feature three
+humans; bot rounds replace two of them with bots whose roles are
+fixed to the deviate-optimal assignment, so the human must override
+their own stat-suggested role.}
+\label{fig:game}
+\end{figure*}
+
+\subsection*{The task as a Markov Decision Process.}\label{sec:task:mdp}
+A single round is a finite-horizon MDP parametrised by the team's stat
+profile $\theta_{1:3}$, the boss's pre-committed attack-intent sequence,
+and a horizon $H$ (turns to the end of the round).
+
+\paragraph*{State and action.} The state $s = (\iota, h_T, h_E)$ holds
+the boss's announced intent for the upcoming turn
+($\iota \in \{0,1\}$, common knowledge), the team's HP $h_T$, and the
+boss's HP $h_E$. A state is terminal if $h_T=0$ or $h_E=0$. The joint
+action is $a = (a_1,a_2,a_3) \in \{\mathrm{ATTACK},\mathrm{BLOCK},\mathrm{HEAL}\}^3$;
+the three components resolve simultaneously into the HP updates shown
+in Fig.~\ref{fig:game}C.
+
+\paragraph*{Role-conditioned action model.} Each role induces a
+deterministic preferred action $a^*(r,s)$: Fighter $\to$ ATTACK; Tank
+$\to$ BLOCK iff $\iota=1$, else ATTACK; Medic $\to$ HEAL iff
+$h_T < h_T^{\max}$, else ATTACK. We assume action noise:
+\begin{equation}\label{eq:action-noise}
+P_\varepsilon(a \mid r, s) =
+\begin{cases} 1-\varepsilon & a = a^*(r,s),\\
+\varepsilon/2 & \text{otherwise.}\end{cases}
+\end{equation}
+
+\paragraph*{Reward and team value function.} A round yields reward
+$R = 100\,(t/H)$ when the team ends a stage with $h_T > 0$ and
+$h_E = 0$ (a fast win is rewarded more than a slow one); otherwise
+$R=0$. For any joint role assignment $\mathbf{r} = (r_1,r_2,r_3)$ and
+state $s$, the team's expected return under the role-conditioned policy
+is
+\begin{equation}\label{eq:value}
+V(\mathbf{r}, s) \;=\;
+\mathbb{E}\!\left[\sum_{t=0}^{H} R(s_t) \;\middle|\; s_0=s,\;
+a_t \!\sim\! \textstyle\prod_i P_\varepsilon(\cdot \mid r_i, s_t)\right].
+\end{equation}
+We pre-compute $V$ by exact value iteration on the tabular MDP,
+separately for each $(\theta_{1:3}, \text{intent sequence})$
+configuration used in the experiment (Methods).
+
+\paragraph*{Stat-optimal vs.\ deviate-optimal.} The \emph{stat-optimal}
+role assignment matches each player to the role their stat profile
+favours; the \emph{deviate-optimal} assignment is
+$\arg\max_{\mathbf{r}} V(\mathbf{r}, s_0)$. In most stat profiles these
+coincide, but a subset (used in bot rounds) was chosen so that the two
+disagree---the stat-suggested role is sub-optimal for the team.
+$V(\mathbf{r},s)$ is a property of the task; it tells us the expected
+payoff of any role assignment if every player follows the
+role-conditioned policy. It is not a model of cognition. We will use
+$V$ in two roles below: (i) as the ground truth that defines
+deviate-optimal assignments, and (ii) as a fixed input to those
+cognitive models that hypothesise humans are value-aware.
 
 \section*{Computational Models}\label{sec:models}
 
-We model each player as a Bayesian agent that maintains a joint
-probability distribution over the role-assignments of \emph{all three}
-players, updates it from the observed action history, and uses it to
-choose a role for the next stage. We then consider several variants that
-relax different aspects of this idealised account.
+We model each player as an approximately Bayesian agent that maintains
+a posterior over teammates' role assignments, updates it from the
+observed action history, and uses it to choose their own role at the
+next stage. Within this family we vary two design choices---whether
+role selection consults the task's value function $V$, and whether the
+agent is sticky in its own role---yielding seven models
+(Table~\ref{tab:models}). All seven share the same inference module
+(below) and differ only in the role-selection rule.
 
-\subsection*{Generative model and prior.} Let $r_i \in \{F,T,M\}$ be the
-role of player $i$ and $\theta_i$ their stat profile. We define a
-\emph{utility-based prior} over role assignments
-\begin{equation}
-P(r_1,r_2,r_3 \mid \theta_{1:3}) \propto \exp\!\left(\frac{1}{\tau_p}
+\subsection*{Belief over teammates' roles.}\label{sec:models:inference}
+
+\paragraph*{Prior.} Before observing any actions, the agent has a
+structured prior driven by the (common-knowledge) stat profiles:
+\begin{equation}\label{eq:prior}
+P_0(r_1,r_2,r_3 \mid \theta_{1:3}) \propto \exp\!\left(\frac{1}{\tau_p}
 \sum_{i=1}^3 \theta_i[r_i]\right),
 \end{equation}
 where $\theta_i[r_i]$ is the stat in $\theta_i$ corresponding to role
-$r_i$ (e.g.\ STR for Fighter), and $\tau_p$ is a temperature controlling
-how strongly the prior follows the stats. This captures the intuition
-that, before observing any actions, teammates are more likely to play
-roles their stats favour.
+$r_i$ (e.g.\ STR for Fighter) and $\tau_p$ controls how strongly the
+prior follows the stats. This captures the intuition that, before
+observing any actions, teammates are more likely to be playing roles
+their stats favour.
 
-\subsection*{Action model and Bayesian update.} Given a role $r$, the
-preferred action $a^*(r,s)$ is deterministic in the current game state
-$s$: Fighters attack, Tanks block iff the boss is attacking and otherwise
-attack, and Medics heal iff the team has lost HP and otherwise attack. We
-allow a small amount of action noise:
+\paragraph*{Likelihood and posterior update.} The likelihood reuses the
+MDP's role-conditioned action model
+(Eq.~\ref{eq:action-noise}). After each turn, the joint posterior over
+the role triple is updated by Bayes' rule using the observed joint
+action and the current game state.
+
+\paragraph*{Bounded memory.} A perfectly Bayesian observer would
+accumulate all turns of evidence. We instead use a \emph{drift-to-prior}
+memory model: at every stage boundary, the joint posterior is pulled $\beta$
+of the way back toward the original prior,
+$\tilde{P}_{t+1} = (1-\beta)\,P_t + \beta\,P_0$. This avoids the
+degenerate case in which the posterior collapses to a delta after a few
+highly informative actions and captures the empirically observed loss
+of inference accuracy across stages (Fig.~\ref{fig:inference}). The
+drift parameter is fit once against held-out human inference reports
+($\beta = 0.5$; Methods).
+
+\subsection*{Role selection: from beliefs to choices.}\label{sec:models:selection}
+
+Choosing a role at the next stage requires (i) anticipating what
+teammates will play and (ii) weighing the team's expected payoff of
+each candidate role assignment. Different cognitive hypotheses combine
+these in different ways. We compare seven role-selection rules,
+organised into three families (Table~\ref{tab:models}). Two design
+contrasts cut across the table: \emph{value-aware} models consult the
+task's value function $V$, while \emph{posterior-sampling (PS)} models
+ignore it; and \emph{sticky} models bias the agent toward its
+previously chosen role, while \emph{pure} models do not.
+
+\emph{Pure inference (no stickiness).}
+\textbf{Bayesian-Belief} chooses each role with probability equal to
+the marginal of the posterior over that player. It uses no value
+information.
+\textbf{Bayesian-Value} computes the agent's expected team value for
+each candidate role $r_i$ by marginalising over teammates,
 \begin{equation}
-P(a \mid r, s) = \begin{cases} 1-\varepsilon & a = a^*(r,s) \\
-\varepsilon/2 & \text{otherwise.}\end{cases}
+\hat V_i(r_i \mid \mathcal{H}) = \sum_{r_{-i}} P(r_{-i}\mid \mathcal{H})\,
+V(r_i, r_{-i}, s),
 \end{equation}
-After each turn, the joint posterior is updated by Bayes' rule using the
-observed actions of all three players.
-
-\subsection*{Bounded memory.} A perfect Bayesian observer would accumulate
-all observations across stages. We instead use a \emph{drift-to-prior}
-memory model: at every stage boundary, the joint posterior is pulled half
-of the way back to the original prior,
-$\tilde{P}_{t+1} = (1-\beta) P_t + \beta P_0$ with $\beta = 0.5$. This
-captures the empirically observed loss of inference accuracy across
-stages (Fig.~3) and avoids the degenerate case where the posterior
-collapses to a delta after a few highly informative actions. The drift
-parameter was selected by a held-out grid search against humans'
-single-stage inference reports (Methods).
-
-\subsection*{Role selection.} A player choosing a role at the next stage
-must reason about (i) what their teammates will play and (ii) what action
-they themselves should take. Different models differ in how they combine
-these. We compare seven instantiations, organised in three families
-(Table~1):
-
-\emph{Pure inference models.}
-\textbf{Bayesian-Belief} chooses each role with probability equal to the
-marginal of the posterior over that player. This captures pure posterior
-sampling and uses no value information.
-\textbf{Bayesian-Value} computes the expected utility of each role given
-the value function of the underlying game (estimated by value iteration)
-and the posterior over teammates' roles, and softmaxes:
+and softmaxes:
 \begin{equation}
-P(r_i \mid \mathcal{H}) \propto \exp\!\left(\frac{1}{\tau_v} V_i(r_i \mid
-\mathcal{H})\right),
+P(r_i \mid \mathcal{H}) \propto \exp\!\left(\frac{1}{\tau_v}\,
+\hat V_i(r_i \mid \mathcal{H})\right).
 \end{equation}
-where $V_i(r_i \mid \mathcal{H}) = \sum_{r_{-i}} P(r_{-i}\mid \mathcal{H})
-V(r_i, r_{-i}, s)$ is the expected team value if player $i$ takes role
-$r_i$ and teammates' roles are sampled from the posterior.
+Here $V(\cdot,\cdot,s)$ is the task value function from
+Eq.~\ref{eq:value}; the agent's $\hat V_i$ is its subjective expectation
+under uncertainty about teammates.
 
-\emph{Hybrid (sticky) models.}
+\emph{Sticky and value-aware.}
 \textbf{Bayesian-Walk} is an $\varepsilon$-mixture of the previous role
 and the value-aware softmax:
 \begin{equation}
@@ -256,23 +483,26 @@ P(r_i) = (1-\varepsilon_s)\,\mathbb{1}[r_i = r_i^{\text{prev}}]
 \end{equation}
 \textbf{Bayesian-Threshold} sticks unless a competing role exceeds the
 current role's expected utility by more than $\delta$; conditional on
-switching, it softmaxes over the candidates.
+switching, it softmaxes over candidates.
 
-\emph{Posterior-sampling variants.}
+\emph{Sticky but value-free (posterior-sampling).}
 \textbf{Bayesian-Walk-PS} and \textbf{Bayesian-Threshold-PS} are
-walk/threshold models that use the posterior marginal in place of the
-value-aware softmax, i.e.\ they do not consult the value function. A
-\textbf{Mixture-PS} model averages walk-PS and threshold-PS.
+walk/threshold rules that replace the value-aware softmax with the
+posterior marginal: they capture the alternative hypothesis that
+inference alone---unaided by the value function---suffices to predict
+role choices. \textbf{Mixture-PS} averages Walk-PS and Threshold-PS
+with mixing weight $w$.
 
-\subsection*{Fitting.} We fit each model in two stages. Stage~1 fits the
-inference parameters ($\tau_p, \varepsilon, $ and memory $\beta$) against
-held-out human inference reports (the stage-by-stage guesses about
-teammates' roles), yielding a single set of best parameters used by every
-Stage~2 model. Stage~2 fits each model's role-selection parameters
-($\tau_v, \varepsilon_s, \delta, w$) by maximising the Pearson
-correlation between the model's predicted role-combination distribution
-and the empirical distribution across humans, with cross-validation
-against held-out log-likelihood. Details are in Methods.
+\subsection*{Fitting.} We fit each model in two stages. Stage~1 fits
+the inference parameters ($\tau_p$, $\varepsilon$, and memory $\beta$)
+against held-out human inference reports (the stage-by-stage guesses
+about teammates' roles), yielding a single set of best parameters used
+by every Stage~2 model. Stage~2 fits each model's role-selection
+parameters ($\tau_v$, $\varepsilon_s$, $\delta$, $w$) by maximising the
+Pearson correlation between the model's predicted joint
+role-combination distribution and the empirical distribution, with
+cross-validation against held-out log-likelihood. Details are in
+Methods.
 
 \section*{Results}\label{sec:results}
 
@@ -285,7 +515,7 @@ $n{=}50$ games. After excluding the 16 games (32\%) that contained any
 participant drop-out, we obtained \textbf{187 clean human team-rounds}
 and \textbf{258 clean human bot rounds}. Treatment conditions varied
 only the assignment of stat profiles to role combinations and produced
-quantitatively similar behaviour (Fig.~1).
+quantitatively similar behaviour (Fig.~\ref{fig:winrates}).
 
 \begin{table}[t!]
 \centering
