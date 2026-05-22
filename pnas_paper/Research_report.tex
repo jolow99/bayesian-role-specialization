@@ -139,131 +139,116 @@ these results support a picture of ad-hoc role specialization as
 inference and role selection, but their search through the space of role
 assignments is biased by a strong preference for behavioural continuity.
 
+A useful study of ad-hoc role specialization must satisfy several
+design desiderata. The roles must be \emph{discrete and identifiable},
+so that one can talk about distributions over assignments; they must
+be \emph{complementary}, so that the team's outcome depends on who
+plays what; players' \emph{actions must reveal their roles}, so that
+inference is possible from observation alone; and the team's
+\emph{outcome must be measurable}, so that joint performance can be
+evaluated quantitatively. Real-world examples like the operating-room
+team or the impromptu kitchen satisfy these criteria but are
+confounded by communication, prior acquaintance, asymmetric expertise,
+and noisy outcomes that make precise computational modelling
+intractable. We therefore study role specialization in a stripped-down
+cooperative game, with Fighter, Tank, and Medic standing in for a
+general class of complementary roles and per-player stat profiles
+standing in for the asymmetric capability cues that, in the wild,
+partially predict who plays what. We use a game rather than a more
+naturalistic collaborative task because it remains faithful to the
+inferential structure of role specialization---private role choice,
+role-driven action, observable team outcome---while making each piece
+directly measurable. The game lets us control what each player knows,
+eliminate communication, and read out beliefs and choices
+stage-by-stage, at the cost of ecological richness---a trade-off in
+line with prior controlled studies of social inference
+\cite{baker2017rational, lambaBayesianCoordination}. The role labels
+and stat values are scaffolding rather than the phenomenon itself;
+what we are after is the inferential and selectional machinery that
+picks a complementary role given the observed actions of others.
+
 \section*{An Ad-Hoc Role Specialization Task}\label{sec:task}
 
-We introduce a three-player browser-based cooperative game implemented in
-the Empirica framework \cite{empirica2021}. Teammates cannot
-communicate, so coordination must proceed by inferring others' roles
-from actions and choosing one's own role accordingly. We first describe
-the task as a player encounters it, then give the formal MDP that
-underlies it. The MDP supplies both the ground-truth labels used in
-our behavioural analyses (\emph{stat-optimal} and
-\emph{deviate-optimal} role assignments) and the value function that
-will be plugged into the value-aware computational models below.
-Neither of these is itself a cognitive hypothesis: they are properties
-of the task.
+To probe ad-hoc role specialization we designed a three-player
+browser-based cooperative game, implemented in the Empirica framework
+\cite{empirica2021}, in which teammates must rapidly infer one
+another's roles from action evidence and choose their own role to
+make the team work---without communication.
 
-\subsection*{Game as encountered by players.}\label{sec:task:structure}
+\subsection*{Game structure.}\label{sec:task:structure}
 Three players form a team that fights a single boss enemy across at
-most five \emph{stages} per round (Fig.~\ref{fig:game}). Each stage
-unfolds in three phases. First, every player privately selects one of
-three \textbf{roles}---\textit{Fighter}, \textit{Tank}, or
+most five \emph{stages} per round (Fig.~\ref{fig:game}A). At the
+start of each stage, every player privately selects one of three
+\textbf{roles}---\textit{Fighter}, \textit{Tank}, or
 \textit{Medic}---which is revealed only through subsequent
-actions. Second, two \textbf{turns} resolve in sequence; on each turn,
-the chosen role determines the player's action through a deterministic
-role policy: a Fighter always attacks; a Tank
-blocks if the boss telegraphs an attack on this turn and otherwise
-attacks; a Medic heals if the team has lost HP and otherwise attacks.
-All three actions resolve simultaneously and update the team's and
-boss's hit points. Third, an \textbf{inference
-query} asks each player to guess which role each teammate was just
-playing; these guesses are an explicit measurement of beliefs and do
-not influence game dynamics. A round terminates when the team defeats
-the boss (WIN), is reduced to zero HP (LOSE), or runs out of stages
-(TIMEOUT, capped at five stages).
+actions. Two \textbf{turns} then resolve in sequence; on each turn the
+chosen role determines the player's action through a deterministic
+role-conditioned policy (Fig.~\ref{fig:game}B): a Fighter always
+attacks; a Tank blocks if the boss telegraphs an attack and otherwise
+attacks; a Medic heals if the team has lost HP and otherwise
+attacks. All three actions resolve simultaneously and update the
+team's and boss's hit points. After both turns, each player is asked
+to guess which role each teammate played in the just-completed
+stage---an explicit measurement of beliefs that does not influence
+game dynamics. A round terminates when the team defeats the boss
+(WIN), is reduced to zero HP (LOSE), or runs out of stages (TIMEOUT,
+capped at five stages). The full Markov decision process underlying
+the game---state and action formalism, damage resolution, reward, and
+value iteration---is deferred to Methods.
 
-Each player is assigned a \textbf{stat profile}
-$\theta_i = (\mathrm{STR}_i,\mathrm{DEF}_i,\mathrm{SUP}_i)$ that scales
-the effectiveness of each role's signature action: STR scales Fighter
-attacks, DEF scales Tank blocking, and SUP scales Medic healing.
-Profiles are drawn from $\{(4,1,1),(1,4,1),(1,1,4),(2,2,2)\}$ and are
-visible to all players throughout the round. Each profile therefore
-suggests a \emph{stat-optimal} role---the role with the largest
-signature stat---but players are free to deviate.
-
-A game consists of six rounds split into two types.
-In \textbf{human rounds} all three players are
-real humans and the team must coordinate without communication. In
-\textbf{bot rounds} the human plays alongside two AI bots whose roles
-are fixed in advance to the team's \emph{deviate-optimal} assignment
-(defined below), so the human must abandon their stat-suggested role to
-fill the missing slot. Bot rounds isolate the question of whether
-humans can override a strong prior cue when the joint optimum requires
-it.
-
+% TODO: replace with multi-panel figure
+% (A: stage loop schematic; B: role-conditioned policy table;
+%  C: stat-optimal vs deviate-optimal worked example;
+%  D: in-game UI screenshot as inset).
 \begin{figure*}[t!]
 \centering
-\includegraphics[width=0.72\linewidth]{fig_game_interface.png}
-\caption{Screenshot of the ad-hoc role-specialization task as seen by
-player P1 (mid-stage 2). Three players cooperate against a boss across
-up to five stages per round. The left panel shows the shared
-battlefield: the boss's STR / attack probability / HP (top right) and
-each player's STR / DEF / SUP stat profile (bottom left). At the start
-of each stage after the first, players are asked to infer which roles
-their teammates played in the previous stage (orange panel) before
-privately choosing their own role for the upcoming stage from
-\{Fighter, Tank, Medic\}. Once all three players commit, two turns of
-simultaneous action resolve according to the role-conditioned policy
-(Fighter $\to$ attack; Tank $\to$ block when the boss attacks, else
-attack; Medic $\to$ heal when the team is hurt, else attack), and the
-resulting actions and HP changes appear in the Battle History sidebar
-(right). A round ends in WIN (boss HP $=0$), LOSE (team HP $=0$), or
-TIMEOUT (five stages elapsed).}
+\includegraphics[width=\linewidth]{fig_task_panels.png}
+\caption{The ad-hoc role-specialization task. \textbf{(A)} The stage
+loop: at the start of each stage players privately choose a role
+(Fighter, Tank, or Medic); the chosen role drives two turns of
+simultaneous action; players then report inferences about teammates'
+previous-stage roles before the next stage begins. A round ends in
+WIN, LOSE, or TIMEOUT after at most five stages. \textbf{(B)} The
+role-conditioned action policy: each role maps deterministically to
+an action given the current game state (boss intent and team HP).
+\textbf{(C)} Stat-optimal vs.\ deviate-optimal disagreement. Each
+player's stat profile (top) suggests a particular role (e.g.\ high
+STR $\to$ Fighter), but the team's expected return $V(\mathbf{r},
+s)$ under value iteration may be maximised by a different
+assignment. The bot-round condition uses profiles for which the
+deviate-optimal assignment differs from the stat-optimal one.
+\textbf{(D)} Inset screenshot of the in-game interface as seen by one
+player: the shared battlefield panel shows the boss's stats and each
+player's stat profile (left); the orange panel solicits inferences
+about teammates from the previous stage; the right sidebar logs the
+battle history.}
 \label{fig:game}
 \end{figure*}
 
-\subsection*{The task as a Markov Decision Process.}\label{sec:task:mdp}
-A single round is a finite-horizon MDP parametrised by the team's stat
-profile $\theta_{1:3}$, the boss's pre-committed attack-intent sequence,
-and a horizon $H$ (turns to the end of the round).
+\subsection*{Capability cues and the deviation challenge.}\label{sec:task:profiles}
+Each player is assigned a \textbf{stat profile}
+$\theta_i = (\mathrm{STR}_i,\mathrm{DEF}_i,\mathrm{SUP}_i)$ that
+scales the effectiveness of their role's signature action: STR
+boosts Fighter attacks, DEF boosts Tank blocks, and SUP boosts Medic
+heals. Profiles are drawn from
+$\{(4,1,1),(1,4,1),(1,1,4),(2,2,2)\}$ and are common knowledge
+throughout the round. Each profile therefore suggests a
+\emph{stat-optimal} role---the role with the largest signature
+stat---but the team's expected return $V(\mathbf{r}, s)$, computed
+by value iteration over the MDP, may be maximised by a
+\emph{deviate-optimal} assignment that disagrees with one or more
+players' stat suggestions (Fig.~\ref{fig:game}C). The gap between
+stat-optimal and deviate-optimal is the experimental hinge: it tests
+whether players can override a salient individual cue when the joint
+optimum requires it. In most stat profiles the two coincide; a
+subset, used in bot rounds, is constructed so that they disagree.
 
-\paragraph*{State and action.} The state $s = (\iota, h_T, h_E)$ holds
-the boss's announced intent for the upcoming turn
-($\iota \in \{0,1\}$, common knowledge), the team's HP $h_T$, and the
-boss's HP $h_E$. A state is terminal if $h_T=0$ or $h_E=0$. The joint
-action is $a = (a_1,a_2,a_3) \in \{\mathrm{ATTACK},\mathrm{BLOCK},\mathrm{HEAL}\}^3$;
-the three components resolve simultaneously. Attacks (A) sum into the
-boss in STR; blocks (B) are sub-additive in DEF (only the strongest
-blocker counts); heals (H) add to team HP in SUP. Damage applies only
-if the boss attacks ($\iota=1$).
-
-\paragraph*{Role-conditioned action model.} Each role induces a
-deterministic preferred action $a^*(r,s)$: Fighter $\to$ ATTACK; Tank
-$\to$ BLOCK iff $\iota=1$, else ATTACK; Medic $\to$ HEAL iff
-$h_T < h_T^{\max}$, else ATTACK. We assume action noise:
-\begin{equation}\label{eq:action-noise}
-P_\varepsilon(a \mid r, s) =
-\begin{cases} 1-\varepsilon & a = a^*(r,s),\\
-\varepsilon/2 & \text{otherwise.}\end{cases}
-\end{equation}
-
-\paragraph*{Reward and team value function.} A round yields reward
-$R = 100\,(t/H)$ when the team ends a stage with $h_T > 0$ and
-$h_E = 0$ (a fast win is rewarded more than a slow one); otherwise
-$R=0$. For any joint role assignment $\mathbf{r} = (r_1,r_2,r_3)$ and
-state $s$, the team's expected return under the role-conditioned policy
-is
-\begin{equation}\label{eq:value}
-V(\mathbf{r}, s) \;=\;
-\mathbb{E}\!\left[\sum_{t=0}^{H} R(s_t) \;\middle|\; s_0=s,\;
-a_t \!\sim\! \textstyle\prod_i P_\varepsilon(\cdot \mid r_i, s_t)\right].
-\end{equation}
-We pre-compute $V$ by exact value iteration on the tabular MDP,
-separately for each $(\theta_{1:3}, \text{intent sequence})$
-configuration used in the experiment (Methods).
-
-\paragraph*{Stat-optimal vs.\ deviate-optimal.} The \emph{stat-optimal}
-role assignment matches each player to the role their stat profile
-favours; the \emph{deviate-optimal} assignment is
-$\arg\max_{\mathbf{r}} V(\mathbf{r}, s_0)$. In most stat profiles these
-coincide, but a subset (used in bot rounds) was chosen so that the two
-disagree---the stat-suggested role is sub-optimal for the team.
-$V(\mathbf{r},s)$ is a property of the task; it tells us the expected
-payoff of any role assignment if every player follows the
-role-conditioned policy. It is not a model of cognition. We will use
-$V$ in two roles below: (i) as the ground truth that defines
-deviate-optimal assignments, and (ii) as a fixed input to those
-cognitive models that hypothesise humans are value-aware.
+A game consists of six rounds split into two types. In \textbf{human
+rounds} all three players are real humans and the team must
+coordinate without communication. In \textbf{bot rounds} the human
+plays alongside two AI bots whose roles are fixed in advance to the
+team's deviate-optimal assignment, so the human must abandon their
+stat-suggested role to fill the remaining slot.
 
 \section*{Computational Models}\label{sec:models}
 
@@ -686,17 +671,55 @@ together with the boss's attack-intent sequence (which is common
 knowledge). Bot rounds additionally specified the two bots' fixed
 roles, which were always set to the deviate-optimal slots.
 
-\subsection*{Game dynamics.} On each turn, the boss either attacks (1)
-or pauses (0) according to the publicly disclosed intent sequence. The
-three players' actions resolve simultaneously: attack damages are
-summed into the boss; the maximum defender's DEF reduces incoming
-damage if the boss attacks; total SUP heals the team back toward
-$\mathrm{TeamMaxHP}$. The boss has a fixed HP pool and a fixed
-per-attack damage; both team and boss HP are capped at their respective
-maxima. A round ends in WIN if boss HP $\leq 0$, LOSE if team HP $\leq 0$,
-or TIMEOUT after the fifth stage. Each stage is two turns; players
-choose a role at the start of every stage and may not change it
-mid-stage.
+\subsection*{The task as a Markov Decision Process.} A single round is
+a finite-horizon MDP parametrised by the team's stat profile
+$\theta_{1:3}$, the boss's pre-committed attack-intent sequence, and
+a horizon $H$ (turns to the end of the round).
+
+\paragraph*{State and action.} The state $s = (\iota, h_T, h_E)$
+holds the boss's announced intent for the upcoming turn
+($\iota \in \{0,1\}$, common knowledge), the team's HP $h_T$, and
+the boss's HP $h_E$. A state is terminal if $h_T = 0$ or $h_E = 0$.
+The joint action is
+$a = (a_1, a_2, a_3) \in \{\mathrm{ATTACK}, \mathrm{BLOCK}, \mathrm{HEAL}\}^3$;
+the three components resolve simultaneously. Attacks sum into the
+boss in STR; blocks are sub-additive in DEF (only the strongest
+blocker counts); heals add to team HP in SUP. Damage applies only if
+the boss attacks ($\iota = 1$). The boss has a fixed HP pool and a
+fixed per-attack damage; both team and boss HP are capped at their
+respective maxima. A round ends in WIN if boss HP $\leq 0$, LOSE if
+team HP $\leq 0$, or TIMEOUT after the fifth stage; each stage is
+two turns and players choose a role at the start of every stage.
+
+\paragraph*{Role-conditioned action model.} Each role induces a
+deterministic preferred action $a^*(r, s)$: Fighter $\to$ ATTACK;
+Tank $\to$ BLOCK iff $\iota = 1$, else ATTACK; Medic $\to$ HEAL iff
+$h_T < h_T^{\max}$, else ATTACK. We assume action noise:
+\begin{equation}\label{eq:action-noise}
+P_\varepsilon(a \mid r, s) =
+\begin{cases} 1-\varepsilon & a = a^*(r,s),\\
+\varepsilon/2 & \text{otherwise.}\end{cases}
+\end{equation}
+
+\paragraph*{Reward and value function.} A round yields reward
+$R = 100\,(t/H)$ when the team ends a stage with $h_T > 0$ and
+$h_E = 0$ (a fast win is rewarded more than a slow one); otherwise
+$R = 0$. For any joint role assignment $\mathbf{r} = (r_1, r_2, r_3)$
+and state $s$, the team's expected return under the role-conditioned
+policy is
+\begin{equation}\label{eq:value}
+V(\mathbf{r}, s) \;=\;
+\mathbb{E}\!\left[\sum_{t=0}^{H} R(s_t) \;\middle|\; s_0=s,\;
+a_t \!\sim\! \textstyle\prod_i P_\varepsilon(\cdot \mid r_i, s_t)\right].
+\end{equation}
+We pre-compute $V$ by exact value iteration on the tabular MDP,
+separately for each $(\theta_{1:3}, \text{intent sequence})$
+configuration used in the experiment. The \emph{stat-optimal} role
+assignment matches each player to the role their stat profile
+favours; the \emph{deviate-optimal} assignment is
+$\arg\max_{\mathbf{r}} V(\mathbf{r}, s_0)$. In most stat profiles
+these coincide; in the bot-round profiles they disagree by
+construction.
 
 \subsection*{Value matrices.} For every stat-profile/role-combination
 configuration used in the experiment, we precomputed the team value
