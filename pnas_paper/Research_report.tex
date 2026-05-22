@@ -155,17 +155,17 @@ of the task.
 
 \subsection*{Game as encountered by players.}\label{sec:task:structure}
 Three players form a team that fights a single boss enemy across at
-most five \emph{stages} per round (Fig.~\ref{fig:game}A). Each stage
+most five \emph{stages} per round (Fig.~\ref{fig:game}). Each stage
 unfolds in three phases. First, every player privately selects one of
 three \textbf{roles}---\textit{Fighter}, \textit{Tank}, or
 \textit{Medic}---which is revealed only through subsequent
 actions. Second, two \textbf{turns} resolve in sequence; on each turn,
 the chosen role determines the player's action through a deterministic
-role policy (Fig.~\ref{fig:game}B): a Fighter always attacks; a Tank
+role policy: a Fighter always attacks; a Tank
 blocks if the boss telegraphs an attack on this turn and otherwise
 attacks; a Medic heals if the team has lost HP and otherwise attacks.
 All three actions resolve simultaneously and update the team's and
-boss's hit points (Fig.~\ref{fig:game}C). Third, an \textbf{inference
+boss's hit points. Third, an \textbf{inference
 query} asks each player to guess which role each teammate was just
 playing; these guesses are an explicit measurement of beliefs and do
 not influence game dynamics. A round terminates when the team defeats
@@ -181,8 +181,8 @@ visible to all players throughout the round. Each profile therefore
 suggests a \emph{stat-optimal} role---the role with the largest
 signature stat---but players are free to deviate.
 
-A game consists of six rounds split into two types
-(Fig.~\ref{fig:game}D). In \textbf{human rounds} all three players are
+A game consists of six rounds split into two types.
+In \textbf{human rounds} all three players are
 real humans and the team must coordinate without communication. In
 \textbf{bot rounds} the human plays alongside two AI bots whose roles
 are fixed in advance to the team's \emph{deviate-optimal} assignment
@@ -193,160 +193,22 @@ it.
 
 \begin{figure*}[t!]
 \centering
-\begin{tikzpicture}[
-  every node/.style={font=\sffamily\small},
-  panel/.style={draw=gray!40, rounded corners=3pt, inner sep=8pt},
-  ptitle/.style={font=\sffamily\bfseries},
-  stage/.style={draw=blue!50, fill=blue!8, rounded corners=2pt,
-                minimum width=1.45cm, minimum height=0.65cm,
-                font=\sffamily\footnotesize},
-  outc/.style={draw=green!55!black, fill=green!10, rounded corners=2pt,
-               minimum width=1.55cm, minimum height=0.65cm,
-               font=\sffamily\footnotesize},
-  sub/.style={draw=gray!60, rounded corners=2pt,
-              minimum height=0.6cm, font=\sffamily\footnotesize,
-              inner xsep=4pt},
-  arr/.style={->, >=stealth, gray!75, line width=0.5pt},
-  fighter/.style={fill=red!12, draw=red!55},
-  tank/.style={fill=blue!12, draw=blue!55},
-  medic/.style={fill=green!15, draw=green!55!black},
-  human/.style={draw=black, fill=blue!10,
-                minimum width=0.85cm, minimum height=0.7cm,
-                font=\sffamily\footnotesize\bfseries},
-  bot/.style={draw=gray!70, fill=gray!25,
-              minimum width=0.85cm, minimum height=0.7cm,
-              font=\sffamily\footnotesize\bfseries},
-]
-
-% =================================================================
-% Panel A: Round / stage / turn structure
-% =================================================================
-\node[ptitle, anchor=west] (Atitle) at (0,0) {\textbf{A}\ \ Round structure};
-
-% Stage timeline
-\foreach \i/\x in {1/0.3, 2/2.0, 3/3.7, 4/5.4, 5/7.1} {
-  \node[stage] (S\i) at (\x,-0.95) {Stage \i};
-}
-\foreach \i/\nx in {1/2, 2/3, 3/4, 4/5} {
-  \draw[arr] (S\i.east) -- (S\nx.west);
-}
-\node[outc] (out) at (8.95,-0.95) {Outcome};
-\draw[arr] (S5.east) -- (out.west);
-\node[anchor=west, font=\sffamily\scriptsize, gray!60!black]
-     at (8.05,-1.55) {WIN / LOSE / TIMEOUT};
-
-% Expanded stage detail (zoom-in)
-\draw[dashed, gray!55] (S2.south west) -- (-0.05,-2.25);
-\draw[dashed, gray!55] (S2.south east) -- (8.7,-2.25);
-\node[anchor=west, font=\sffamily\footnotesize, gray!60!black]
-     at (0, -2.05) {one stage:};
-
-\node[sub, fill=yellow!22] (rc)  at (1.0,-2.7) {Role choice};
-\node[sub, fill=red!15]    (t1)  at (3.0,-2.7) {Turn 1};
-\node[sub, fill=red!15]    (t2)  at (4.7,-2.7) {Turn 2};
-\node[sub, fill=purple!15, inner xsep=6pt] (inf) at (7.0,-2.7) {Inference query};
-\draw[arr] (rc.east) -- (t1.west);
-\draw[arr] (t1.east) -- (t2.west);
-\draw[arr] (t2.east) -- (inf.west);
-
-% =================================================================
-% Panel B: Role policies
-% =================================================================
-\node[ptitle, anchor=west] at (10.7,0) {\textbf{B}\ \ Role $\to$ action};
-
-\matrix (M) [matrix of nodes,
-             anchor=north west,
-             nodes={anchor=center, font=\sffamily\footnotesize,
-                    minimum height=0.55cm, inner xsep=3pt},
-             row sep=2pt, column sep=4pt,
-             column 1/.style={nodes={font=\sffamily\footnotesize\itshape}},
-             row 1/.style={nodes={font=\sffamily\scriptsize\bfseries}},
-            ] at (10.7,-0.55)
-{
-                  & boss attacks & boss pauses \\
-  Fighter (F)     & |[fighter]| ATTACK & |[fighter]| ATTACK \\
-  Tank (T)        & |[tank]|    BLOCK  & |[fighter]| ATTACK \\
-  Medic (M)       & |[medic]|   HEAL$^{*}$  & |[medic]| HEAL$^{*}$ \\
-};
-\node[anchor=north west, font=\sffamily\scriptsize, gray!60!black,
-      text width=6cm]
-     at (10.7,-3.4)
-     {$^{*}$ Medic attacks instead if team HP is full. Boss intent is
-      announced before each turn.};
-
-% =================================================================
-% Panel C: One turn's mechanics
-% =================================================================
-\node[ptitle, anchor=west] at (0,-4.55) {\textbf{C}\ \ One turn};
-
-% Joint action panel
-\node[draw=red!55,  fill=red!12,  rounded corners=2pt,
-      minimum width=0.95cm, minimum height=0.65cm,
-      font=\sffamily\footnotesize] (P1) at (0.6,-5.4) {P$_1$: A};
-\node[draw=blue!55, fill=blue!12, rounded corners=2pt,
-      minimum width=0.95cm, minimum height=0.65cm,
-      font=\sffamily\footnotesize] (P2) at (1.7,-5.4) {P$_2$: B};
-\node[draw=green!55!black, fill=green!15, rounded corners=2pt,
-      minimum width=0.95cm, minimum height=0.65cm,
-      font=\sffamily\footnotesize] (P3) at (2.8,-5.4) {P$_3$: H};
-
-\node[anchor=east, font=\sffamily\scriptsize, gray!60!black]
-     at (P1.west) {joint action:};
-
-% Arrow
-\draw[arr, line width=0.7pt] (3.45,-5.4) -- (4.4,-5.4);
-
-% Mechanics
-\node[anchor=west, font=\sffamily\scriptsize, text width=5.6cm]
-     at (4.4,-5.4)
-     {\,$h_E \!\leftarrow\! h_E - \sum_{i:\,a_i=A}\!\mathrm{STR}_i$ \\[1pt]
-      $h_T \!\leftarrow\! h_T - \max\!\big(0,\, d_E - \max_{i:\,a_i=B}\!\mathrm{DEF}_i\big)$ \\[1pt]
-      $\hphantom{h_T \!\leftarrow\! h_T} + \sum_{i:\,a_i=H}\!\mathrm{SUP}_i$\,};
-
-\node[anchor=north west, font=\sffamily\scriptsize, gray!60!black, text width=10cm]
-     at (0,-6.85)
-     {Attacks add (STR); only the strongest blocker counts (max DEF); heals add (SUP).
-      Damage applies only if the boss attacks ($\iota=1$).};
-
-% =================================================================
-% Panel D: Round types
-% =================================================================
-\node[ptitle, anchor=west] at (10.7,-4.55) {\textbf{D}\ \ Round types};
-
-% Human round
-\node[anchor=west, font=\sffamily\footnotesize] at (10.7,-5.1) {Human round:};
-\node[human] (H1) at (10.95,-5.7) {H};
-\node[human] (H2) at (11.95,-5.7) {H};
-\node[human] (H3) at (12.95,-5.7) {H};
-\node[anchor=west, font=\sffamily\scriptsize, gray!60!black,
-      text width=4.3cm]
-     at (13.6,-5.7) {3 humans; team must coordinate.};
-
-% Bot round
-\node[anchor=west, font=\sffamily\footnotesize] at (10.7,-6.35) {Bot round:};
-\node[human] (HB) at (10.95,-6.95) {H};
-\node[bot]   (B1) at (11.95,-6.95) {Bot};
-\node[bot]   (B2) at (12.95,-6.95) {Bot};
-\node[anchor=west, font=\sffamily\scriptsize, gray!60!black,
-      text width=4.3cm]
-     at (13.6,-6.95)
-     {Bots fixed to the deviate-optimal roles; human must
-      abandon their stat-suggested role.};
-
-\end{tikzpicture}
-\caption{Overview of the ad-hoc role specialization task. (\textbf{A})
-A round consists of up to five stages, each comprising a private role
-choice, two turns of joint action, and an inference query in which the
-player guesses each teammate's current role. (\textbf{B}) Roles map
-deterministically to actions through a role-conditioned policy that
-depends on the announced boss intent and current team HP.
-(\textbf{C}) On each turn the three players' actions resolve
-simultaneously: attacks (A) are additive in STR, blocks (B) are
-sub-additive in DEF (only the strongest blocker counts), and heals
-(H) are additive in SUP. (\textbf{D}) Human rounds feature three
-humans; bot rounds replace two of them with bots whose roles are
-fixed to the deviate-optimal assignment, so the human must override
-their own stat-suggested role.}
+\includegraphics[width=0.72\linewidth]{fig_game_interface.png}
+\caption{Screenshot of the ad-hoc role-specialization task as seen by
+player P1 (mid-stage 2). Three players cooperate against a boss across
+up to five stages per round. The left panel shows the shared
+battlefield: the boss's STR / attack probability / HP (top right) and
+each player's STR / DEF / SUP stat profile (bottom left). At the start
+of each stage after the first, players are asked to infer which roles
+their teammates played in the previous stage (orange panel) before
+privately choosing their own role for the upcoming stage from
+\{Fighter, Tank, Medic\}. Once all three players commit, two turns of
+simultaneous action resolve according to the role-conditioned policy
+(Fighter $\to$ attack; Tank $\to$ block when the boss attacks, else
+attack; Medic $\to$ heal when the team is hurt, else attack), and the
+resulting actions and HP changes appear in the Battle History sidebar
+(right). A round ends in WIN (boss HP $=0$), LOSE (team HP $=0$), or
+TIMEOUT (five stages elapsed).}
 \label{fig:game}
 \end{figure*}
 
@@ -360,8 +222,10 @@ the boss's announced intent for the upcoming turn
 ($\iota \in \{0,1\}$, common knowledge), the team's HP $h_T$, and the
 boss's HP $h_E$. A state is terminal if $h_T=0$ or $h_E=0$. The joint
 action is $a = (a_1,a_2,a_3) \in \{\mathrm{ATTACK},\mathrm{BLOCK},\mathrm{HEAL}\}^3$;
-the three components resolve simultaneously into the HP updates shown
-in Fig.~\ref{fig:game}C.
+the three components resolve simultaneously. Attacks (A) sum into the
+boss in STR; blocks (B) are sub-additive in DEF (only the strongest
+blocker counts); heals (H) add to team HP in SUP. Damage applies only
+if the boss attacks ($\iota=1$).
 
 \paragraph*{Role-conditioned action model.} Each role induces a
 deterministic preferred action $a^*(r,s)$: Fighter $\to$ ATTACK; Tank
