@@ -12,6 +12,8 @@ __pycache__/
 .ipynb_checkpoints/
 cogsci_paper/slides/
 *.pdf
+# ...but keep vector figure outputs from analysis experiments (paper-facing artifacts)
+!analysis/experiments/**/*.pdf
 *.html
 computational_model/bayesian-role-specialization-*/
 computational_model/analysis/figures
