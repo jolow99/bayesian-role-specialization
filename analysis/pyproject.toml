@@ -20,5 +20,10 @@ build-backend = "hatchling.build"
 [tool.hatch.build.targets.wheel]
 packages = ["shared"]
 
+[tool.uv]
+# Build Pillow from source so it links against Homebrew libraqm — required
+# to shape ZWJ emoji (the medic 👩🏻‍⚕️ role icon) in figure rendering.
+no-binary-package = ["pillow"]
+
 [tool.uv.sources]
 scribe = { git = "https://github.com/goodfire-ai/scribe.git" }
