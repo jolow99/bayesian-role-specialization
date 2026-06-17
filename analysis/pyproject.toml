@@ -11,6 +11,7 @@ dependencies = [
     "pandas>=3.0.0",
     "scribe",
     "seaborn>=0.13.2",
+    "svgpath2mpl>=1.0.0",
 ]
 
 [build-system]
