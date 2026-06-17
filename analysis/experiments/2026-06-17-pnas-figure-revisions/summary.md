@@ -48,7 +48,8 @@ fill + a crisp role-coloured border) rather than a solid colour block, so
 the role/action icons read on a near-white ground — the action emoji sit
 directly on the card (the old white chips behind them are gone, which
 looked awkward against the solid fill). The legend keys both the role and
-action icons, each laid out on a single horizontal "Roles" / "Actions" row.
+action icons under a "Roles" / "Actions" header with the three icons on the
+row beneath each.
 
 **Decluttered** per the latest pass: dropped the "human" sub-label, the
 "team's belief" row label, the "turn" index row, the in-figure "WIN" tag,
@@ -62,15 +63,16 @@ The **legend sits in the empty top-left block** (left of the Start column,
 above the P1 group) as a compact single column — no bottom legend, so the
 freed bottom whitespace is cut. The **Roles** key (Fighter / Tank / Medic
 mini-cards matching the light-tinted stage cards) and the **Actions** key
-(attack / block / heal) each occupy one **horizontal row**; the remaining
-rows key a **paired team(blue)/boss(red) HP bar** (the inline "team HP" /
-"boss HP" strip labels are removed — this is now the only HP key), the red ▾
-**"boss attacks"** marker, a worked mini bar-chart for the posterior bars,
-and the two role-inference markers as their own rows (no sub-header): filled
-▲ = **correct role inference**, hollow △ = **wrong role inference**. The
-per-stage carets sit on the inferred-role bar and are **labelled with the
-reporting player (P1/P2/P3)** beneath, so each marker reads as "P_n inferred
-this player's role correctly/wrongly".
+(attack / block / heal) each sit under a bold header with the three icons on
+the row beneath; the remaining rows key a **paired team(blue)/boss(red) HP
+bar** (the inline "team HP" / "boss HP" strip labels are removed — this is
+now the only HP key), the red ▾ **"boss attacks"** marker, a worked mini
+bar-chart for the posterior bars, and the two role-inference markers as
+their own rows (no sub-header): filled ▲ = **correct role inference**,
+hollow △ = **wrong role inference**. The per-stage carets sit on the
+inferred-role bar and are **labelled with the reporting player (P1/P2/P3)**
+beneath: a lone reporter for a role is centred on that role's bar, two
+reporters of the same role are spread horizontally around it.
 
 **Why a 4-stage (not 5-stage) case.** The advisor's hard requirements were
 a 5-stage round that (i) starts near-worst, (ii) shows sustained

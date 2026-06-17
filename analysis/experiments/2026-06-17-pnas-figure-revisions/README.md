@@ -8,7 +8,7 @@ vector PDF (+ 300 dpi PNG), colorblind-safe, no in-figure titles.
 | File | Was | What changed |
 |------|-----|--------------|
 | `R4_individual_fitting.pdf` | `R2_individual_fitting` (06-16) | renamed R2→R4; all 13 models shown individually (6 Bayesian + 7 baselines) under the two titled sub-legends; **hatching removed** (solid fills) — replaced by a **two-family palette** (cool Bayesian / warm-neutral baselines, hand-tuned for separation) + heavier white separators; single-column |
-| `R3_team_case.pdf` | `R3_team_case` (06-16) | new 4-live-stage case ending rank 1; **leading "Start" column** (initial team/boss HP); **light role-tinted cards** (transparent fill + coloured border, no white action chips); game-UI role + action emoji on cards (no letters); compact **narrower** STR/DEF/SUP stat panel with **P1/P2/P3 at the far left**; **per-turn "turn 1/2" labels**; merged role+belief rows, boss-attacks folded into HP strip, relent arrows + best-response overlay removed; decluttered; **top-left legend** with **horizontal Roles / Actions rows**, paired team/boss HP bar key, correct/wrong **role-inference** markers (carets labelled with the reporting player); inline team/boss HP labels removed; HP numbers on the first turn of each stage too |
+| `R3_team_case.pdf` | `R3_team_case` (06-16) | new 4-live-stage case ending rank 1; **leading "Start" column** (initial team/boss HP); **light role-tinted cards** (transparent fill + coloured border, no white action chips); game-UI role + action emoji on cards (no letters); compact **narrower** STR/DEF/SUP stat panel with **P1/P2/P3 at the far left**; **per-turn "turn 1/2" labels**; merged role+belief rows, boss-attacks folded into HP strip, relent arrows + best-response overlay removed; decluttered; **top-left legend** with **Roles / Actions header-over-icons keys**, paired team/boss HP bar key, correct/wrong **role-inference** markers (carets labelled with the reporting player, centred when lone / spread when two); inline team/boss HP labels removed; HP numbers on the first turn of each stage too |
 
 `summary.md` collects the case-selection rationale and the (unchanged)
 model-fitting numbers.
@@ -57,14 +57,16 @@ track with its belief row, folded boss-attacks into the HP strip, removed
 the green relent arrows and the model best-response overlay). The **legend
 sits in the top-left block** as a compact single column — the bottom legend
 (and its whitespace) is gone. The **Roles** (Fighter / Tank / Medic
-mini-cards) and **Actions** (attack / block / heal) icon keys each occupy
-one **horizontal row**; the rest key a **paired team(blue)/boss(red) HP bar**
-(the inline "team HP" / "boss HP" strip labels are removed), the red ▾
-**"boss attacks"** marker, a mini bar-chart for the posterior bars, and the
-two role-inference markers as their own rows: filled ▲ = **correct role
-inference**, hollow △ = **wrong role inference** — the per-stage carets are
-labelled with the **reporting player (P1/P2/P3)** beneath. HP numbers are
-labeled on the **first turn of each stage** as well as the last.
+mini-cards) and **Actions** (attack / block / heal) keys each sit under a
+bold header with the three icons on the row beneath; the rest key a **paired
+team(blue)/boss(red) HP bar** (the inline "team HP" / "boss HP" strip labels
+are removed), the red ▾ **"boss attacks"** marker, a mini bar-chart for the
+posterior bars, and the two role-inference markers as their own rows: filled
+▲ = **correct role inference**, hollow △ = **wrong role inference** — the
+per-stage carets are labelled with the **reporting player (P1/P2/P3)**
+beneath (a lone reporter for a role is centred on that role's bar; two are
+spread around it). HP numbers are labeled on the **first turn of each
+stage** as well as the last.
 
 ## Scripts
 
