@@ -48,8 +48,7 @@ fill + a crisp role-coloured border) rather than a solid colour block, so
 the role/action icons read on a near-white ground — the action emoji sit
 directly on the card (the old white chips behind them are gone, which
 looked awkward against the solid fill). The legend keys both the role and
-action icons under a "Roles" / "Actions" header with the three icons on the
-row beneath each.
+action icons (lowercase names, one row each, no group header).
 
 **Decluttered** per the latest pass: dropped the "human" sub-label, the
 "team's belief" row label, the "turn" index row, the in-figure "WIN" tag,
@@ -61,18 +60,41 @@ rational + sticky story without the extra ink).
 
 The **legend sits in the empty top-left block** (left of the Start column,
 above the P1 group) as a compact single column — no bottom legend, so the
-freed bottom whitespace is cut. The **Roles** key (Fighter / Tank / Medic
-mini-cards matching the light-tinted stage cards) and the **Actions** key
-(attack / block / heal) each sit under a bold header with the three icons on
-the row beneath; the remaining rows key a **paired team(blue)/boss(red) HP
-bar** (the inline "team HP" / "boss HP" strip labels are removed — this is
-now the only HP key), the red ▾ **"boss attacks"** marker, a worked mini
-bar-chart for the posterior bars, and the two role-inference markers as
-their own rows (no sub-header): filled ▲ = **correct role inference**,
-hollow △ = **wrong role inference**. The per-stage carets sit on the
-inferred-role bar and are **labelled with the reporting player (P1/P2/P3)**
-beneath: a lone reporter for a role is centred on that role's bar, two
-reporters of the same role are spread horizontally around it.
+freed bottom whitespace is cut, and the rows are **generously spaced** for
+readability. The **role** key (fighter / tank / medic mini-cards matching
+the light-tinted stage cards, lowercase) and the **action** key (attack /
+block / heal) each occupy one row with **no group header**; the remaining
+rows key a **paired team(blue)/boss(red) HP bar** (the inline "team HP" /
+"boss HP" strip labels are removed — this is now the only HP key), the red ▾
+**"boss attacks"** marker, a worked mini bar-chart for the belief bars, and
+the two role-inference markers as their own rows: filled ▲ = **correct role
+inference**, hollow △ = **wrong role inference**. The **player-id and
+STR/DEF/SUP stat panels are kept small** so the left margin stays compact.
+
+**What the belief sub-rows show (per-observer).** For each target player the
+sub-row holds **two** mini bar-charts — **one per teammate-observer** —
+giving that observer's belief about the target's role, with the observer's
+own correct/wrong inference caret over its guessed-role bar and a
+**`Pr(Pᵢ | Pⱼ)`** label beneath (mild notation abuse: "Pᵢ's role given Pⱼ
+knows their own role" = Pⱼ's belief about Pᵢ; the legend defines it by
+example). So the P1 row holds `Pr(P1 | P2)` and `Pr(P1 | P3)` — the two
+teammates' beliefs about P1 — not P1's beliefs about others. Each observer's belief is read off the **fitted Bayesian
+observer model's joint posterior** by **conditioning on that observer's own
+(known) role** and marginalizing the third player:
+`P(r_target | r_obs = obs's role)`. This is *not* the same as the plain
+marginal: although the prior (`exp(Σᵢ statᵢ(rᵢ)/τ)`) and action likelihood
+(`∏ᵢ P(actionᵢ | roleᵢ)`) each factorize, the fitted memory step
+(`drift_prior_0.5`, a convex mix of the within-stage posterior with the
+prior — `pipeline.apply_boundary`) makes the joint **correlated**, so
+conditioning on your own role shifts your belief about teammates. The two
+observers therefore differ wherever the conditioning is informative (e.g.
+this case's Stage 4: P1→P2 `[.41,.51,.09]` vs P3→P2 `[.36,.51,.13]`); they
+coincide only when conditioning happens to be uninformative. The
+per-observer gaps are **modest in this symmetric 222 case** (the only
+coupling is the drift mixing) and would be larger for heterogeneous-stat
+teams. The conditioning is a pure readout of the existing joint posterior —
+no separate per-player model is fitted (`conditional_role_belief` in
+`team_case.py`).
 
 **Why a 4-stage (not 5-stage) case.** The advisor's hard requirements were
 a 5-stage round that (i) starts near-worst, (ii) shows sustained

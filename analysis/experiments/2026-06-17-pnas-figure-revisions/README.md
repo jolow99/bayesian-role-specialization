@@ -8,7 +8,7 @@ vector PDF (+ 300 dpi PNG), colorblind-safe, no in-figure titles.
 | File | Was | What changed |
 |------|-----|--------------|
 | `R4_individual_fitting.pdf` | `R2_individual_fitting` (06-16) | renamed R2→R4; all 13 models shown individually (6 Bayesian + 7 baselines) under the two titled sub-legends; **hatching removed** (solid fills) — replaced by a **two-family palette** (cool Bayesian / warm-neutral baselines, hand-tuned for separation) + heavier white separators; single-column |
-| `R3_team_case.pdf` | `R3_team_case` (06-16) | new 4-live-stage case ending rank 1; **leading "Start" column** (initial team/boss HP); **light role-tinted cards** (transparent fill + coloured border, no white action chips); game-UI role + action emoji on cards (no letters); compact **narrower** STR/DEF/SUP stat panel with **P1/P2/P3 at the far left**; **per-turn "turn 1/2" labels**; merged role+belief rows, boss-attacks folded into HP strip, relent arrows + best-response overlay removed; decluttered; **top-left legend** with **Roles / Actions header-over-icons keys**, paired team/boss HP bar key, correct/wrong **role-inference** markers (carets labelled with the reporting player, centred when lone / spread when two); inline team/boss HP labels removed; HP numbers on the first turn of each stage too |
+| `R3_team_case.pdf` | `R3_team_case` (06-16) | new 4-live-stage case ending rank 1; **leading "Start" column** (initial team/boss HP); **light role-tinted cards** (transparent fill + coloured border, no white action chips); game-UI role + action emoji on cards (no letters); compact **narrower** STR/DEF/SUP stat panel with **P1/P2/P3 at the far left**; **per-turn "turn 1/2" labels**; merged role+belief rows, boss-attacks folded into HP strip, relent arrows + best-response overlay removed; decluttered; **small** P1/P2/P3 ids + stat panels; **roomy top-left legend** (lowercase role/action keys, no group headers), paired team/boss HP bar key, correct/wrong **role-inference** markers; **per-observer belief sub-rows** (two mini posteriors per player per stage — each teammate's belief conditioned on its own role, `P(r_target | r_obs)`); inline team/boss HP labels removed; HP numbers on the first turn of each stage too |
 
 `summary.md` collects the case-selection rationale and the (unchanged)
 model-fitting numbers.
@@ -56,17 +56,34 @@ go in the caption) — and **much more compact** (merged each player's role
 track with its belief row, folded boss-attacks into the HP strip, removed
 the green relent arrows and the model best-response overlay). The **legend
 sits in the top-left block** as a compact single column — the bottom legend
-(and its whitespace) is gone. The **Roles** (Fighter / Tank / Medic
-mini-cards) and **Actions** (attack / block / heal) keys each sit under a
-bold header with the three icons on the row beneath; the rest key a **paired
-team(blue)/boss(red) HP bar** (the inline "team HP" / "boss HP" strip labels
-are removed), the red ▾ **"boss attacks"** marker, a mini bar-chart for the
-posterior bars, and the two role-inference markers as their own rows: filled
-▲ = **correct role inference**, hollow △ = **wrong role inference** — the
-per-stage carets are labelled with the **reporting player (P1/P2/P3)**
-beneath (a lone reporter for a role is centred on that role's bar; two are
-spread around it). HP numbers are labeled on the **first turn of each
-stage** as well as the last.
+(and its whitespace) is gone and the rows are **generously spaced**. The
+**role** (fighter / tank / medic mini-cards, lowercase) and **action**
+(attack / block / heal) keys each occupy one row with **no group header**;
+the rest key a **paired team(blue)/boss(red) HP bar** (the inline "team HP" /
+"boss HP" strip labels are removed), the red ▾ **"boss attacks"** marker, a
+mini bar-chart keyed as **"teammate's role belief"**, and the two
+role-inference markers as their own rows: filled ▲ = **correct role
+inference**, hollow △ = **wrong role inference**. The P1/P2/P3 ids and
+STR/DEF/SUP stat panels are kept **small** to keep the left margin compact.
+HP numbers are labeled on the **first turn of each stage** as well as the
+last.
+
+**Per-observer belief sub-rows.** Each target player's belief sub-row holds
+**two** mini bar-charts — one per teammate-observer — showing that
+observer's belief about the target's role, with the observer's own
+correct/wrong caret over its guessed-role bar and a `Pr(Pi | Pj)` label
+beneath (mild notation abuse for "Pj's belief about Pi", defined by example
+in the legend) — so the P1 row reads `Pr(P1 | P2)`, `Pr(P1 | P3)`.
+Each is read off the fitted **Bayesian observer model's joint posterior** by
+**conditioning on the observer's own (known) role** and marginalizing the
+third player: `P(r_target | r_obs = obs's role)` (`conditional_role_belief`
+in `team_case.py`). This differs from the plain marginal because the fitted
+memory step (`drift_prior_0.5`, a convex mix of the within-stage posterior
+with the prior) makes the joint **correlated**, so conditioning on your own
+role shifts your belief about teammates — the two observers therefore differ
+wherever the conditioning is informative (gaps are modest in this symmetric
+222 case, larger for heterogeneous-stat teams). No separate per-player model
+is fitted — it's a readout of the existing joint posterior.
 
 ## Scripts
 
