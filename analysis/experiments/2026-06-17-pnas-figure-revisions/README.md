@@ -8,7 +8,7 @@ vector PDF (+ 300 dpi PNG), colorblind-safe, no in-figure titles.
 | File | Was | What changed |
 |------|-----|--------------|
 | `R4_individual_fitting.pdf` | `R2_individual_fitting` (06-16) | renamed R2→R4; all 13 models shown individually (6 Bayesian + 7 baselines) under the two titled sub-legends; **hatching removed** (solid fills) — replaced by a **two-family palette** (cool Bayesian / warm-neutral baselines, hand-tuned for separation) + heavier white separators; single-column |
-| `R3_team_case.pdf` | `R3_team_case` (06-16) | new 4-live-stage case ending rank 1; **leading "Start" column** (initial team/boss HP); **light role-tinted cards** (transparent fill + coloured border, no white action chips); game-UI role + action emoji on cards (no letters); compact **narrower** STR/DEF/SUP stat panel with **P1/P2/P3 at the far left**; **per-turn "turn 1/2" labels**; merged role+belief rows, boss-attacks folded into HP strip, relent arrows + best-response overlay removed; decluttered; **small** P1/P2/P3 ids + stat panels; **roomy top-left legend** (lowercase role/action keys, no group headers), paired team/boss HP bar key, correct/wrong **role-inference** markers; **per-observer belief sub-rows** (two mini posteriors per player per stage — each teammate's belief conditioned on its own role, `P(r_target | r_obs)`); inline team/boss HP labels removed; HP numbers on the first turn of each stage too |
+| `R3_team_case.pdf` | `R3_team_case` (06-16) | new 4-live-stage case ending rank 1; **leading "Start" column** (initial team/boss HP); **light role-tinted cards** (transparent fill + coloured border, no white action chips); game-UI role + action emoji on cards (no letters); compact **narrower** STR/DEF/SUP stat panel with **P1/P2/P3 id + stats moved into the "Start" column** (no negative-x left margin); **per-turn "turn 1/2" labels**; merged role+belief rows, boss-attacks folded into HP strip, relent arrows + best-response overlay removed; decluttered; **bottom horizontal legend band** (2 centered rows: row 1 = lowercase role/action keys + green **"Py correctly infers Px"** caret; row 2 = team/boss HP + 👹 **boss-attacks** marker + posterior-bar key + red **"Py wrongly infers Px"** caret) — posterior key relabeled generic **`Pr(Px | Py) = Py's belief of Px`**; role-inference carets recoloured to **green = correct / red = wrong** (was filled/hollow), and the boss-attack marker is the **👹 emoji** (was a red ▾); legend rows **justified to a common width** with **tight F/T/M and A/B/H clusters**; **edge separator lines removed** (interior only); **dashed separators between the P1/P2 and P2/P3 groups**; **tighter STR/DEF/SUP row spacing**; **left/top whitespace reclaimed**; **per-observer belief sub-rows** (two mini posteriors per player per stage — each teammate's belief conditioned on its own role, `P(r_target | r_obs)`); belief readout **left-shifted by one stage** so each column shows that stage's **end-of-stage** posterior, with the **initial (prior) belief in the Start column** and the final stage's posterior now shown (no caret); inline team/boss HP labels removed; HP numbers on the first turn of each stage too |
 
 `summary.md` collects the case-selection rationale and the (unchanged)
 model-fitting numbers.
@@ -46,34 +46,53 @@ A/B/H). The role cards are now a **light role-tinted panel** (≈15% fill +
 a crisp role-coloured border) rather than a solid colour block, with the
 action emoji sitting directly on the card (the old white chips are gone —
 they looked awkward against the solid fill). A leading **"Start" column**
-(left of Stage 1) shows the **initial team / boss HP** before any turn. The
-**compact, narrower** 3-row STR/DEF/SUP stat panel (label + bar of value/6 +
-value) like the game's `PlayerStats` keeps the **P1/P2/P3 id at the far
-left** (vertically centred on its row), leaving the legend the full top-left
-block. **Per-turn "turn 1 / turn 2" labels** run under the HP strip. It is
-**decluttered** — no "human" / "team's belief" / "WIN" / title labels (those
-go in the caption) — and **much more compact** (merged each player's role
-track with its belief row, folded boss-attacks into the HP strip, removed
-the green relent arrows and the model best-response overlay). The **legend
-sits in the top-left block** as a compact single column — the bottom legend
-(and its whitespace) is gone and the rows are **generously spaced**. The
-**role** (fighter / tank / medic mini-cards, lowercase) and **action**
-(attack / block / heal) keys each occupy one row with **no group header**;
-the rest key a **paired team(blue)/boss(red) HP bar** (the inline "team HP" /
-"boss HP" strip labels are removed), the red ▾ **"boss attacks"** marker, a
-mini bar-chart keyed as **"teammate's role belief"**, and the two
-role-inference markers as their own rows: filled ▲ = **correct role
-inference**, hollow △ = **wrong role inference**. The P1/P2/P3 ids and
-STR/DEF/SUP stat panels are kept **small** to keep the left margin compact.
-HP numbers are labeled on the **first turn of each stage** as well as the
-last.
+(left of Stage 1) shows the **initial team / boss HP** before any turn, and
+now also holds the **P1/P2/P3 id + STR/DEF/SUP stat panel** at each player's
+row (the **compact, narrower** 3-row panel — label + bar of value/6 + value
+— like the game's `PlayerStats`). Moving the ids + stats out of the old
+negative-x left margin lets `x_lo` pull in to ≈ 0, so the Start column reads
+top-to-bottom as *"Start" header → initial HP → P1/P2/P3 stats*. `START_W`
+was widened (0.65 → 0.95) so the stat bars + numeric values fit legibly;
+everything downstream keys off `col_x`/`START_W` so the stages shift
+automatically. **Per-turn "turn 1 / turn 2" labels** run under the HP strip.
+It is **decluttered** — no "human" / "team's belief" / "WIN" / title labels
+(those go in the caption) — and **much more compact** (merged each player's
+role track with its belief row, folded boss-attacks into the HP strip,
+removed the green relent arrows and the model best-response overlay). The
+**legend now sits in a horizontal band along the bottom** (was a tall
+top-left column) as **two centered rows**: (1) the **role** (fighter / tank /
+medic mini-cards, lowercase) + **action** (attack / block / heal) keys, then
+the green **"Py correctly infers Px"** caret; (2) a **paired team(blue)/boss(red)
+HP bar** key (the inline "team HP" / "boss HP" strip labels are removed), the
+**👹 "boss attacks"** marker, the **posterior bar-chart** key relabeled generic
+**`Pr(Px | Py) = Py's belief of Px`** (spaces kept around the pipe — a bare `|`
+renders like an "I" at small sizes), then the red **"Py wrongly infers Px"**
+caret. The role-inference carets are now colour-coded (**green = correct,
+red = wrong**, replacing the old filled/hollow pair) both in the legend and on
+the belief charts, and the boss-attack marker is the **👹 emoji** (a vector
+Twemoji, was a red ▾) both in the HP strip and the legend. Within row 1 the
+**fighter/tank/medic and attack/block/heal icons are packed into tight
+clusters**, and **both legend rows are justified to a common width** so their
+left/right edges line up; the two inference-caret clusters are forced to an
+identical (max) width so the green and red carets **left-align in the same
+column**. The whole legend band is dropped a little lower for clearer
+separation from the diagram. With the stats in the Start column and the legend at the bottom,
+the **left and top whitespace is reclaimed** and the figure is noticeably
+tighter; the **outer left/right column-separator lines are dropped** (interior
+separators only, so nothing crosses the player ids) and the **STR/DEF/SUP stat
+rows are spaced tighter**. **Dashed horizontal separators** sit in the gaps
+between the P1/P2 and P2/P3 groups so each player's belief sub-row reads with
+the card *above* it (its own) rather than being mis-grouped with the player
+above. HP numbers are labeled on
+the **first turn of each stage** as well as the last.
 
 **Per-observer belief sub-rows.** Each target player's belief sub-row holds
 **two** mini bar-charts — one per teammate-observer — showing that
 observer's belief about the target's role, with the observer's own
 correct/wrong caret over its guessed-role bar and a `Pr(Pi | Pj)` label
-beneath (mild notation abuse for "Pj's belief about Pi", defined by example
-in the legend) — so the P1 row reads `Pr(P1 | P2)`, `Pr(P1 | P3)`.
+beneath (mild notation abuse for "Pj's belief about Pi", defined generically
+in the bottom legend as `Pr(Px | Py) = Py's belief of Px`) — so the P1 row
+reads `Pr(P1 | P2)`, `Pr(P1 | P3)`.
 Each is read off the fitted **Bayesian observer model's joint posterior** by
 **conditioning on the observer's own (known) role** and marginalizing the
 third player: `P(r_target | r_obs = obs's role)` (`conditional_role_belief`
@@ -84,6 +103,18 @@ role shifts your belief about teammates — the two observers therefore differ
 wherever the conditioning is informative (gaps are modest in this symmetric
 222 case, larger for heterogeneous-stat teams). No separate per-player model
 is fitted — it's a readout of the existing joint posterior.
+
+**Timing alignment (left-shifted by one stage).** The chart under stage
+column `s` is the belief at the **end of stage s** (`posteriors[s + 1]`,
+after observing stage s's actions, conditioned on the observer's role *during*
+stage s), and its caret is the human report **about stage s** (which the game
+logs at the next stage, since an inference made at stage N is about stage
+N−1). The leading **Start column** carries the **initial belief** (the prior
+`posteriors[0]`, uniform `[.33, .33, .33]` here) before any actions, with no
+caret; the **last stage** shows its end-of-stage posterior but no caret (no
+inference is ever reported after it). Previously the charts were offset by one
+(column `s` showed the *start*-of-stage-`s` belief about stage `s−1`), which
+mislabeled the timing and dropped the final stage's posterior.
 
 ## Scripts
 
