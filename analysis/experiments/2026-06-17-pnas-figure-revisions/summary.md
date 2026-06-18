@@ -34,8 +34,10 @@ against common.py's 05-12 fit.
 `PlayerStats` component — one row per STR / DEF / SUP (text label) with a
 bar of value/6 and the value — colour-linked to the role each stat favours
 (STR→Fighter red, DEF→Tank blue, SUP→Medic green). The panel is **compact**
-(short bars, tight spacing) so it no longer eats the left margin; the
-reclaimed left whitespace lets `x_lo` pull in. This team is symmetric
+(short bars, tight spacing) and now lives **inside the "Start" column** (at
+each player's row, below the initial-HP bars) rather than in the old
+negative-x left margin; `START_W` was widened 0.65 → 0.95 so the bars +
+numeric values fit, and `x_lo` pulls in to ≈ 0. This team is symmetric
 (all 2/2/2), so capabilities give no role hint and reaching the optimum is
 a pure coordination problem (state this in the caption — there is no
 in-figure title/note).
@@ -48,7 +50,7 @@ fill + a crisp role-coloured border) rather than a solid colour block, so
 the role/action icons read on a near-white ground — the action emoji sit
 directly on the card (the old white chips behind them are gone, which
 looked awkward against the solid fill). The legend keys both the role and
-action icons (lowercase names, one row each, no group header).
+action icons (lowercase names, in the bottom legend band).
 
 **Decluttered** per the latest pass: dropped the "human" sub-label, the
 "team's belief" row label, the "turn" index row, the in-figure "WIN" tag,
@@ -58,26 +60,57 @@ flags, the "best-resp: X" text, and the dashed gold "stuck" card outlines
 are gone (the value ranks + the card trajectory already carry the
 rational + sticky story without the extra ink).
 
-The **legend sits in the empty top-left block** (left of the Start column,
-above the P1 group) as a compact single column — no bottom legend, so the
-freed bottom whitespace is cut, and the rows are **generously spaced** for
-readability. The **role** key (fighter / tank / medic mini-cards matching
-the light-tinted stage cards, lowercase) and the **action** key (attack /
-block / heal) each occupy one row with **no group header**; the remaining
-rows key a **paired team(blue)/boss(red) HP bar** (the inline "team HP" /
-"boss HP" strip labels are removed — this is now the only HP key), the red ▾
-**"boss attacks"** marker, a worked mini bar-chart for the belief bars, and
-the two role-inference markers as their own rows: filled ▲ = **correct role
-inference**, hollow △ = **wrong role inference**. The **player-id and
-STR/DEF/SUP stat panels are kept small** so the left margin stays compact.
+The **legend sits in a horizontal band along the bottom** of the figure (it
+was a tall top-left column) laid out as **two centered rows**, which —
+together with the stats moving into the Start column — frees the left and top
+whitespace and tightens the figure. Row 1: the **role** key (fighter / tank /
+medic mini-cards matching the light-tinted stage cards, lowercase) + the
+**action** key (attack / block / heal), then the **green "Py correctly infers
+Px"** caret. Row 2: a **paired team(blue)/boss(red) HP bar** key (the inline
+"team HP" / "boss HP" strip labels are removed — this is now the only HP key),
+the **👹 "boss attacks"** marker, a worked mini bar-chart for the belief bars
+keyed generically as **`Pr(Px | Py) = Py's belief of Px`** (spaces kept around
+the pipe — a bare `|` reads like an "I" at small sizes), then the **red "Py
+wrongly infers Px"** caret. The two inference carets are **colour-coded
+(green = correct, red = wrong)** — replacing the earlier filled/hollow pair —
+and the same green/red carets annotate the belief charts; the boss-attack
+marker is the **👹 vector Twemoji** (was a red ▾) both in the HP strip and the
+legend. Within row 1 the **fighter/tank/medic and attack/block/heal icons are
+packed into tight clusters**, and **both rows are justified to a common width**
+(`leg_w`) so their left/right edges align; the two inference-caret clusters
+are given an identical (max) width so the green and red carets **left-align in
+the same column** (start at the same x). The whole legend band is dropped a
+little lower for clearer separation from the diagram.
+
+**Dashed group separators.** Two dashed horizontal lines sit in the gaps
+between the P1/P2 and P2/P3 groups (full grid width). Because each player's
+belief sub-row sits *below* its own role card, the separators keep readers
+from mis-grouping a player's card with the beliefs printed above it — the line
+makes "card + the beliefs beneath it" read as one unit.
 
 **What the belief sub-rows show (per-observer).** For each target player the
 sub-row holds **two** mini bar-charts — **one per teammate-observer** —
 giving that observer's belief about the target's role, with the observer's
 own correct/wrong inference caret over its guessed-role bar and a
-**`Pr(Pᵢ | Pⱼ)`** label beneath (mild notation abuse: "Pᵢ's role given Pⱼ
-knows their own role" = Pⱼ's belief about Pᵢ; the legend defines it by
-example). So the P1 row holds `Pr(P1 | P2)` and `Pr(P1 | P3)` — the two
+**`Pr(Pᵢ | Pⱼ)`** label.
+
+**Timing alignment.** The chart under stage column `s` is the belief at the
+**END of stage s** (the joint after observing stage s's actions, conditioned
+on the observer's role *during* stage s), and its caret is the human report
+**about stage s** — which the game logs at the *next* stage (an inference made
+at stage N is about stage N−1). The leading **Start column** carries the
+**initial belief** (the prior, `posteriors[0]`, uniform `[.33,.33,.33]` for
+this symmetric team) before any actions, with no caret. The **last stage**
+therefore shows its end-of-stage posterior but no caret (no inference is ever
+reported after it). Earlier the charts were offset by one (column `s` showed
+the *start*-of-stage-`s` belief about stage `s−1`), which both mislabeled the
+timing and dropped the final stage's posterior; the readout is now
+left-shifted by one stage so each column shows that stage's own outcome.
+
+The `Pr(Pᵢ | Pⱼ)` label is a mild notation abuse: "Pᵢ's role given Pⱼ
+knows their own role" = Pⱼ's belief about Pᵢ; the bottom legend defines it
+generically as `Pr(Px | Py) = Py's belief of Px`). So the P1 row holds
+`Pr(P1 | P2)` and `Pr(P1 | P3)` — the two
 teammates' beliefs about P1 — not P1's beliefs about others. Each observer's belief is read off the **fitted Bayesian
 observer model's joint posterior** by **conditioning on that observer's own
 (known) role** and marginalizing the third player:
@@ -88,7 +121,8 @@ marginal: although the prior (`exp(Σᵢ statᵢ(rᵢ)/τ)`) and action likeliho
 prior — `pipeline.apply_boundary`) makes the joint **correlated**, so
 conditioning on your own role shifts your belief about teammates. The two
 observers therefore differ wherever the conditioning is informative (e.g.
-this case's Stage 4: P1→P2 `[.41,.51,.09]` vs P3→P2 `[.36,.51,.13]`); they
+this case's end-of-Stage-4 belief about P2: P1→P2 `[.76,.12,.12]` vs
+P3→P2 `[.78,.11,.11]`); they
 coincide only when conditioning happens to be uninformative. The
 per-observer gaps are **modest in this symmetric 222 case** (the only
 coupling is the drift mixing) and would be larger for heterogeneous-stat
@@ -117,23 +151,38 @@ sustained stickiness-then-relent arc and correct beliefs.
    about that player" row into one labelled group — was 3 role tracks +
    3 belief rows (6 rows); now 3 stacked groups (role card on top, the
    team's posterior belief + teammates' reports directly beneath).
-2. **Folded boss-attack markers** into the team/boss HP strip (red carets
+2. **Folded boss-attack markers** into the team/boss HP strip (👹 emoji
    in the strip's lower margin) instead of a separate row. The inline
    "boss attacks" row label is dropped — it is now a legend item.
 3. **Removed the green relent arrows** — the role card simply changing in
    the next stage already shows the relent.
-4. **Legend moved to the empty top-left** (was a multi-row block under the
-   last player group); the bottom whitespace it occupied is removed.
-5. **Narrower STR/DEF/SUP stat panel** (shorter bars, tighter spacing). The
-   **player id (P1/P2/P3) sits at the far left**, vertically centred on its
-   row, leaving the legend the full top-left block.
+4. **Legend moved to a horizontal band along the bottom** (was a tall
+   single column in the top-left margin), laid out as two rows justified to a
+   common width with tight F/T/M and A/B/H clusters — so the left margin is no
+   longer reserved for it and `x_lo` pulls in to ≈ 0. Its posterior-bar key is
+   relabeled generically `Pr(Px | Py) = Py's belief of Px`; the inference
+   carets are the green "correctly infers" / red "wrongly infers" keys, and
+   the boss-attack key is the 👹 emoji.
+5. **Narrower STR/DEF/SUP stat panel + player id moved into the "Start"
+   column** (at each player's row, x ∈ [0, START_W]) instead of the old
+   negative-x left margin; `START_W` widened 0.65 → 0.95 so the bars +
+   values fit, and the three stat rows are spaced tighter (`stat_dy = 0.105`,
+   centred on the role-track row). This is the main left-whitespace reclaim.
 6. **Per-turn labels** ("turn 1" / "turn 2") are printed under the HP strip
    so each stage's turn columns are explicit, and inter-group / sub-row gaps
    were tightened to cut the remaining slack.
+7. **Dropped the outer column-separator lines** — only the interior
+   Start/stage boundaries are drawn, so no vertical rule crosses the player
+   ids at the left edge or hangs off the right edge.
+8. **Dashed separators between the player groups** (P1/P2 and P2/P3), so each
+   player's belief sub-row reads with its own card above it rather than with
+   the player above.
 
-**Start column.** A leading **"Start"** column (left of Stage 1) shows the
-**initial team and boss HP** (full bars, labelled "initial") so the reader
-sees the starting state before any turn. The team/boss HP numbers are also
+**Start column.** A leading **"Start"** column (left of Stage 1) reads
+top-to-bottom as: the **initial team and boss HP** (full bars, labelled
+"initial") so the reader sees the starting state before any turn, then each
+player's **P1/P2/P3 id + STR/DEF/SUP stat panel** at that player's row. The
+team/boss HP numbers are also
 printed on the **first turn of each stage as well as the last** (single-turn
 stages collapse to one label), so every stage's entering and exiting HP is
 legible. The inline "team HP" / "boss HP" strip labels are gone — the paired

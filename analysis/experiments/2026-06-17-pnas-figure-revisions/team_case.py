@@ -63,7 +63,7 @@ from common_human import (  # noqa: E402
     human_posteriors, load_human_records,
     load_stage1_canonical, stage_value_rank,
 )
-from icons import draw_action_icon, draw_role_icon  # noqa: E402
+from icons import draw_action_icon, draw_role_icon, draw_svg  # noqa: E402
 from shared.constants import ROLE_NAMES, ROLE_SHORT  # noqa: E402
 
 OUT_DIR = SCRIPT_DIR / "stuff to incorporate"
@@ -77,12 +77,15 @@ ROLE_COLORS = {0: "#e74c3c", 1: "#3498db", 2: "#2ecc71"}   # F / T / M
 TEAM_HP_COLOR = "#3498db"
 ENEMY_HP_COLOR = "#e74c3c"
 WIN_COLOR = "#27ae60"
+CARET_OK_COLOR = "#27ae60"     # green caret: observer correctly infers the role
+CARET_BAD_COLOR = "#e74c3c"    # red caret: observer wrongly infers the role
+BOSS_SVG = "boss_attack.svg"   # 👹 Twemoji, vector, marks the boss-attack turns
 ACTION_NAME_TO_LETTER = {"ATTACK": "A", "BLOCK": "B", "HEAL": "H"}
 
 # ── geometry (data units; axes aspect is equal) ──
 COL_W = 1.0
 TURN_W = COL_W / 2
-START_W = 0.65             # leading "Start" column (initial HP only)
+START_W = 0.95             # leading "Start" column (initial HP + player id/stats)
 CELL_PAD = 0.05
 TRACK_H = 0.50
 BELIEF_H = 0.30
@@ -160,8 +163,9 @@ def _draw_stage_headers(ax, n_stages, turns, y_top, y_bottom):
         ax.text(col_x(s) + COL_W / 2, y_top + 0.26, f"Stage {s + 1}",
                 ha="center", va="bottom", fontsize=8.5, fontweight="bold",
                 color="#333")
-    # column separators: left edge of Start, then every stage boundary
-    for x in [0.0] + [col_x(s) for s in range(n_stages + 1)]:
+    # interior column separators only (Start|Stage1, then each stage boundary);
+    # the outer left/right edges are left open to keep the figure uncluttered
+    for x in [col_x(s) for s in range(n_stages)]:
         ax.plot([x, x], [y_bottom, y_top + 0.22], color="#ddd",
                 linewidth=0.6, zorder=0)
 
@@ -174,7 +178,7 @@ def _draw_hp_strip(ax, rec, turns, hp_y, ranks):
     last_turn_of_stage = {}
     for tu in turns:
         last_turn_of_stage[tu["s"]] = tu["t"]
-    attack_y = hp_y - 0.085
+    attack_y = hp_y - 0.07
 
     # ---- Start column: the initial (full) team/boss HP, before any turn ----
     for k, (val, mx, color) in enumerate(
@@ -208,10 +212,9 @@ def _draw_hp_strip(ax, rec, turns, hp_y, ranks):
                 ax.text(bx + bw / 2, hp_y + HP_H + 0.03, f"{val:.0f}",
                         ha="center", va="bottom", fontsize=5, color=color)
         # boss-attack marker for this turn, in the HP band's lower margin
-        # (keyed in the legend; no inline row label)
+        # (👹 emoji, keyed in the legend; no inline row label)
         if tu["intent"] == 1:
-            ax.scatter([x], [attack_y], marker="v", s=12, color=ENEMY_HP_COLOR,
-                       zorder=5)
+            draw_svg(ax, BOSS_SVG, x, attack_y, size=0.13, zorder=5)
         # per-turn label under the HP strip (team/boss HP key now in legend)
         ax.text(x, hp_y - 0.15, f"turn {tu['j'] + 1}", ha="center", va="top",
                 fontsize=5, color="#999")
@@ -254,17 +257,18 @@ def _draw_player_group(ax, rec, turns, posteriors, role_y, bel_y, pid):
     n_stages = rec["n_stages"]
     stage_turns = rec["stage_turns"]
 
-    # left margin: a player id at the far left, then a compact 3-row stat panel
-    # mirroring the game UI's PlayerStats (STR/DEF/SUP label + short bar of
-    # value/6 + value), colour-linked to the role each favours (STR->F red,
-    # DEF->T blue, SUP->M green).
-    ax.text(-1.40, role_y + TRACK_H / 2, f"P{pid + 1}", ha="center",
+    # Start column (x in [0, START_W]): a player id at the left, then a compact
+    # 3-row stat panel mirroring the game UI's PlayerStats (STR/DEF/SUP label +
+    # short bar of value/6 + value), colour-linked to the role each favours
+    # (STR->F red, DEF->T blue, SUP->M green).
+    ax.text(0.07, role_y + TRACK_H / 2, f"P{pid + 1}", ha="center",
             va="center", fontsize=7, color="#222", fontweight="bold")
     st = [int(v) for v in rec["player_stats"][pid]]      # STR, DEF, SUP
-    lab_x = -1.27
-    bar_x0, bar_x1 = -1.05, -0.80
+    lab_x = 0.18
+    bar_x0, bar_x1 = 0.43, 0.73
+    stat_dy = 0.105                                      # tight row spacing
     for k, name in enumerate(("STR", "DEF", "SUP")):
-        row_cy = role_y + TRACK_H * (5 - 2 * k) / 6
+        row_cy = role_y + TRACK_H / 2 + (1 - k) * stat_dy
         ax.text(lab_x, row_cy, name, ha="left", va="center", fontsize=4.2,
                 color=ROLE_COLORS[k], fontweight="bold")
         ax.add_patch(Rectangle((bar_x0, row_cy - 0.022), bar_x1 - bar_x0, 0.044,
@@ -288,123 +292,192 @@ def _draw_player_group(ax, rec, turns, posteriors, role_y, bel_y, pid):
     # own (known) role — P(r_pid | r_obs = obs's role), marginalizing the third.
     # Two observers => two mini bar-charts per stage, each carrying that
     # observer's correct/wrong inference caret (filled = correct, hollow =
-    # wrong) and an observer label. ----
+    # wrong) and an observer label.
+    #
+    # Alignment: the chart under stage column `s` is the belief at the END of
+    # stage `s` (= posteriors[s + 1], after observing stage s's actions),
+    # conditioned on the observer's role *during* stage s, and the caret is the
+    # human report ABOUT stage s — which the game logs at the NEXT stage
+    # (s + 1), since an inference made at stage N is about stage N-1. The last
+    # stage therefore shows its end-of-stage posterior but no caret (no report
+    # is ever logged after it). The leading Start column carries the INITIAL
+    # belief (the prior, posteriors[0]) before any actions — no caret. ----
     observers = [o for o in range(3) if o != pid]          # the two teammates
-    reports_by_stage = {}   # {stage: {reporter: guessed role about pid}}
+    reports_by_stage = {}   # {stage logged: {reporter: guessed role about pid}}
     for si, obs_map in rec["inferred"].items():
         for reporter, guesses in obs_map.items():
             if pid in guesses:
                 reports_by_stage.setdefault(si, {})[reporter] = guesses[pid]
-    true_prev = {s: rec["role_seq"][s - 1][pid] for s in range(1, n_stages)}
+    true_now = {s: rec["role_seq"][s][pid] for s in range(n_stages)}
 
     mbw, mgap, max_h, half_dx = 0.06, 0.02, 0.13, 0.24
     base_y = bel_y + 0.115
+
+    def draw_cell(hc, belief, obs, guessed=None, correct=False):
+        """One observer's mini posterior bar-chart at centre `hc`, with an
+        optional correct/wrong caret over the guessed-role bar."""
+        ax.plot([hc - 0.13, hc + 0.13], [base_y, base_y],
+                color="#ccc", linewidth=0.5)
+        bar_x = {}
+        for role in range(3):
+            bx = hc + (role - 1) * (mbw + mgap) - mbw / 2
+            bar_x[role] = bx + mbw / 2
+            h = max(float(belief[role]) * max_h, 0.010)
+            ax.add_patch(Rectangle((bx, base_y), mbw, h,
+                                   facecolor=ROLE_COLORS[role],
+                                   edgecolor="none", alpha=0.80, zorder=4))
+        if guessed is not None:
+            ax.scatter([bar_x[guessed]], [base_y - 0.05], marker="^", s=12,
+                       facecolor=CARET_OK_COLOR if correct else CARET_BAD_COLOR,
+                       edgecolor="none", zorder=6)
+        # label as Pr(target | observer): observer's belief over this row's
+        # player's role given the observer's own (known) role
+        ax.text(hc, base_y - 0.10, f"Pr(P{pid + 1} | P{obs + 1})",
+                ha="center", va="top", fontsize=4.2, color="#444", zorder=6)
+
+    # ---- Start column: the initial belief (the prior) before any actions ----
+    for oi, obs in enumerate(observers):
+        hc = start_cx() + (oi - 0.5) * 2 * half_dx
+        obs_role = rec["role_seq"][0][obs]   # observer's chosen stage-1 role
+        belief = conditional_role_belief(posteriors[0], pid, obs, obs_role)
+        draw_cell(hc, belief, obs)
+
+    # ---- stage columns: end-of-stage-s belief ----
     for s in range(n_stages):
-        truth = true_prev.get(s)
-        reports = reports_by_stage.get(s, {})
-        cond_stage = s - 1 if s >= 1 else 0   # observer knows its inferred-stage role
+        truth = true_now.get(s)               # P{pid}'s actual role in stage s
+        reports = reports_by_stage.get(s + 1, {})   # reports ABOUT stage s
         for oi, obs in enumerate(observers):
             hc = col_x(s) + COL_W / 2 + (oi - 0.5) * 2 * half_dx
-            obs_role = rec["role_seq"][cond_stage][obs]
-            belief = conditional_role_belief(posteriors[s], pid, obs, obs_role)
-            ax.plot([hc - 0.13, hc + 0.13], [base_y, base_y],
-                    color="#ccc", linewidth=0.5)
-            bar_x = {}
-            for role in range(3):
-                bx = hc + (role - 1) * (mbw + mgap) - mbw / 2
-                bar_x[role] = bx + mbw / 2
-                h = max(float(belief[role]) * max_h, 0.010)
-                ax.add_patch(Rectangle((bx, base_y), mbw, h,
-                                       facecolor=ROLE_COLORS[role],
-                                       edgecolor="none", alpha=0.80, zorder=4))
-            # this observer's reported guess (caret over its guessed-role bar)
-            if obs in reports:
-                guessed = reports[obs]
-                correct = (truth is not None and guessed == truth)
-                ax.scatter([bar_x[guessed]], [base_y - 0.05], marker="^", s=11,
-                           facecolor="#222" if correct else "white",
-                           edgecolor="#222", linewidths=0.6, zorder=6)
-            # label as Pr(target | observer): observer's belief over this row's
-            # player's role given the observer's own (known) role
-            ax.text(hc, base_y - 0.10, f"Pr(P{pid + 1} | P{obs + 1})",
-                    ha="center", va="top", fontsize=4.2, color="#444", zorder=6)
+            obs_role = rec["role_seq"][s][obs]   # observer's own role in stage s
+            belief = conditional_role_belief(posteriors[s + 1], pid, obs, obs_role)
+            guessed = reports.get(obs)
+            correct = (guessed is not None and truth is not None
+                       and guessed == truth)
+            draw_cell(hc, belief, obs, guessed=guessed, correct=correct)
 
 
-def _draw_legend(ax, lx0, ly_top):
-    """Single-column legend in the top-left block (left of the Start column,
-    above the first player group), with generous line spacing. The role and
-    action icons are keyed by their lowercase names on one row each (no group
-    headers); the remaining rows key the HP bars, the boss-attack marker, the
-    posterior bars, and the correct/wrong role inferences."""
-    rh = 0.145
+def _draw_legend(ax, cx_center, y_top):
+    """Compact horizontal legend band along the bottom of the figure, laid out
+    across two centered rows: (1) the role icons + action icons (keyed by their
+    lowercase names) + the green "correctly infers" caret; (2) the team/boss HP
+    bar, the 👹 boss-attack marker, the posterior-bar key, and the red "wrongly
+    infers" caret. Returns the centre y of the last row so the caller can size
+    the canvas to it."""
+    CW = 0.052          # approx data-unit width per character at fontsize 6
+    TIGHT = 0.10        # gap WITHIN a cluster (fighter/tank/medic, A/B/H)
+    INTER = 0.22        # baseline gap BETWEEN clusters
+    ROW_H = 0.185
 
-    # ----- row 1: roles (one row, no header) -----
-    y = ly_top
-    cx = lx0 + 0.05
-    for r in range(3):
-        # mini role card matching the light-tinted stage cards
-        ax.add_patch(Rectangle((cx - 0.05, y - 0.046), 0.10, 0.092,
-                               facecolor=ROLE_COLORS[r], edgecolor=ROLE_COLORS[r],
-                               linewidth=0.7, alpha=0.20, zorder=3))
-        draw_role_icon(ax, r, cx, y, size=0.098, zorder=5)
-        ax.text(cx + 0.08, y, ROLE_NAMES[r].lower(), ha="left", va="center",
-                fontsize=6, color="#333")
-        cx += 0.08 + 0.046 * len(ROLE_NAMES[r]) + 0.13
+    def role_item(r):
+        name = ROLE_NAMES[r].lower()
 
-    # ----- row 2: actions (one row, no header) -----
-    y -= rh
-    cx = lx0 + 0.05
-    for a, name in (("A", "attack"), ("B", "block"), ("H", "heal")):
-        draw_action_icon(ax, a, cx, y, size=0.105, zorder=5)
-        ax.text(cx + 0.075, y, name, ha="left", va="center", fontsize=6,
-                color="#333")
-        cx += 0.075 + 0.046 * len(name) + 0.14
+        def draw(x, y):
+            cx = x + 0.05
+            ax.add_patch(Rectangle((cx - 0.05, y - 0.046), 0.10, 0.092,
+                                   facecolor=ROLE_COLORS[r],
+                                   edgecolor=ROLE_COLORS[r],
+                                   linewidth=0.7, alpha=0.20, zorder=3))
+            draw_role_icon(ax, r, cx, y, size=0.098, zorder=5)
+            ax.text(x + 0.135, y, name, ha="left", va="center", fontsize=6,
+                    color="#333")
+        return 0.135 + CW * len(name), draw
 
-    # ----- row 3: team/boss HP bar key -----
-    y -= rh
-    hbw, hh = 0.05, 0.13
-    ax.add_patch(Rectangle((lx0, y - hh / 2), hbw, hh, facecolor=TEAM_HP_COLOR,
-                           edgecolor="none", alpha=0.9, zorder=5))
-    ax.add_patch(Rectangle((lx0 + hbw + 0.015, y - hh / 2), hbw, hh * 0.6,
-                           facecolor=ENEMY_HP_COLOR, edgecolor="none",
-                           alpha=0.9, zorder=5))
-    ax.text(lx0 + 2 * hbw + 0.055, y, "team / boss HP", ha="left", va="center",
-            fontsize=6, color="#333")
+    def action_item(a, name):
+        def draw(x, y):
+            draw_action_icon(ax, a, x + 0.05, y, size=0.105, zorder=5)
+            ax.text(x + 0.12, y, name, ha="left", va="center", fontsize=6,
+                    color="#333")
+        return 0.12 + CW * len(name), draw
 
-    # ----- row 4: boss-attack marker -----
-    y -= rh
-    ax.scatter([lx0 + 0.03], [y], marker="v", s=12, color=ENEMY_HP_COLOR,
-               zorder=5)
-    ax.text(lx0 + 0.13, y, "boss attacks", ha="left", va="center", fontsize=6,
-            color="#333")
+    def hp_item():
+        text = "team / boss HP"
 
-    # ----- row 5: posterior bar-chart key -----
-    y -= rh
-    demo = [0.55, 0.30, 0.15]
-    bw, gap, h_max = 0.040, 0.020, 0.12
-    bx = lx0 + 0.01
-    base = y - h_max / 2
-    ax.plot([bx - 0.008, bx + 3 * bw + 2 * gap + 0.008], [base, base],
-            color="#ccc", linewidth=0.5, zorder=4)
-    for r in range(3):
-        ax.add_patch(Rectangle((bx + r * (bw + gap), base), bw,
-                               max(demo[r] * h_max, 0.010),
-                               facecolor=ROLE_COLORS[r], edgecolor="none",
-                               alpha=0.80, zorder=5))
-    ax.text(bx + 3 * bw + 2 * gap + 0.05, y, "Pr(P1 | P2) = P2's belief of P1",
-            ha="left", va="center", fontsize=6, color="#333")
+        def draw(x, y):
+            hbw, hh = 0.05, 0.13
+            ax.add_patch(Rectangle((x, y - hh / 2), hbw, hh,
+                                   facecolor=TEAM_HP_COLOR, edgecolor="none",
+                                   alpha=0.9, zorder=5))
+            ax.add_patch(Rectangle((x + hbw + 0.015, y - hh / 2), hbw, hh * 0.6,
+                                   facecolor=ENEMY_HP_COLOR, edgecolor="none",
+                                   alpha=0.9, zorder=5))
+            ax.text(x + 0.135, y, text, ha="left", va="center", fontsize=6,
+                    color="#333")
+        return 0.135 + CW * len(text), draw
 
-    # ----- rows 6 & 7: correct / wrong role inference -----
-    y -= rh
-    ax.scatter([lx0 + 0.05], [y], marker="^", s=12, facecolor="#222",
-               edgecolor="#222", linewidths=0.6, zorder=5)
-    ax.text(lx0 + 0.15, y, "correct role inference", ha="left", va="center",
-            fontsize=6, color="#333")
-    y -= rh
-    ax.scatter([lx0 + 0.05], [y], marker="^", s=12, facecolor="white",
-               edgecolor="#222", linewidths=0.6, zorder=5)
-    ax.text(lx0 + 0.15, y, "wrong role inference", ha="left", va="center",
-            fontsize=6, color="#333")
+    def boss_item():
+        text = "boss attacks"
+
+        def draw(x, y):
+            draw_svg(ax, BOSS_SVG, x + 0.05, y, size=0.13, zorder=5)
+            ax.text(x + 0.135, y, text, ha="left", va="center", fontsize=6,
+                    color="#333")
+        return 0.135 + CW * len(text), draw
+
+    def posterior_item():
+        text = "Pr(Px | Py) = Py's belief of Px"
+        bw, gap, h_max = 0.040, 0.020, 0.12
+        bars_w = 3 * bw + 2 * gap
+
+        def draw(x, y):
+            demo = [0.55, 0.30, 0.15]
+            base = y - h_max / 2
+            ax.plot([x - 0.008, x + bars_w + 0.008], [base, base],
+                    color="#ccc", linewidth=0.5, zorder=4)
+            for r in range(3):
+                ax.add_patch(Rectangle((x + r * (bw + gap), base), bw,
+                                       max(demo[r] * h_max, 0.010),
+                                       facecolor=ROLE_COLORS[r], edgecolor="none",
+                                       alpha=0.80, zorder=5))
+            ax.text(x + bars_w + 0.06, y, text, ha="left", va="center",
+                    fontsize=6, color="#333")
+        return bars_w + 0.06 + CW * len(text), draw
+
+    def caret_item(text, color, width):
+        # width is passed in (shared max) so both carets get an identical-width
+        # cluster — with the rows justified, equal last-cluster widths make the
+        # two carets left-align in the same column.
+        def draw(x, y):
+            ax.scatter([x + 0.05], [y], marker="^", s=12, facecolor=color,
+                       edgecolor="none", zorder=5)
+            ax.text(x + 0.13, y, text, ha="left", va="center", fontsize=6,
+                    color="#333")
+        return width, draw
+
+    # Each row is a list of CLUSTERS; items inside a cluster are packed tight
+    # (TIGHT gap) and clusters are spread apart. Both rows are justified to a
+    # common width so their left/right edges line up and the two inference
+    # carets sit in the same column on the right.
+    ok_text, bad_text = "Py correctly infers Px", "Py wrongly infers Px"
+    caret_w = 0.13 + CW * max(len(ok_text), len(bad_text))
+    rows = [
+        [[role_item(0), role_item(1), role_item(2)],
+         [action_item("A", "attack"), action_item("B", "block"),
+          action_item("H", "heal")],
+         [caret_item(ok_text, CARET_OK_COLOR, caret_w)]],
+        [[hp_item()], [boss_item()], [posterior_item()],
+         [caret_item(bad_text, CARET_BAD_COLOR, caret_w)]],
+    ]
+
+    def cluster_w(cluster):
+        return sum(w for w, _ in cluster) + TIGHT * (len(cluster) - 1)
+
+    leg_w = max(sum(cluster_w(c) for c in row) + INTER * (len(row) - 1)
+                for row in rows)
+    x_left = cx_center - leg_w / 2
+
+    y = y_top
+    for row in rows:
+        cws = [cluster_w(c) for c in row]
+        inter = (leg_w - sum(cws)) / (len(row) - 1) if len(row) > 1 else 0.0
+        gx = x_left
+        for cluster, cw in zip(row, cws):
+            ix = gx
+            for w, draw in cluster:
+                draw(ix, y)
+                ix += w + TIGHT
+            gx += cw + inter
+        y -= ROW_H
+    return y + ROW_H     # centre y of the last drawn row
 
 
 # ──────────────────────────────────────────────────────────────────────
@@ -429,11 +502,11 @@ def render(rec, posteriors, name="R3_team_case"):
         group_bel_ys.append(bel_y)
         yy = bel_y - GROUP_GAP
 
-    # left margin holds the player-id + (compact) stat panels and the top-left
-    # legend; the grid (Start + stage columns) starts at x = 0.
-    x_lo = -1.50
-    x_hi = START_W + n_stages * COL_W + 0.45
-    lx0 = x_lo + 0.04
+    # the player-id + (compact) stat panels now live inside the Start column and
+    # the legend sits in a band at the bottom, so the grid (Start + stage
+    # columns) can start at x ~ 0 with only a thin left margin.
+    x_lo = -0.05
+    x_hi = START_W + n_stages * COL_W + 0.35
 
     fig, ax = plt.subplots()
     ax.set_aspect("equal")
@@ -445,9 +518,20 @@ def render(rec, posteriors, name="R3_team_case"):
     for pid in range(3):
         _draw_player_group(ax, rec, turns, posteriors, group_role_ys[pid],
                            group_bel_ys[pid], pid)
-    _draw_legend(ax, lx0, ly_top=0.31)
 
-    y_lo, y_hi = group_bel_ys[-1] - 0.06, 0.34
+    # dashed separators in the gaps between player groups, so each player's
+    # belief sub-row reads with the card ABOVE it (its own) rather than being
+    # mis-grouped with the beliefs of the player above.
+    sep_x0, sep_x1 = 0.0, col_x(n_stages - 1) + COL_W
+    for i in range(2):
+        y_sep = (group_bel_ys[i] + group_role_ys[i + 1] + TRACK_H) / 2
+        ax.plot([sep_x0, sep_x1], [y_sep, y_sep], color="#bbb", linewidth=0.7,
+                linestyle=(0, (4, 3)), zorder=1)
+
+    last_row_y = _draw_legend(ax, (x_lo + x_hi) / 2,
+                              group_bel_ys[-1] - 0.30)
+
+    y_lo, y_hi = last_row_y - 0.11, 0.30
     ax.set_xlim(x_lo, x_hi)
     ax.set_ylim(y_lo, y_hi)
     ax.axis("off")
