@@ -15,7 +15,7 @@ Primary output `R3_team_case.pdf` = `R3_team_case_2F8H1E_r2`.
 | 3 | MFT | 2/27 | 0.91 | 0.67 | 0.61 | **0.73** | Y Y Y | 0.83 | 0.40 | 0.28 |
 | 4 | MFT | 2/27 | 0.93 | 0.70 | 0.61 | **0.75** | Y Y Y | 0.87 | 0.45 | 0.29 |
 
-Mean P(chosen) over all player-stages: **0.54** (chance 0.33); min 0.19. Model's most likely role = chosen role in **7/12** player-stages (green carets, prediction row). Model's most likely inferred role = played role in **22/24** observer-target-stage cells (green carets, belief row).
+Mean P(chosen) over all player-stages: **0.54** (chance 0.33); min 0.19. Model's most likely role = chosen role in **7/12** player-stages (green carets, in-card prediction chart). Humans' own reported inferences correct in **9/18** reports (green carets, belief charts). Model's most likely inferred role (end-of-stage belief) = played role in 22/24 cells (not drawn).
 
 | Position | participant | dominant model (R4 posterior) | P(Bayesian-Walk-BR) |
 |---|---|---|--:|
@@ -32,7 +32,7 @@ Mean P(chosen) over all player-stages: **0.54** (chance 0.33); min 0.19. Model's
 | 3 | TMF | 9/27 | 0.65 | 0.60 | 0.75 | **0.67** | Y Y Y | 0.35 | 0.27 | 0.54 |
 | 4 | TMF | 10/27 | 0.64 | 0.64 | 0.64 | **0.64** | Y Y Y | 0.33 | 0.33 | 0.33 |
 
-Mean P(chosen) over all player-stages: **0.59** (chance 0.33); min 0.11. Model's most likely role = chosen role in **11/12** player-stages (green carets, prediction row). Model's most likely inferred role = played role in **24/24** observer-target-stage cells (green carets, belief row).
+Mean P(chosen) over all player-stages: **0.59** (chance 0.33); min 0.11. Model's most likely role = chosen role in **11/12** player-stages (green carets, in-card prediction chart). Humans' own reported inferences correct in **11/18** reports (green carets, belief charts). Model's most likely inferred role (end-of-stage belief) = played role in 24/24 cells (not drawn).
 
 | Position | participant | dominant model (R4 posterior) | P(Bayesian-Walk-BR) |
 |---|---|---|--:|
@@ -50,7 +50,7 @@ Mean P(chosen) over all player-stages: **0.59** (chance 0.33); min 0.11. Model's
 | 4 | TMF | 3/27 | 0.90 | 0.63 | 0.80 | **0.78** | Y Y Y | 0.82 | 0.32 | 0.63 |
 | 5 | TMF | 2/27 | 0.67 | 0.62 | 0.86 | **0.72** | Y Y Y | 0.39 | 0.30 | 0.75 |
 
-Mean P(chosen) over all player-stages: **0.65** (chance 0.33); min 0.26. Model's most likely role = chosen role in **14/15** player-stages (green carets, prediction row). Model's most likely inferred role = played role in **30/30** observer-target-stage cells (green carets, belief row).
+Mean P(chosen) over all player-stages: **0.65** (chance 0.33); min 0.26. Model's most likely role = chosen role in **14/15** player-stages (green carets, in-card prediction chart). Humans' own reported inferences correct in **21/24** reports (green carets, belief charts). Model's most likely inferred role (end-of-stage belief) = played role in 30/30 cells (not drawn).
 
 | Position | participant | dominant model (R4 posterior) | P(Bayesian-Walk-BR) |
 |---|---|---|--:|
@@ -67,7 +67,7 @@ Mean P(chosen) over all player-stages: **0.65** (chance 0.33); min 0.26. Model's
 | 3 | FTM | 4/27 | 0.97 | 0.74 | 0.76 | **0.82** | Y Y Y | 0.94 | 0.53 | 0.56 |
 | 4 | FTM | 4/27 | 0.69 | 0.63 | 0.65 | **0.65** | Y Y Y | 0.42 | 0.31 | 0.35 |
 
-Mean P(chosen) over all player-stages: **0.66** (chance 0.33); min 0.30. Model's most likely role = chosen role in **10/12** player-stages (green carets, prediction row). Model's most likely inferred role = played role in **24/24** observer-target-stage cells (green carets, belief row).
+Mean P(chosen) over all player-stages: **0.66** (chance 0.33); min 0.30. Model's most likely role = chosen role in **10/12** player-stages (green carets, in-card prediction chart). Humans' own reported inferences correct in **14/18** reports (green carets, belief charts). Model's most likely inferred role (end-of-stage belief) = played role in 24/24 cells (not drawn).
 
 | Position | participant | dominant model (R4 posterior) | P(Bayesian-Walk-BR) |
 |---|---|---|--:|
@@ -84,7 +84,7 @@ Mean P(chosen) over all player-stages: **0.66** (chance 0.33); min 0.30. Model's
 | 3 | MFF | 9/27 | 0.59 | 0.25 | 0.69 | **0.51** | Y n Y | 0.24 | 0.46 | 0.43 |
 | 4 | FFF | 1/27 | 0.26 | 0.73 | 0.73 | **0.58** | n Y Y | 0.49 | 0.51 | 0.50 |
 
-Mean P(chosen) over all player-stages: **0.47** (chance 0.33); min 0.13. Model's most likely role = chosen role in **7/12** player-stages (green carets, prediction row). Model's most likely inferred role = played role in **22/24** observer-target-stage cells (green carets, belief row).
+Mean P(chosen) over all player-stages: **0.47** (chance 0.33); min 0.13. Model's most likely role = chosen role in **7/12** player-stages (green carets, in-card prediction chart). Humans' own reported inferences correct in **12/18** reports (green carets, belief charts). Model's most likely inferred role (end-of-stage belief) = played role in 22/24 cells (not drawn).
 
 | Position | participant | dominant model (R4 posterior) | P(Bayesian-Walk-BR) |
 |---|---|---|--:|

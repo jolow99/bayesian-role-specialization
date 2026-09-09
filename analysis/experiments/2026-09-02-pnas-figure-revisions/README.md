@@ -15,10 +15,13 @@ PNG), no in-figure titles (captions live in the paper), 7 in full-width.
 
 | Change | Detail |
 |---|---|
-| **Model-prediction sub-row** (new) | Per player, between the role card and the belief sub-row: one mini bar-chart per stage with the **Bayesian-Walk-BR** predicted distribution over that player's role, `Pr(Px \| model)`. The bar for the role the player *actually* chose is outlined in black with its probability printed above it. |
-| **Carets now score the model, not the human** | In both model rows a caret sits under the model's *most likely* role: green if it is the actual role (the chosen role in the prediction row; the played role in the belief row), red otherwise. The 06-17 carets marked whether the *human's reported* inference was right; those human reports are no longer drawn. |
-| **Belief bars relabelled** | Legend key is now `Pr(Px \| Py): the model's inference of Py's belief about Px's role` — the advisor found "fitted observer's posterior" unclear about where the numbers come from. It is our Stage-1 Bayesian observer run on the actual action history, conditioned on Py's own role; not a human report. |
-| **Legend moved to a left column** | The paper figure is full-width, so horizontal space is cheap: the legend is one left-aligned column to the left of the Start column (roles, actions, HP/boss, belief key, prediction key, green/red caret keys), vertically centred on the diagram. Figure is now ≈ 7 × 4.9 in (was ≈ 7 × 7.6 in with the bottom band). |
+| **BW prediction lives inside the role card** | Each role card is taller (0.74 vs 0.50 data units). One icon line on top: the role icon centred, the per-turn action icons on the same line under the HP strip's turn columns. Below it a white strip holds `Pr(Px \| BW)`, the **Bayesian-Walk-BR** predicted distribution over Px's role at that stage (centred, widely spaced bars; P(chosen) printed directly above the chosen bar). The sub-row under the card holds only the two belief charts `Pr(Px \| Py)`, `Pr(Px \| Pz)`. Stage columns are 1.25 data units wide (06-17: 1.0). |
+| **Labels once, not per column** | The charts are small multiples, so the `Pr(Px\|Py)` labels appear once per row, under the Start column's prior charts (the leftmost instance); stage columns carry bare charts. The in-card chart has no label at all — the legend names it (`Pr(Px \| BW) = … (white strip in Px's card)`). |
+| **Start column: player id above the stats** | `P1`/`P2`/`P3` sits centred above its STR/DEF/SUP panel rather than to its left. |
+| **Turn headers above the HP bars** | The "turn 1 / turn 2" labels and the 👹 boss-attack marker moved from the gap below the HP strip to a header row above the HP bars (under the combo rank), so each turn column is titled once at the top and nothing sits between the HP strip and P1's cards. |
+| **Belief timing = 06-17** | `Pr(Px \| Py)` under stage *s* is the belief at the **end** of stage *s* (`posteriors[s+1]`, conditioned on Py's stage-*s* role); the **Start column holds the prior**. The `Pr(Px \| BW)` chart in column *s* is computed from the belief drawn in the column to its *left* (`posteriors[s]`) plus Px's previous role, so the row reads: previous beliefs → prediction → card → updated beliefs. (An intermediate 09-02 draft used entering-stage beliefs and left the Start column empty; reverted.) |
+| **Green/red carets on both model charts** | Over a belief chart the caret is Py's *own reported guess* about Px (logged at stage *s+1*, about stage *s*), over the guessed role: green "Py correctly infers Px", red "Py wrongly infers Px". In the in-card `Pr(Px \| BW)` chart the caret sits under BW's *most likely* role: green "BW correctly predicts Px" (it is the role Px chose, i.e. the card's role), red "BW wrongly predicts Px". P(chosen) is printed above the chosen role's bar (only that number is shown: when the caret is green it equals the model's top-pick probability, and when red the bar heights already show the model's preference); there is no outline. The prior and the last stage have no report and so no belief caret. (Intermediate drafts tried single-colour markers and a black outline; the user preferred explicit correctness colouring.) |
+| **Legend moved to a left column** | The paper figure is full-width, so horizontal space is cheap: one left-aligned legend column (1.5 data units wide, 4.9 pt text, 0.45 units clear of the Start column, generous item/section spacing) to the left of the Start column. Keys read `Pr(Px \| Py) = Py's belief of Px` and `Pr(Px \| BW) = Bayesian-Walk prediction of Px`. |
 | **Case is a parameter** | `CASES` in `team_case_model.py` lists (game-id suffix, round, output stem). The first entry is also written as plain `R3_team_case.{pdf,png}`. |
 
 Everything else (Start column, stat panels, HP strip, combo ranks,
@@ -50,10 +53,10 @@ script asserts that these start-of-stage posteriors match the 06-16
 scaffolding's `human_posteriors` (max abs diff < 1e-9) and that the
 pipeline's combos match the logged roles.
 
-**Reading the row.** The chart under stage column *s* is the prediction
-*for* stage *s*, made from the belief drawn in the column to its left
-(end of stage *s−1*; the Start column's prior for *s = 1*) plus the
-stage-*s−1* roles. Switches are always predicted at ≤ `eps_s` ≈ 0.54
+**Reading the row.** The `Pr(Px | BW)` chart under stage column *s* is the
+prediction *for* stage *s*, made from the `Pr(Px | Py)` beliefs drawn in the
+column to its left (end of stage *s−1*; the Start column's prior for
+*s = 1*) plus Px's stage-*s−1* role. Switches are always predicted at ≤ `eps_s` ≈ 0.54
 total mass, so a *correctly anticipated* switch shows up as a bar around
 0.2–0.4 that is nonetheless the tallest non-sticky bar; repeats show up
 as 0.6–0.9. In a round's final stage the value matrix is often flat
@@ -72,10 +75,11 @@ worth a caption sentence.
 | `R3_team_case_11B0J4_r6` | `01KQ6YDF…11B0J4` r6 | 222_222_222 | MTF → MMF → MFF → FFF, WIN | 0.47 | The 06-17 pinned case, for comparison. Both relents get ≈ 0.25; ends all-Fighter. |
 
 Per-stage P(chosen) tables, the count of player-stages where the model's
-most likely role is the chosen one (green carets, prediction row), the
-model's inference accuracy (green carets, belief row), and each
-participant's dominant model (from the R4 individual-fitting posteriors)
-are in `summary.md`.
+most likely role is the chosen one (green carets, in-card chart), the
+humans' report accuracy (green carets, belief charts), the model's own
+inference accuracy on the end-of-stage beliefs (not drawn), and each
+participant's dominant model
+(from the R4 individual-fitting posteriors) are in `summary.md`.
 
 ## Scripts
 
