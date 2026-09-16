@@ -108,8 +108,8 @@ sys.path.insert(0, str(DIR_0617))
 sys.path.insert(0, str(DIR_0616))
 
 from common_human import (  # noqa: E402
-    human_posteriors, load_human_records, load_stage1_canonical,
-    stage_value_rank,
+    _combo_index, human_posteriors, load_human_records,
+    load_stage1_canonical, stage_start_hp, stage_value_rank, value_vector_27,
 )
 from icons import draw_action_icon, draw_role_icon, draw_svg  # noqa: E402
 from shared.constants import ROLE_NAMES, ROLE_SHORT  # noqa: E402
@@ -253,6 +253,19 @@ def walk_predictions(traj, values, params):
 # ──────────────────────────────────────────────────────────────────────
 # Renderer: player group with the model sub-row
 # ──────────────────────────────────────────────────────────────────────
+
+def stage_values(rec):
+    """Per stage: (V of the played combo, best V over all 27 combos) at the
+    stage-start HP -- the paper's expected return on a 0-100 scale. Replaces
+    the 'combo rank k/27' header (2026-09-16): argsort ranks broke ties
+    arbitrarily (position-swapped combos of identical-stat players have
+    identical V) and hid the size of the gap; see combo_rank_check.md."""
+    out = []
+    for s, (thp, ehp) in enumerate(stage_start_hp(rec)):
+        V = value_vector_27(rec, thp, ehp)
+        out.append((float(V[_combo_index(rec["role_seq"][s])]), float(V.max())))
+    return out
+
 
 def _fmt_p(p):
     s = f"{p:.2f}"
@@ -438,7 +451,7 @@ def _draw_role_card_with_pred(ax, s, ty, role, actions_this_stage, pred, pid):
         _caret(ax, bar_cx[role], base - 0.045, color=CARET_CHOSEN_COLOR)
 
 
-def _draw_hp_strip(ax, rec, turns, hp_y, ranks):
+def _draw_hp_strip(ax, rec, turns, hp_y, vals):
     """Team/boss HP mini-bars per turn (06-17), but with the per-turn
     "turn 1 / turn 2" labels and the boss-attack marker moved ABOVE the bars,
     as a header row under the combo rank -- so each turn column is titled once
@@ -486,9 +499,10 @@ def _draw_hp_strip(ax, rec, turns, hp_y, ranks):
             draw_svg(ax, BOSS_SVG, x, boss_cy, size=0.13, zorder=5)
     ax.plot([0.0, col_x(turns[-1]["s"]) + COL_W], [hp_y, hp_y],
             color="#bbb", linewidth=0.6)
-    # value-rank of the played combo, per stage, just under the stage headers
+    # expected return of the played combo vs the best available, per stage
     for s in range(rec["n_stages"]):
-        ax.text(col_x(s) + COL_W / 2, rank_y, f"combo rank {ranks[s]}/27",
+        vp, vb = vals[s]
+        ax.text(col_x(s) + COL_W / 2, rank_y, f"value {vp:.0f} (best {vb:.0f})",
                 ha="center", va="bottom", fontsize=5.5, color="#666")
 
 
@@ -664,7 +678,7 @@ def _draw_legend_left(ax, x_left, y_center):
 def render(rec, posteriors, preds, names):
     n_stages = rec["n_stages"]
     turns = tc.flatten_turns(rec)
-    ranks = [stage_value_rank(rec, s) for s in range(n_stages)]
+    vals = stage_values(rec)
 
     hp_y = -HP_H - 0.47          # room above the bars for turn labels, boss icons, combo rank
     role_ys, bel_ys = [], []
@@ -686,7 +700,7 @@ def render(rec, posteriors, preds, names):
     ax.set_aspect("equal")
     tc._draw_stage_headers(ax, n_stages, turns, y_top=0.0,
                            y_bottom=bel_ys[-1] + 0.02)
-    _draw_hp_strip(ax, rec, turns, hp_y, ranks)
+    _draw_hp_strip(ax, rec, turns, hp_y, vals)
     for pid in range(3):
         _draw_player_group(ax, rec, turns, posteriors, preds, role_ys[pid],
                            bel_ys[pid], pid)
@@ -779,10 +793,11 @@ def case_summary_md(rec, preds, ranks, dom, inf_acc, rep_acc):
         f"### `{rec['game_id']}` round {rec['round_number']} — "
         f"`{rec['stat_profile_id']}`, {rec['outcome']}, {n} live stages",
         "",
-        "| Stage | combo | value rank | P(chosen) P1 | P2 | P3 | mean | "
+        "| Stage | combo | value played / best | raw rank | P(chosen) P1 | P2 | P3 | mean | "
         "model top-role = chosen? | value-softmax only P1 | P2 | P3 |",
-        "|--:|---|--:|--:|--:|--:|--:|---|--:|--:|--:|",
+        "|--:|---|--:|--:|--:|--:|--:|--:|---|--:|--:|--:|",
     ]
+    vals = stage_values(rec)
     all_p = []
     top_hits = 0
     for s in range(n):
@@ -793,7 +808,7 @@ def case_summary_md(rec, preds, ranks, dom, inf_acc, rep_acc):
                else "n" for i in range(3)]
         top_hits += hit.count("Y")
         all_p.extend(pc)
-        lines.append(f"| {s + 1} | {combo} | {ranks[s]}/27 | "
+        lines.append(f"| {s + 1} | {combo} | {vals[s][0]:.1f} / {vals[s][1]:.1f} | {ranks[s]}/27 | "
                      + " | ".join(f"{p:.2f}" for p in pc)
                      + f" | **{np.mean(pc):.2f}** | {' '.join(hit)} | "
                      + " | ".join(f"{p:.2f}" for p in pv) + " |")
