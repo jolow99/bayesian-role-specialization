@@ -8,12 +8,12 @@ Primary output `R3_team_case.pdf` = `R3_team_case_2F8H1E_r2`.
 
 ### `01KQ6YDA7NHWHSTQNZB82F8H1E` round 2 — `114_222_222`, WIN, 4 live stages
 
-| Stage | combo | value rank | P(chosen) P1 | P2 | P3 | mean | model top-role = chosen? | value-softmax only P1 | P2 | P3 |
-|--:|---|--:|--:|--:|--:|--:|---|--:|--:|--:|
-| 1 | FTT | 24/27 | 0.24 | 0.30 | 0.30 | **0.28** | n n n | 0.24 | 0.30 | 0.30 |
-| 2 | MFT | 1/27 | 0.36 | 0.19 | 0.62 | **0.39** | n n Y | 0.67 | 0.35 | 0.29 |
-| 3 | MFT | 2/27 | 0.91 | 0.67 | 0.61 | **0.73** | Y Y Y | 0.83 | 0.40 | 0.28 |
-| 4 | MFT | 2/27 | 0.93 | 0.70 | 0.61 | **0.75** | Y Y Y | 0.87 | 0.45 | 0.29 |
+| Stage | combo | value played / best | raw rank | P(chosen) P1 | P2 | P3 | mean | model top-role = chosen? | value-softmax only P1 | P2 | P3 |
+|--:|---|--:|--:|--:|--:|--:|--:|---|--:|--:|--:|
+| 1 | FTT | 4.7 / 22.7 | 24/27 | 0.24 | 0.30 | 0.30 | **0.28** | n n n | 0.24 | 0.30 | 0.30 |
+| 2 | MFT | 36.1 / 36.1 | 1/27 | 0.36 | 0.19 | 0.62 | **0.39** | n n Y | 0.67 | 0.35 | 0.29 |
+| 3 | MFT | 64.4 / 64.4 | 2/27 | 0.91 | 0.67 | 0.61 | **0.73** | Y Y Y | 0.83 | 0.40 | 0.28 |
+| 4 | MFT | 77.5 / 77.5 | 2/27 | 0.93 | 0.70 | 0.61 | **0.75** | Y Y Y | 0.87 | 0.45 | 0.29 |
 
 Mean P(chosen) over all player-stages: **0.54** (chance 0.33); min 0.19. Model's most likely role = chosen role in **7/12** player-stages (not marked on the figure since 09-16; read off the in-card numbers). Humans' own reported inferences correct in **9/18** reports (green carets, belief charts). Model's most likely inferred role (end-of-stage belief) = played role in 22/24 cells (not drawn).
 
@@ -25,12 +25,12 @@ Mean P(chosen) over all player-stages: **0.54** (chance 0.33); min 0.19. Model's
 
 ### `01KQ6YDF6T28MRGBK1E911B0J4` round 8 — `141_222_222`, WIN, 4 live stages
 
-| Stage | combo | value rank | P(chosen) P1 | P2 | P3 | mean | model top-role = chosen? | value-softmax only P1 | P2 | P3 |
-|--:|---|--:|--:|--:|--:|--:|---|--:|--:|--:|
-| 1 | TFF | 1/27 | 0.48 | 0.55 | 0.55 | **0.53** | Y Y Y | 0.48 | 0.55 | 0.55 |
-| 2 | TMF | 4/27 | 0.70 | 0.11 | 0.76 | **0.52** | Y n Y | 0.44 | 0.21 | 0.55 |
-| 3 | TMF | 9/27 | 0.65 | 0.60 | 0.75 | **0.67** | Y Y Y | 0.35 | 0.27 | 0.54 |
-| 4 | TMF | 10/27 | 0.64 | 0.64 | 0.64 | **0.64** | Y Y Y | 0.33 | 0.33 | 0.33 |
+| Stage | combo | value played / best | raw rank | P(chosen) P1 | P2 | P3 | mean | model top-role = chosen? | value-softmax only P1 | P2 | P3 |
+|--:|---|--:|--:|--:|--:|--:|--:|---|--:|--:|--:|
+| 1 | TFF | 40.2 / 40.2 | 1/27 | 0.48 | 0.55 | 0.55 | **0.53** | Y Y Y | 0.48 | 0.55 | 0.55 |
+| 2 | TMF | 47.0 / 59.4 | 4/27 | 0.70 | 0.11 | 0.76 | **0.52** | Y n Y | 0.44 | 0.21 | 0.55 |
+| 3 | TMF | 75.0 / 80.0 | 9/27 | 0.65 | 0.60 | 0.75 | **0.67** | Y Y Y | 0.35 | 0.27 | 0.54 |
+| 4 | TMF | 90.0 / 90.0 | 10/27 | 0.64 | 0.64 | 0.64 | **0.64** | Y Y Y | 0.33 | 0.33 | 0.33 |
 
 Mean P(chosen) over all player-stages: **0.59** (chance 0.33); min 0.11. Model's most likely role = chosen role in **11/12** player-stages (not marked on the figure since 09-16; read off the in-card numbers). Humans' own reported inferences correct in **11/18** reports (green carets, belief charts). Model's most likely inferred role (end-of-stage belief) = played role in 24/24 cells (not drawn).
 
@@ -42,13 +42,13 @@ Mean P(chosen) over all player-stages: **0.59** (chance 0.33); min 0.11. Model's
 
 ### `01KQ6YDC2Q5SV4P2SZHVK72DV0` round 5 — `141_222_222`, WIN, 5 live stages
 
-| Stage | combo | value rank | P(chosen) P1 | P2 | P3 | mean | model top-role = chosen? | value-softmax only P1 | P2 | P3 |
-|--:|---|--:|--:|--:|--:|--:|---|--:|--:|--:|
-| 1 | TFF | 1/27 | 0.39 | 0.37 | 0.37 | **0.38** | Y Y Y | 0.39 | 0.37 | 0.37 |
-| 2 | TMF | 2/27 | 0.77 | 0.26 | 0.65 | **0.56** | Y n Y | 0.57 | 0.47 | 0.35 |
-| 3 | TMF | 1/27 | 0.89 | 0.68 | 0.83 | **0.80** | Y Y Y | 0.80 | 0.41 | 0.68 |
-| 4 | TMF | 3/27 | 0.90 | 0.63 | 0.80 | **0.78** | Y Y Y | 0.82 | 0.32 | 0.63 |
-| 5 | TMF | 2/27 | 0.67 | 0.62 | 0.86 | **0.72** | Y Y Y | 0.39 | 0.30 | 0.75 |
+| Stage | combo | value played / best | raw rank | P(chosen) P1 | P2 | P3 | mean | model top-role = chosen? | value-softmax only P1 | P2 | P3 |
+|--:|---|--:|--:|--:|--:|--:|--:|---|--:|--:|--:|
+| 1 | TFF | 12.8 / 12.8 | 1/27 | 0.39 | 0.37 | 0.37 | **0.38** | Y Y Y | 0.39 | 0.37 | 0.37 |
+| 2 | TMF | 30.3 / 30.3 | 2/27 | 0.77 | 0.26 | 0.65 | **0.56** | Y n Y | 0.57 | 0.47 | 0.35 |
+| 3 | TMF | 40.4 / 40.4 | 1/27 | 0.89 | 0.68 | 0.83 | **0.80** | Y Y Y | 0.80 | 0.41 | 0.68 |
+| 4 | TMF | 73.0 / 80.0 | 3/27 | 0.90 | 0.63 | 0.80 | **0.78** | Y Y Y | 0.82 | 0.32 | 0.63 |
+| 5 | TMF | 90.0 / 90.0 | 2/27 | 0.67 | 0.62 | 0.86 | **0.72** | Y Y Y | 0.39 | 0.30 | 0.75 |
 
 Mean P(chosen) over all player-stages: **0.65** (chance 0.33); min 0.26. Model's most likely role = chosen role in **14/15** player-stages (not marked on the figure since 09-16; read off the in-card numbers). Humans' own reported inferences correct in **21/24** reports (green carets, belief charts). Model's most likely inferred role (end-of-stage belief) = played role in 30/30 cells (not drawn).
 
@@ -60,12 +60,12 @@ Mean P(chosen) over all player-stages: **0.65** (chance 0.33); min 0.26. Model's
 
 ### `01KRBKSTM48HJWYZ0J4SRBRN0Z` round 8 — `411_141_114`, WIN, 4 live stages
 
-| Stage | combo | value rank | P(chosen) P1 | P2 | P3 | mean | model top-role = chosen? | value-softmax only P1 | P2 | P3 |
-|--:|---|--:|--:|--:|--:|--:|---|--:|--:|--:|
-| 1 | FMM | 2/27 | 0.59 | 0.30 | 0.51 | **0.47** | Y n Y | 0.59 | 0.30 | 0.51 |
-| 2 | FTM | 1/27 | 0.81 | 0.40 | 0.82 | **0.68** | Y n Y | 0.66 | 0.74 | 0.67 |
-| 3 | FTM | 4/27 | 0.97 | 0.74 | 0.76 | **0.82** | Y Y Y | 0.94 | 0.53 | 0.56 |
-| 4 | FTM | 4/27 | 0.69 | 0.63 | 0.65 | **0.65** | Y Y Y | 0.42 | 0.31 | 0.35 |
+| Stage | combo | value played / best | raw rank | P(chosen) P1 | P2 | P3 | mean | model top-role = chosen? | value-softmax only P1 | P2 | P3 |
+|--:|---|--:|--:|--:|--:|--:|--:|---|--:|--:|--:|
+| 1 | FMM | 19.0 / 31.0 | 2/27 | 0.59 | 0.30 | 0.51 | **0.47** | Y n Y | 0.59 | 0.30 | 0.51 |
+| 2 | FTM | 50.3 / 50.3 | 1/27 | 0.81 | 0.40 | 0.82 | **0.68** | Y n Y | 0.66 | 0.74 | 0.67 |
+| 3 | FTM | 70.4 / 73.6 | 4/27 | 0.97 | 0.74 | 0.76 | **0.82** | Y Y Y | 0.94 | 0.53 | 0.56 |
+| 4 | FTM | 90.0 / 90.0 | 4/27 | 0.69 | 0.63 | 0.65 | **0.65** | Y Y Y | 0.42 | 0.31 | 0.35 |
 
 Mean P(chosen) over all player-stages: **0.66** (chance 0.33); min 0.30. Model's most likely role = chosen role in **10/12** player-stages (not marked on the figure since 09-16; read off the in-card numbers). Humans' own reported inferences correct in **14/18** reports (green carets, belief charts). Model's most likely inferred role (end-of-stage belief) = played role in 24/24 cells (not drawn).
 
@@ -77,12 +77,12 @@ Mean P(chosen) over all player-stages: **0.66** (chance 0.33); min 0.30. Model's
 
 ### `01KQ6YDF6T28MRGBK1E911B0J4` round 6 — `222_222_222`, WIN, 4 live stages
 
-| Stage | combo | value rank | P(chosen) P1 | P2 | P3 | mean | model top-role = chosen? | value-softmax only P1 | P2 | P3 |
-|--:|---|--:|--:|--:|--:|--:|---|--:|--:|--:|
-| 1 | MTF | 17/27 | 0.25 | 0.26 | 0.49 | **0.33** | n n Y | 0.25 | 0.26 | 0.49 |
-| 2 | MMF | 18/27 | 0.57 | 0.13 | 0.73 | **0.48** | Y n Y | 0.21 | 0.23 | 0.51 |
-| 3 | MFF | 9/27 | 0.59 | 0.25 | 0.69 | **0.51** | Y n Y | 0.24 | 0.46 | 0.43 |
-| 4 | FFF | 1/27 | 0.26 | 0.73 | 0.73 | **0.58** | n Y Y | 0.49 | 0.51 | 0.50 |
+| Stage | combo | value played / best | raw rank | P(chosen) P1 | P2 | P3 | mean | model top-role = chosen? | value-softmax only P1 | P2 | P3 |
+|--:|---|--:|--:|--:|--:|--:|--:|---|--:|--:|--:|
+| 1 | MTF | 25.0 / 36.1 | 17/27 | 0.25 | 0.26 | 0.49 | **0.33** | n n Y | 0.25 | 0.26 | 0.49 |
+| 2 | MMF | 35.1 / 54.2 | 18/27 | 0.57 | 0.13 | 0.73 | **0.48** | Y n Y | 0.21 | 0.23 | 0.51 |
+| 3 | MFF | 52.3 / 65.5 | 9/27 | 0.59 | 0.25 | 0.69 | **0.51** | Y n Y | 0.24 | 0.46 | 0.43 |
+| 4 | FFF | 80.0 / 80.0 | 1/27 | 0.26 | 0.73 | 0.73 | **0.58** | n Y Y | 0.49 | 0.51 | 0.50 |
 
 Mean P(chosen) over all player-stages: **0.47** (chance 0.33); min 0.13. Model's most likely role = chosen role in **7/12** player-stages (not marked on the figure since 09-16; read off the in-card numbers). Humans' own reported inferences correct in **12/18** reports (green carets, belief charts). Model's most likely inferred role (end-of-stage belief) = played role in 22/24 cells (not drawn).
 
