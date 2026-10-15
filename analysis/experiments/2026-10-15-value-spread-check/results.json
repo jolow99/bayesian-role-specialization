@@ -1,0 +1,38 @@
+{
+  "n_agent_stages": 2163,
+  "n_team_rounds": 204,
+  "gap": {
+    "mean": 10.851827569639182,
+    "median": 7.979732441700158,
+    "p10": 0.9640568955341564,
+    "p25": 3.013620143135389,
+    "p75": 13.323803117908547,
+    "p90": 25.917967673642792,
+    "max": 68.35144907606515
+  },
+  "by_model": {
+    "Bayesian-Walk-BR": {
+      "tau_v": 12.094293234062137,
+      "frac_gap_gt_tau": 0.29496070272769304,
+      "frac_gap_gt_half_tau": 0.603791030975497,
+      "mean_top_prob": 0.48137575489301054,
+      "median_top_prob": 0.4463885079129787,
+      "frac_top_prob_gt_0.5": 0.3259361997226075,
+      "frac_top_prob_gt_0.8": 0.059639389736477116,
+      "mean_top_prob_when_gap_gt_tau": 0.6465533735247185,
+      "mean_top_prob_when_gap_le_tau": 0.4122719380490566
+    },
+    "Bayesian-BR": {
+      "tau_v": 11.622170581663323,
+      "frac_gap_gt_tau": 0.32269995376791494,
+      "frac_gap_gt_half_tau": 0.613962089690245,
+      "mean_top_prob": 0.4862390075479444,
+      "median_top_prob": 0.45081716066385646,
+      "frac_top_prob_gt_0.5": 0.3361072584373555,
+      "frac_top_prob_gt_0.8": 0.06472491909385113,
+      "mean_top_prob_when_gap_gt_tau": 0.6460566804897164,
+      "mean_top_prob_when_gap_le_tau": 0.4100937954569158
+    }
+  },
+  "uniform_top_prob": 0.3333333333333333
+}
