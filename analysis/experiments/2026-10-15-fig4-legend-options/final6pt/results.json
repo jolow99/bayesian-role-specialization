@@ -1,0 +1,116 @@
+[
+ {
+  "name": "final6pt/R3_team_case",
+  "native_w": 7.0,
+  "native_h": 5.907734359675284,
+  "s": 0.9142857142857144,
+  "printed_w": 6.4,
+  "printed_h": 5.401357128845974,
+  "min_native": 6.617187499999999,
+  "min_printed": 6.05,
+  "min_text": "value 5 (best 23)",
+  "header": [
+   "one",
+   10.0,
+   0.9671256704798804
+  ],
+  "legend_overflow": false,
+  "K": 1.6725013347430004,
+  "start_w": 1.3
+ },
+ {
+  "name": "final6pt/main_at_1.0/R3_team_case",
+  "native_w": 7.0,
+  "native_h": 5.886543449170504,
+  "s": 1.0158730158730158,
+  "printed_w": 7.111111111111111,
+  "printed_h": 5.979980646776385,
+  "min_native": 5.9554687500000005,
+  "min_printed": 6.05,
+  "min_text": "value 5 (best 23)",
+  "header": [
+   "one",
+   10.0,
+   0.9150762512672653
+  ],
+  "legend_overflow": false,
+  "K": 1.6729383703308336,
+  "start_w": 1.3
+ },
+ {
+  "name": "final6pt/R3_team_case_11B0J4_r6",
+  "native_w": 7.0,
+  "native_h": 5.886543449170504,
+  "s": 1.0158730158730158,
+  "printed_w": 7.111111111111111,
+  "printed_h": 5.979980646776385,
+  "min_native": 5.9554687500000005,
+  "min_printed": 6.05,
+  "min_text": "value 25 (best 36)",
+  "header": [
+   "one",
+   10.0,
+   0.9150762512672653
+  ],
+  "legend_overflow": false,
+  "K": 1.6729383703308336,
+  "start_w": 1.3
+ },
+ {
+  "name": "final6pt/R3_team_case_11B0J4_r8",
+  "native_w": 7.0,
+  "native_h": 5.886543449170504,
+  "s": 1.0158730158730158,
+  "printed_w": 7.111111111111111,
+  "printed_h": 5.979980646776385,
+  "min_native": 5.9554687500000005,
+  "min_printed": 6.05,
+  "min_text": "value 40 (best 40)",
+  "header": [
+   "one",
+   10.0,
+   0.9150762512672653
+  ],
+  "legend_overflow": false,
+  "K": 1.6729383703308336,
+  "start_w": 1.3
+ },
+ {
+  "name": "final6pt/R3_team_case_K72DV0_r5",
+  "native_w": 7.0,
+  "native_h": 5.117708424546667,
+  "s": 1.0158730158730158,
+  "printed_w": 7.111111111111111,
+  "printed_h": 5.198941891602963,
+  "min_native": 5.9554687500000005,
+  "min_printed": 6.05,
+  "min_text": "value 13 (best 13)",
+  "header": [
+   "two",
+   9.0,
+   null
+  ],
+  "legend_overflow": false,
+  "K": 1.4888671875000001,
+  "start_w": 1.411499104892236
+ },
+ {
+  "name": "final6pt/R3_team_case_RBRN0Z_r8",
+  "native_w": 7.0,
+  "native_h": 5.886543449170504,
+  "s": 1.0158730158730158,
+  "printed_w": 7.111111111111111,
+  "printed_h": 5.979980646776385,
+  "min_native": 5.9554687500000005,
+  "min_printed": 6.05,
+  "min_text": "value 19 (best 31)",
+  "header": [
+   "one",
+   10.0,
+   0.9150762512672653
+  ],
+  "legend_overflow": false,
+  "K": 1.6729383703308336,
+  "start_w": 1.3
+ }
+]
