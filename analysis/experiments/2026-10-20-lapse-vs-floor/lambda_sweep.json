@@ -1,0 +1,309 @@
+{
+  "0.0005": {
+    "delta": [
+      0.44,
+      1.0
+    ],
+    "agg_ll": {
+      "Bayesian Walk": -2.4755272113944358,
+      "Bayesian Walk-PS": -2.5116996555490263,
+      "Bayesian-Belief": -2.518161462049541,
+      "Bayesian-Value": -2.5653916100611935,
+      "Bayesian Threshold": -4.67036197401374,
+      "Bayesian Thresh-PS": -4.045821986417326,
+      "Random Walk": -2.587135740888129,
+      "Top-7": -5.215796241575989,
+      "Random-to-Optimal": -3.7662254542690077,
+      "Optimal": -8.201303888792031,
+      "Copy Others": -4.484572263566414,
+      "Contradict Others": -2.8607798331976597,
+      "Random": -2.8085426692779207,
+      "Always Stick": -4.1018512393985
+    },
+    "dominant": {
+      "Bayesian Walk": 21,
+      "Top-7": 22,
+      "Bayesian-Belief": 9,
+      "Random-to-Optimal": 4,
+      "Bayesian-Value": 8,
+      "Bayesian Thresh-PS": 1,
+      "Random": 14,
+      "Random Walk": 5,
+      "Bayesian Walk-PS": 9,
+      "Optimal": 2,
+      "Contradict Others": 7
+    },
+    "total_ind_ll": {
+      "Bayesian Walk": -2039.612902012966,
+      "Bayesian Walk-PS": -2098.096766817608,
+      "Bayesian-Belief": -2096.122406484699,
+      "Bayesian-Value": -2246.9318524869464,
+      "Bayesian Threshold": -6339.828312914786,
+      "Bayesian Thresh-PS": -5773.68832326618,
+      "Random Walk": -2177.24987015634,
+      "Top-7": -2912.4540186057807,
+      "Random-to-Optimal": -3506.5104918346074,
+      "Optimal": -7008.078702447867,
+      "Copy Others": -8461.020584348165,
+      "Contradict Others": -2839.2861593118096,
+      "Random": -2376.2983803891243,
+      "Always Stick": -5814.083990202296
+    }
+  },
+  "0.001": {
+    "delta": [
+      0.44,
+      1.0
+    ],
+    "agg_ll": {
+      "Bayesian Walk": -2.475490952970102,
+      "Bayesian Walk-PS": -2.5117258070716564,
+      "Bayesian-Belief": -2.5182109987832986,
+      "Bayesian-Value": -2.5652991841880723,
+      "Bayesian Threshold": -4.462598395237386,
+      "Bayesian Thresh-PS": -3.8844456082707928,
+      "Random Walk": -2.5871303099224923,
+      "Top-7": -4.927593326330019,
+      "Random-to-Optimal": -3.7127819634112047,
+      "Optimal": -7.659189079961987,
+      "Copy Others": -4.348701572613993,
+      "Contradict Others": -2.860418752524955,
+      "Random": -2.808542669277921,
+      "Always Stick": -3.940458370946792
+    },
+    "dominant": {
+      "Bayesian Walk": 20,
+      "Top-7": 22,
+      "Bayesian-Belief": 9,
+      "Random-to-Optimal": 4,
+      "Bayesian-Value": 8,
+      "Bayesian Thresh-PS": 1,
+      "Random": 14,
+      "Random Walk": 5,
+      "Bayesian Walk-PS": 9,
+      "Optimal": 3,
+      "Contradict Others": 7
+    },
+    "total_ind_ll": {
+      "Bayesian Walk": -2039.3308355795402,
+      "Bayesian Walk-PS": -2097.9927174694435,
+      "Bayesian-Belief": -2096.097656329474,
+      "Bayesian-Value": -2246.694317170536,
+      "Bayesian Threshold": -5893.728804883499,
+      "Bayesian Thresh-PS": -5364.371813467311,
+      "Random Walk": -2177.0247628101847,
+      "Top-7": -2825.1464795639067,
+      "Random-to-Optimal": -3374.784474372353,
+      "Optimal": -6489.938853949967,
+      "Copy Others": -7874.058630678913,
+      "Contradict Others": -2838.2845931669144,
+      "Random": -2376.2983803891243,
+      "Always Stick": -5404.754166574373
+    }
+  },
+  "0.005": {
+    "delta": [
+      0.44,
+      1.0
+    ],
+    "agg_ll": {
+      "Bayesian Walk": -2.4752203136719606,
+      "Bayesian Walk-PS": -2.5119405323582558,
+      "Bayesian-Belief": -2.518610558927954,
+      "Bayesian-Value": -2.56459640199609,
+      "Bayesian Threshold": -3.9796202034292367,
+      "Bayesian Thresh-PS": -3.5105021578765987,
+      "Random Walk": -2.5870928948077787,
+      "Top-7": -4.259589803249571,
+      "Random-to-Optimal": -3.580653876228062,
+      "Optimal": -6.400992161868759,
+      "Copy Others": -4.0314431877825125,
+      "Contradict Others": -2.857604405078602,
+      "Random": -2.808542669277921,
+      "Always Stick": -3.56638268800152
+    },
+    "dominant": {
+      "Bayesian Walk": 17,
+      "Top-7": 22,
+      "Bayesian-Belief": 9,
+      "Random-to-Optimal": 4,
+      "Bayesian-Value": 8,
+      "Bayesian Thresh-PS": 3,
+      "Random": 14,
+      "Random Walk": 5,
+      "Bayesian Walk-PS": 8,
+      "Optimal": 5,
+      "Contradict Others": 7
+    },
+    "total_ind_ll": {
+      "Bayesian Walk": -2037.2322533284043,
+      "Bayesian Walk-PS": -2097.1723230268612,
+      "Bayesian-Belief": -2095.9065272618323,
+      "Bayesian-Value": -2244.9066139852325,
+      "Bayesian Threshold": -4859.5525829230855,
+      "Bayesian Thresh-PS": -4415.865868010791,
+      "Random Walk": -2175.2412461312924,
+      "Top-7": -2622.5965336619483,
+      "Random-to-Optimal": -3068.7761704529853,
+      "Optimal": -5288.757065249914,
+      "Copy Others": -6511.935384979329,
+      "Contradict Others": -2830.353304772576,
+      "Random": -2376.2983803891243,
+      "Always Stick": -4456.14149211252
+    }
+  },
+  "0.01": {
+    "delta": [
+      0.44,
+      1.0
+    ],
+    "agg_ll": {
+      "Bayesian Walk": -2.4749282406462334,
+      "Bayesian Walk-PS": -2.512222513468373,
+      "Bayesian-Belief": -2.5191181225810144,
+      "Bayesian-Value": -2.5637991638281425,
+      "Bayesian Threshold": -3.7710500383904217,
+      "Bayesian Thresh-PS": -3.3503362986212846,
+      "Random Walk": -2.587060955497752,
+      "Top-7": -3.9732679580726376,
+      "Random-to-Optimal": -3.5155666041116977,
+      "Optimal": -5.8597600132467,
+      "Copy Others": -3.892813380666222,
+      "Contradict Others": -2.8542552460704735,
+      "Random": -2.808542669277921,
+      "Always Stick": -3.4060507620498663
+    },
+    "dominant": {
+      "Bayesian Walk": 16,
+      "Top-7": 22,
+      "Bayesian-Belief": 9,
+      "Random-to-Optimal": 4,
+      "Bayesian-Value": 8,
+      "Bayesian Thresh-PS": 4,
+      "Random": 14,
+      "Random Walk": 5,
+      "Bayesian Walk-PS": 8,
+      "Optimal": 5,
+      "Contradict Others": 7
+    },
+    "total_ind_ll": {
+      "Bayesian Walk": -2034.914926783017,
+      "Bayesian Walk-PS": -2096.176612208861,
+      "Bayesian-Belief": -2095.6847239496137,
+      "Bayesian-Value": -2242.8984320170266,
+      "Bayesian Threshold": -4416.052029187362,
+      "Bayesian Thresh-PS": -4009.565925317634,
+      "Random Walk": -2173.054847145688,
+      "Top-7": -2535.576910943482,
+      "Random-to-Optimal": -2936.832406126251,
+      "Optimal": -4773.639794881829,
+      "Copy Others": -5926.180563123692,
+      "Contradict Others": -2820.6372600546924,
+      "Random": -2376.2983803891243,
+      "Always Stick": -4049.7075918114624
+    }
+  },
+  "0.02": {
+    "delta": [
+      0.44,
+      1.0
+    ],
+    "agg_ll": {
+      "Bayesian Walk": -2.4744847036920006,
+      "Bayesian Walk-PS": -2.51283043244897,
+      "Bayesian-Belief": -2.5201599648111532,
+      "Bayesian-Value": -2.5624271265568734,
+      "Bayesian Threshold": -3.561869311023115,
+      "Bayesian Thresh-PS": -3.191531915920302,
+      "Random Walk": -2.5870449352378397,
+      "Top-7": -3.68905864252928,
+      "Random-to-Optimal": -3.440405985574219,
+      "Optimal": -5.319521381147478,
+      "Copy Others": -3.7513122220301978,
+      "Contradict Others": -2.848030839005244,
+      "Random": -2.808542669277921,
+      "Always Stick": -3.2469116541976932
+    },
+    "dominant": {
+      "Bayesian Walk": 16,
+      "Top-7": 20,
+      "Bayesian-Belief": 7,
+      "Random-to-Optimal": 3,
+      "Bayesian-Value": 8,
+      "Bayesian Thresh-PS": 5,
+      "Contradict Others": 8,
+      "Random Walk": 5,
+      "Bayesian Walk-PS": 9,
+      "Random": 13,
+      "Optimal": 8
+    },
+    "total_ind_ll": {
+      "Bayesian Walk": -2030.9863749508659,
+      "Bayesian Walk-PS": -2094.283046474927,
+      "Bayesian-Belief": -2095.2976725282088,
+      "Bayesian-Value": -2239.4210427381026,
+      "Bayesian Threshold": -3975.467866221443,
+      "Bayesian Thresh-PS": -3606.6503517128826,
+      "Random Walk": -2168.823044637189,
+      "Top-7": -2448.9332994697415,
+      "Random-to-Optimal": -2804.718246688221,
+      "Optimal": -4261.91161022738,
+      "Copy Others": -5341.774988995669,
+      "Contradict Others": -2801.8339331159887,
+      "Random": -2376.2983803891243,
+      "Always Stick": -3646.5222789946247
+    }
+  },
+  "0.05": {
+    "delta": [
+      0.44,
+      1.0
+    ],
+    "agg_ll": {
+      "Bayesian Walk": -2.4740935595480473,
+      "Bayesian Walk-PS": -2.5149851744537055,
+      "Bayesian-Belief": -2.5234937255980006,
+      "Bayesian-Value": -2.559607644322845,
+      "Bayesian Threshold": -3.2846092076901376,
+      "Bayesian Thresh-PS": -2.986285417738457,
+      "Random Walk": -2.587354170133236,
+      "Top-7": -3.320597893509674,
+      "Random-to-Optimal": -3.316567572229959,
+      "Optimal": -4.608787189788349,
+      "Copy Others": -3.555709681562917,
+      "Contradict Others": -2.83212243297898,
+      "Random": -2.808542669277921,
+      "Always Stick": -3.040640142081558
+    },
+    "dominant": {
+      "Bayesian Walk": 15,
+      "Top-7": 19,
+      "Bayesian-Belief": 7,
+      "Random-to-Optimal": 5,
+      "Bayesian-Value": 7,
+      "Bayesian Thresh-PS": 8,
+      "Contradict Others": 8,
+      "Random Walk": 5,
+      "Bayesian Walk-PS": 6,
+      "Always Stick": 1,
+      "Random": 12,
+      "Optimal": 9
+    },
+    "total_ind_ll": {
+      "Bayesian Walk": -2022.6483590112807,
+      "Bayesian Walk-PS": -2089.360076279665,
+      "Bayesian-Belief": -2094.580535437262,
+      "Bayesian-Value": -2231.6256180957944,
+      "Bayesian Threshold": -3403.029682432703,
+      "Bayesian Thresh-PS": -3085.6057839949312,
+      "Random Walk": -2157.2142630043454,
+      "Top-7": -2336.0229281877655,
+      "Random-to-Optimal": -2629.951555261701,
+      "Optimal": -3597.0265927094306,
+      "Copy Others": -4573.815222050274,
+      "Contradict Others": -2749.9422833096987,
+      "Random": -2376.2983803891243,
+      "Always Stick": -3124.653846546798
+    }
+  }
+}

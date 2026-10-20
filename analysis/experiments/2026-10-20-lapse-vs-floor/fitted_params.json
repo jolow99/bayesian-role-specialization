@@ -1,0 +1,143 @@
+{
+  "none": {
+    "Bayesian-BR": {
+      "params": {
+        "tau_softmax": 11.62217062607224
+      },
+      "agg_ll": -2.565485127912888
+    },
+    "Bayesian-Walk-BR": {
+      "params": {
+        "tau_softmax": 12.094150585309638,
+        "epsilon_switch": 0.5415413916876077
+      },
+      "agg_ll": -2.475564023868397
+    },
+    "Bayesian-Walk-PS": {
+      "params": {
+        "epsilon_switch": 0.8230586426483971
+      },
+      "agg_ll": -2.511673658433077
+    },
+    "Bayesian-Threshold-BR": {
+      "params": null,
+      "agg_ll": -Infinity
+    },
+    "Bayesian-Threshold-PS [agg_ll]": {
+      "delta": null,
+      "plateau": null,
+      "value": -Infinity
+    },
+    "Bayesian-Threshold-PS [mean_ll]": {
+      "delta": null,
+      "plateau": null,
+      "value": -Infinity
+    },
+    "Random Walk": {
+      "params": {
+        "eps_switch": 0.27
+      },
+      "agg_ll": -2.5861452822814033
+    }
+  },
+  "lapse": {
+    "Bayesian-BR": {
+      "params": {
+        "tau_softmax": 10.57358455691587
+      },
+      "agg_ll": -2.5583941212030767
+    },
+    "Bayesian-Walk-BR": {
+      "params": {
+        "tau_softmax": 10.050126230396003,
+        "epsilon_switch": 0.5253827626440035
+      },
+      "agg_ll": -2.4717415532672575
+    },
+    "Bayesian-Walk-PS": {
+      "params": {
+        "epsilon_switch": 0.7820066631532934
+      },
+      "agg_ll": -2.5146419442998487
+    },
+    "Bayesian-Threshold-BR": {
+      "params": {
+        "tau_softmax": 14.314133524926088,
+        "delta": 0.46428571428571425
+      },
+      "agg_ll": -3.281214685577761
+    },
+    "Bayesian-Threshold-PS [agg_ll]": {
+      "delta": 0.44,
+      "plateau": [
+        0.44,
+        1.0
+      ],
+      "value": -2.986285417738457
+    },
+    "Bayesian-Threshold-PS [mean_ll]": {
+      "delta": 0.44,
+      "plateau": [
+        0.44,
+        1.0
+      ],
+      "value": -4.230446517666876
+    },
+    "Random Walk": {
+      "params": {
+        "eps_switch": 0.26
+      },
+      "agg_ll": -2.587307944024182
+    }
+  },
+  "floor": {
+    "Bayesian-BR": {
+      "params": {
+        "tau_softmax": 11.62217062607224
+      },
+      "agg_ll": -2.565485127912888
+    },
+    "Bayesian-Walk-BR": {
+      "params": {
+        "tau_softmax": 12.094150585309638,
+        "epsilon_switch": 0.5415413916876077
+      },
+      "agg_ll": -2.475564023868397
+    },
+    "Bayesian-Walk-PS": {
+      "params": {
+        "epsilon_switch": 0.8230586426483971
+      },
+      "agg_ll": -2.511673658433077
+    },
+    "Bayesian-Threshold-BR": {
+      "params": {
+        "tau_softmax": 18.57847017623996,
+        "delta": 0.42857142857142855
+      },
+      "agg_ll": -9.862029148800366
+    },
+    "Bayesian-Threshold-PS [agg_ll]": {
+      "delta": 0.44,
+      "plateau": [
+        0.44,
+        1.0
+      ],
+      "value": -8.03574382169014
+    },
+    "Bayesian-Threshold-PS [mean_ll]": {
+      "delta": 0.44,
+      "plateau": [
+        0.44,
+        1.0
+      ],
+      "value": -15.455090442470345
+    },
+    "Random Walk": {
+      "params": {
+        "eps_switch": 0.27
+      },
+      "agg_ll": -2.5861452822814033
+    }
+  }
+}
