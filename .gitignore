@@ -21,3 +21,11 @@ analysis/data/
 analysis/legacy/
 analysis/.venv/
 notebooks/
+# Env-selection scripts (Algorithms S1/S2): track code only, not outputs
+!computational_model/human_env_generation_latest/
+computational_model/human_env_generation_latest/*
+!computational_model/human_env_generation_latest/*.py
+!computational_model/bot_env_generation_latest/
+computational_model/bot_env_generation_latest/*
+!computational_model/bot_env_generation_latest/*.py
+!computational_model/bot_env_generation_latest/env_mapping.txt
