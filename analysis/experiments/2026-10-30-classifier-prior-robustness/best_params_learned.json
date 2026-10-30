@@ -1,0 +1,17 @@
+{
+  "ll_per_answer": -0.7893708276263,
+  "ll_total": -2450.207048952035,
+  "n": 3104,
+  "tau_prior": 6.713728175785759,
+  "epsilon": 0.21815402819804877,
+  "beta": 0.6830254540812776,
+  "theta": 0.5090243520896758,
+  "p_F": 0.5496930075648039,
+  "p_T": 0.22924828052830415,
+  "p_M": 0.22105871190689197,
+  "mean_resp_prior": 0.5090240109190982,
+  "n_free_params": 6,
+  "non_bayesian_class": "learned (a, b, 1-a-b)",
+  "inference_target": "unmixed",
+  "inference_lapse": 0.01
+}

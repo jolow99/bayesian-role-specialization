@@ -1,0 +1,41 @@
+==================================================================
+Two-type classifier, uniform non-Bayesian class: tau, eps, beta, theta
+==================================================================
+Loaded bayesian-role-specialization-2026-04-23-09-12-55: 240 player-rounds
+Loaded bayesian-role-specialization-2026-04-27-10-05-17: 264 player-rounds
+Loaded bayesian-role-specialization-2026-04-27-11-56-13: 216 player-rounds
+Loaded bayesian-role-specialization-2026-05-11-15-10-24: 240 player-rounds
+Loaded bayesian-role-specialization-2026-05-11-16-42-04: 240 player-rounds
+Total: 1200 player-rounds from 5 exports
+[pipeline] Soft classifier: 204 clean human teams, 102 participants, 3104 answers (per participant: median 30, min 10, max 40; 16 dropout games excluded)
+
+--- Theta profile (tau, eps, beta polished at each theta) ---
+  theta=0.000  LL=-0.8974  tau=5.535  eps=0.4832  beta=0.815  mean P(D)=0.000
+  theta=0.050  LL=-0.8521  tau=6.025  eps=0.2910  beta=0.751  mean P(D)=0.397
+  theta=0.100  LL=-0.8440  tau=6.008  eps=0.2845  beta=0.746  mean P(D)=0.406
+  theta=0.150  LL=-0.8397  tau=6.022  eps=0.2809  beta=0.743  mean P(D)=0.412
+  theta=0.200  LL=-0.8369  tau=6.040  eps=0.2780  beta=0.741  mean P(D)=0.417
+  theta=0.250  LL=-0.8351  tau=6.055  eps=0.2753  beta=0.740  mean P(D)=0.421
+  theta=0.300  LL=-0.8339  tau=6.070  eps=0.2729  beta=0.738  mean P(D)=0.425
+  theta=0.350  LL=-0.8331  tau=6.080  eps=0.2705  beta=0.736  mean P(D)=0.429
+  theta=0.400  LL=-0.8327  tau=6.086  eps=0.2682  beta=0.734  mean P(D)=0.433
+  theta=0.450  LL=-0.8326  tau=6.089  eps=0.2660  beta=0.732  mean P(D)=0.436
+  theta=0.500  LL=-0.8329  tau=6.089  eps=0.2638  beta=0.730  mean P(D)=0.440
+  theta=0.550  LL=-0.8334  tau=6.085  eps=0.2615  beta=0.729  mean P(D)=0.444
+  theta=0.600  LL=-0.8343  tau=6.080  eps=0.2591  beta=0.726  mean P(D)=0.447
+  theta=0.650  LL=-0.8355  tau=6.075  eps=0.2565  beta=0.724  mean P(D)=0.452
+  theta=0.700  LL=-0.8372  tau=6.070  eps=0.2534  beta=0.722  mean P(D)=0.457
+  theta=0.750  LL=-0.8394  tau=6.072  eps=0.2496  beta=0.719  mean P(D)=0.462
+  theta=0.800  LL=-0.8423  tau=6.093  eps=0.2449  beta=0.716  mean P(D)=0.469
+  theta=0.850  LL=-0.8464  tau=6.148  eps=0.2391  beta=0.712  mean P(D)=0.478
+  theta=0.900  LL=-0.8523  tau=6.256  eps=0.2325  beta=0.708  mean P(D)=0.487
+  theta=0.950  LL=-0.8630  tau=6.714  eps=0.2247  beta=0.704  mean P(D)=0.499
+  theta=1.000  LL=-1.0986  tau=0.500  eps=0.0500  beta=0.000  mean P(D)=1.000
+
+Profile best: theta=0.450 LL=-0.8326
+
+--- Joint L-BFGS-B over (tau, eps, beta, theta) ---
+
+Best: theta=0.435 tau=6.0891 eps=0.2667 beta=0.733 LL=-0.8326 mean P(D)=0.435
+Non-Bayesians (P > 0.5): uniform class 45, stat-prior class 47, both 45, agree on 100 of 102
+Saved to /Users/bhavyesh/Desktop/bayesian-role-specialization/analysis/experiments/2026-10-30-classifier-prior-robustness/best_params_uniform.json, /Users/bhavyesh/Desktop/bayesian-role-specialization/analysis/experiments/2026-10-30-classifier-prior-robustness/theta_profile_uniform.json, /Users/bhavyesh/Desktop/bayesian-role-specialization/analysis/experiments/2026-10-30-classifier-prior-robustness/participant_types_uniform.csv

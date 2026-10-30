@@ -1,0 +1,22 @@
+==================================================================
+Two-type classifier, learned (a, b, 1-a-b) non-Bayesian class
+==================================================================
+Loaded bayesian-role-specialization-2026-04-23-09-12-55: 240 player-rounds
+Loaded bayesian-role-specialization-2026-04-27-10-05-17: 264 player-rounds
+Loaded bayesian-role-specialization-2026-04-27-11-56-13: 216 player-rounds
+Loaded bayesian-role-specialization-2026-05-11-15-10-24: 240 player-rounds
+Loaded bayesian-role-specialization-2026-05-11-16-42-04: 240 player-rounds
+Total: 1200 player-rounds from 5 exports
+[pipeline] Soft classifier: 204 clean human teams, 102 participants, 3104 answers (per participant: median 30, min 10, max 40; 16 dropout games excluded)
+
+--- Coarse tau x eps x beta grid ((theta, a, b) maximized at each) ---
+Grid best: tau=6.714 eps=0.171 beta=0.75 LL=-0.7909
+
+--- L-BFGS-B polish of (tau, eps, beta) ---
+
+Best: theta=0.509 tau=6.7137 eps=0.2182 beta=0.683 LL=-0.7894
+Learned non-Bayesian role distribution: F=0.550  T=0.229  M=0.221
+Empirical report frequencies of classified non-Bayesians: F=0.548  T=0.230  M=0.222
+Non-Bayesians (P > 0.5): learned 52, stat-prior 47, both 47, agree on 97 of 102
+Non-Bayesians (P > 0.5): learned 52, uniform 45, both 45, agree on 95 of 102
+Saved to /Users/bhavyesh/Desktop/bayesian-role-specialization/analysis/experiments/2026-10-30-classifier-prior-robustness/best_params_learned.json and /Users/bhavyesh/Desktop/bayesian-role-specialization/analysis/experiments/2026-10-30-classifier-prior-robustness/participant_types_learned.csv
