@@ -1,0 +1,91 @@
+{
+  "Population": {
+    "n": 102,
+    "bayesian_dominant": 57,
+    "leading_post_gt_0.5": 54,
+    "counts": {
+      "Bayesian-Walk-BR": 19,
+      "Bayesian-Threshold-PS": 16,
+      "Top-5": 12,
+      "Random": 11,
+      "Bayesian-Walk-PS": 11,
+      "Bayesian-BR": 10,
+      "Contradict Others": 7,
+      "Random-to-Optimal": 6,
+      "Optimal": 5,
+      "Random Walk": 4,
+      "Bayesian-PS": 1
+    },
+    "dropped": [
+      "Bayesian-Threshold-BR"
+    ],
+    "params": {
+      "Bayesian-BR": "\u03c4_v = 12.30",
+      "Bayesian-Walk-BR": "\u03c4_v = 10.90, \u03b5_s = 0.53",
+      "Bayesian-Walk-PS": "\u03b5_s = 0.46",
+      "Bayesian-Threshold-PS": "\u03b4 = -0.442",
+      "Bayesian-Threshold-BR": "\u03c4_v = 12.30, \u03b4 = -70.000",
+      "Random Walk": "\u03b5 = 0.203",
+      "Top-7": "k = 5"
+    }
+  },
+  "Bayesian": {
+    "n": 55,
+    "bayesian_dominant": 32,
+    "leading_post_gt_0.5": 31,
+    "counts": {
+      "Bayesian-Walk-BR": 13,
+      "Bayesian-Threshold-PS": 7,
+      "Top-5": 7,
+      "Bayesian-Walk-PS": 6,
+      "Contradict Others": 6,
+      "Optimal": 4,
+      "Bayesian-BR": 3,
+      "Random-to-Optimal": 3,
+      "Bayesian-Threshold-BR": 2,
+      "Random": 2,
+      "Random Walk": 1,
+      "Bayesian-PS": 1
+    },
+    "dropped": [],
+    "params": {
+      "Bayesian-BR": "\u03c4_v = 9.96",
+      "Bayesian-Walk-BR": "\u03c4_v = 9.00, \u03b5_s = 0.55",
+      "Bayesian-Walk-PS": "\u03b5_s = 0.50",
+      "Bayesian-Threshold-PS": "\u03b4 = -0.443",
+      "Bayesian-Threshold-BR": "\u03c4_v = 9.96, \u03b4 = -58.000",
+      "Random Walk": "\u03b5 = 0.198",
+      "Top-7": "k = 5"
+    }
+  },
+  "Non-Bayesian": {
+    "n": 47,
+    "bayesian_dominant": 21,
+    "leading_post_gt_0.5": 21,
+    "counts": {
+      "Bayesian-Walk-PS": 9,
+      "Random": 8,
+      "Top-5": 7,
+      "Random Walk": 5,
+      "Bayesian-BR": 5,
+      "Random-to-Optimal": 4,
+      "Bayesian-PS": 3,
+      "Bayesian-Walk-BR": 3,
+      "Bayesian-Threshold-PS": 1,
+      "Contradict Others": 1,
+      "Optimal": 1
+    },
+    "dropped": [
+      "Bayesian-Threshold-BR"
+    ],
+    "params": {
+      "Bayesian-BR": "\u03c4_v = 16.52",
+      "Bayesian-Walk-BR": "\u03c4_v = 15.93, \u03b5_s = 0.42",
+      "Bayesian-Walk-PS": "\u03b5_s = 0.33",
+      "Bayesian-Threshold-PS": "\u03b4 = -0.459",
+      "Bayesian-Threshold-BR": "\u03c4_v = 16.52, \u03b4 = -70.000",
+      "Random Walk": "\u03b5 = 0.294",
+      "Top-7": "k = 5"
+    }
+  }
+}
