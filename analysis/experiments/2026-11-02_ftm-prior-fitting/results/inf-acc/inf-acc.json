@@ -1,0 +1,25 @@
+{
+  "threshold": 0.5,
+  "chance": 0.3333333333333333,
+  "updater": {
+    "n_participants": 50,
+    "n_answers": 1510,
+    "pooled_acc": 0.8125827814569536,
+    "participant_mean_acc": 0.8134138170013735,
+    "participant_se": 0.013518126212870296
+  },
+  "non_updater": {
+    "n_participants": 52,
+    "n_answers": 1594,
+    "pooled_acc": 0.45545796737766625,
+    "participant_mean_acc": 0.458597967777442,
+    "participant_se": 0.0189697433640014
+  },
+  "all": {
+    "n_participants": 102,
+    "n_answers": 3104,
+    "pooled_acc": 0.6291881443298969,
+    "participant_mean_acc": 0.6325273056323102,
+    "participant_se": 0.021156404408817074
+  }
+}

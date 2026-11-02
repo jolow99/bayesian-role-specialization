@@ -1,0 +1,47 @@
+Total: 1200 player-rounds from 5 exports
+[data] 204 clean human team-rounds
+
+updaters: 50 participants, 1064 choices
+  Bayesian-BR             agg-LL -0.9832  mean-LL -1.0127  marg-r 0.165  combo-r 0.408  {'tau_softmax': 9.478136}
+  Bayesian-Walk-BR        agg-LL -0.9196  mean-LL -0.8892  marg-r 0.591  combo-r 0.482  {'tau_softmax': 8.544641, 'epsilon_switch': 0.415888}
+  Bayesian-Threshold-BR   agg-LL -0.9832  mean-LL -1.0127  marg-r 0.165  combo-r 0.408  {'tau_softmax': 9.480429442371939, 'delta': -60.75}
+  Bayesian-PS             agg-LL -0.9847  mean-LL -0.9453  marg-r 0.377  combo-r 0.394  {}
+  Bayesian-Walk-PS        agg-LL -0.9428  mean-LL -0.9200  marg-r 0.564  combo-r 0.442  {'epsilon_switch': 0.413144}
+  Bayesian-Threshold-PS   agg-LL -0.9548  mean-LL -0.9410  marg-r 0.293  combo-r 0.458  {'delta': -0.356}
+  Optimal                 agg-LL -2.0530  mean-LL -2.1008  marg-r 0.476  combo-r 0.239  {}
+  Top-5                   agg-LL -1.1324  mean-LL -1.1892  marg-r 0.387  combo-r 0.370  {'k': 5}
+  Random-to-Optimal       agg-LL -1.2102  mean-LL -1.3010  marg-r 0.450  combo-r 0.180  {}
+  Copy Others             agg-LL -1.4474  mean-LL -2.9006  marg-r 0.102  combo-r -0.004  {}
+  Contradict Others       agg-LL -1.0885  mean-LL -1.2282  marg-r -0.126  combo-r 0.293  {}
+  Random Walk             agg-LL -0.9678  mean-LL -0.9628  marg-r 0.568  combo-r 0.374  {'eps': 0.179344}
+  Random                  agg-LL -1.0986  mean-LL -1.0986  marg-r -0.000  combo-r 0.243  {}
+
+non-updaters: 52 participants, 1099 choices
+  Bayesian-BR             agg-LL -1.0565  mean-LL -1.0626  marg-r 0.036  combo-r 0.408  {'tau_softmax': 16.971229}
+  Bayesian-Walk-BR        agg-LL -1.0339  mean-LL -1.0031  marg-r 0.207  combo-r 0.481  {'tau_softmax': 16.507331, 'epsilon_switch': 0.569717}
+  Bayesian-Threshold-BR   agg-LL -1.0567  mean-LL -1.0642  marg-r 0.049  combo-r 0.411  {'tau_softmax': 17.980093614562605, 'delta': -31.25}
+  Bayesian-PS             agg-LL -1.1053  mean-LL -1.1030  marg-r 0.393  combo-r 0.394  {}
+  Bayesian-Walk-PS        agg-LL -1.0412  mean-LL -1.0582  marg-r 0.426  combo-r 0.443  {'epsilon_switch': 0.417328}
+  Bayesian-Threshold-PS   agg-LL -1.1053  mean-LL -1.1030  marg-r 0.393  combo-r 0.394  {'delta': -1.0}
+  Optimal                 agg-LL -2.3560  mean-LL -2.3799  marg-r 0.333  combo-r 0.239  {}
+  Top-5                   agg-LL -1.3550  mean-LL -1.3899  marg-r 0.349  combo-r 0.370  {'k': 5}
+  Random-to-Optimal       agg-LL -1.3714  mean-LL -1.4465  marg-r 0.195  combo-r 0.180  {}
+  Copy Others             agg-LL -1.3909  mean-LL -2.5214  marg-r -0.017  combo-r -0.004  {}
+  Contradict Others       agg-LL -1.1400  mean-LL -1.3821  marg-r 0.081  combo-r 0.293  {}
+  Random Walk             agg-LL -1.0531  mean-LL -1.0495  marg-r 0.206  combo-r 0.400  {'eps': 0.297921}
+  Random                  agg-LL -1.0986  mean-LL -1.0986  marg-r -0.000  combo-r 0.243  {}
+
+population: 102 participants, 2163 choices
+  Bayesian-BR             agg-LL -1.0159  mean-LL -1.0438  marg-r 0.206  combo-r 0.412  {'tau_softmax': 11.326689}
+  Bayesian-Walk-BR        agg-LL -0.9852  mean-LL -0.9557  marg-r 0.371  combo-r 0.488  {'tau_softmax': 10.136321, 'epsilon_switch': 0.482741}
+  Bayesian-Threshold-BR   agg-LL -1.0159  mean-LL -1.0438  marg-r 0.206  combo-r 0.412  {'tau_softmax': 11.326752307589306, 'delta': -70.0}
+  Bayesian-PS             agg-LL -1.0379  mean-LL -1.0258  marg-r 0.437  combo-r 0.394  {}
+  Bayesian-Walk-PS        agg-LL -0.9993  mean-LL -0.9938  marg-r 0.441  combo-r 0.439  {'epsilon_switch': 0.39816}
+  Bayesian-Threshold-PS   agg-LL -1.0156  mean-LL -1.0306  marg-r 0.404  combo-r 0.457  {'delta': -0.345}
+  Optimal                 agg-LL -2.2070  mean-LL -2.2437  marg-r 0.484  combo-r 0.239  {}
+  Top-5                   agg-LL -1.2458  mean-LL -1.2906  marg-r 0.516  combo-r 0.370  {'k': 5}
+  Random-to-Optimal       agg-LL -1.2814  mean-LL -1.3757  marg-r 0.354  combo-r 0.180  {}
+  Copy Others             agg-LL -1.3156  mean-LL -2.7044  marg-r 0.265  combo-r -0.004  {}
+  Contradict Others       agg-LL -1.0968  mean-LL -1.3074  marg-r -0.215  combo-r 0.293  {}
+  Random Walk             agg-LL -1.0205  mean-LL -1.0309  marg-r 0.265  combo-r 0.381  {'eps': 0.203206}
+  Random                  agg-LL -1.0986  mean-LL -1.0986  marg-r -0.000  combo-r 0.243  {}

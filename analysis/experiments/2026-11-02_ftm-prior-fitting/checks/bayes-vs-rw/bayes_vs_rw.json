@@ -1,0 +1,102 @@
+{
+  "non-updaters": {
+    "Bayesian-BR": {
+      "tvd_random": 0.11103674894555743,
+      "tvd_random_walk": 0.2797095015152524,
+      "dll_per_choice": -0.019349052112830747,
+      "n_better": 23,
+      "n": 52,
+      "wilcoxon_p": 0.4831578764739659
+    },
+    "Bayesian-Walk-BR": {
+      "tvd_random": 0.2465576737913755,
+      "tvd_random_walk": 0.09823054021386493,
+      "dll_per_choice": 0.043707023428235514,
+      "n_better": 39,
+      "n": 52,
+      "wilcoxon_p": 4.004507474854599e-05
+    },
+    "Bayesian-Threshold-BR": {
+      "tvd_random": 0.10799340879568238,
+      "tvd_random_walk": 0.28039458864764155,
+      "dll_per_choice": -0.021020207646701608,
+      "n_better": 23,
+      "n": 52,
+      "wilcoxon_p": 0.4662749311599338
+    },
+    "Bayesian-PS": {
+      "tvd_random": 0.21635967423147046,
+      "tvd_random_walk": 0.30787452227961737,
+      "dll_per_choice": -0.051874484489504054,
+      "n_better": 25,
+      "n": 52,
+      "wilcoxon_p": 0.2626495248045475
+    },
+    "Bayesian-Walk-PS": {
+      "tvd_random": 0.34694206154121726,
+      "tvd_random_walk": 0.12771399676435788,
+      "dll_per_choice": -0.006031502671036733,
+      "n_better": 26,
+      "n": 52,
+      "wilcoxon_p": 0.7224624239878545
+    },
+    "Bayesian-Threshold-PS": {
+      "tvd_random": 0.21635967423147046,
+      "tvd_random_walk": 0.30787452227961737,
+      "dll_per_choice": -0.05187448448950415,
+      "n_better": 25,
+      "n": 52,
+      "wilcoxon_p": 0.2626495248045475
+    }
+  },
+  "updaters": {
+    "Bayesian-BR": {
+      "tvd_random": 0.18953415937625628,
+      "tvd_random_walk": 0.360659741590417,
+      "dll_per_choice": -0.04740172424641122,
+      "n_better": 19,
+      "n": 50,
+      "wilcoxon_p": 0.08760075247442067
+    },
+    "Bayesian-Walk-BR": {
+      "tvd_random": 0.3533554615358305,
+      "tvd_random_walk": 0.13139835538873354,
+      "dll_per_choice": 0.07677971666102199,
+      "n_better": 39,
+      "n": 50,
+      "wilcoxon_p": 7.946967700789287e-06
+    },
+    "Bayesian-Threshold-BR": {
+      "tvd_random": 0.18950340937447654,
+      "tvd_random_walk": 0.360654580087375,
+      "dll_per_choice": -0.04738891569436587,
+      "n_better": 19,
+      "n": 50,
+      "wilcoxon_p": 0.08760075247442067
+    },
+    "Bayesian-PS": {
+      "tvd_random": 0.13940941706349383,
+      "tvd_random_walk": 0.24374389961595197,
+      "dll_per_choice": 0.013784477714092167,
+      "n_better": 24,
+      "n": 50,
+      "wilcoxon_p": 0.969474172425139
+    },
+    "Bayesian-Walk-PS": {
+      "tvd_random": 0.34341022634318963,
+      "tvd_random_walk": 0.03793557259913134,
+      "dll_per_choice": 0.04313967562930932,
+      "n_better": 44,
+      "n": 50,
+      "wilcoxon_p": 4.3806736016449577e-11
+    },
+    "Bayesian-Threshold-PS": {
+      "tvd_random": 0.20206889726100202,
+      "tvd_random_walk": 0.23704514122295509,
+      "dll_per_choice": 0.022787742482550284,
+      "n_better": 28,
+      "n": 50,
+      "wilcoxon_p": 0.40970358186013023
+    }
+  }
+}

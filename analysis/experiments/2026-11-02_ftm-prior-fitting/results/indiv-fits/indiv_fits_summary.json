@@ -1,0 +1,58 @@
+{
+  "updaters": {
+    "n": 50,
+    "bayesian_best": 29,
+    "counts": {
+      "Bayesian-Walk-BR": 12,
+      "Bayesian-Threshold-PS": 7,
+      "Top-5": 7,
+      "Contradict Others": 6,
+      "Bayesian-BR": 5,
+      "Bayesian-Walk-PS": 4,
+      "Random-to-Optimal": 3,
+      "Optimal": 3,
+      "Random Walk": 1,
+      "Bayesian-PS": 1,
+      "Random": 1
+    },
+    "leading_post_gt_0.5": 33,
+    "dropped": []
+  },
+  "non_updaters": {
+    "n": 52,
+    "bayesian_best": 0,
+    "counts": {
+      "Random Walk": 14,
+      "Prior Sampling": 12,
+      "Random": 11,
+      "Top-5": 7,
+      "Random-to-Optimal": 5,
+      "Optimal": 2,
+      "Contradict Others": 1
+    },
+    "leading_post_gt_0.5": 49,
+    "dropped": []
+  },
+  "non_updaters_all_models": {
+    "n": 52,
+    "bayesian_best": 22,
+    "counts": {
+      "Bayesian-Walk-BR": 10,
+      "Prior Sampling": 9,
+      "Top-5": 6,
+      "Random Walk": 5,
+      "Bayesian-Walk-PS": 5,
+      "Random": 4,
+      "Bayesian-Threshold-BR": 4,
+      "Bayesian-BR": 3,
+      "Random-to-Optimal": 3,
+      "Optimal": 2,
+      "Contradict Others": 1
+    },
+    "leading_post_gt_0.5": 32,
+    "dropped": [
+      "Bayesian-PS",
+      "Bayesian-Threshold-PS"
+    ]
+  }
+}
