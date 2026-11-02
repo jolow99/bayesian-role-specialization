@@ -98,8 +98,9 @@ def calibrate(marg, inferred, team, edges=None):
     return out
 
 
-def panel(ax, cal, title, roles=None):
-    """Decile panel; with `roles`, one labelled point per role and no histogram / binned r."""
+def panel(ax, cal, title, roles=None, top_left=False):
+    """Decile panel; with `roles`, one labelled point per role and no histogram / binned r.
+    top_left puts the r text in the upper left, clear of a curve that stays low at high x."""
     ok = cal["ns"] > 0
     centers = (EDGES[:-1] + EDGES[1:]) / 2
     ax.plot([0, 1], [0, 1], "--", color="#999999", linewidth=0.8, zorder=1,
@@ -130,13 +131,15 @@ def panel(ax, cal, title, roles=None):
             ax.text(c, -0.14 + hh + 0.012, f"{n}", ha="center", va="bottom", fontsize=4.5,
                     color="#777")
     rb = cal["r_by_bins"]
-    ax.text(0.97, 0.42, f"$r$ = {cal['r_binned']:.2f}", transform=ax.transAxes,
-            ha="right", va="bottom", fontsize=9, fontweight="bold")
-    ax.text(0.97, 0.22,
+    x, ha, (y_r, y_s, va) = (0.03, "left", (0.97, 0.86, "top")) if top_left else \
+        (0.97, "right", (0.42, 0.22, "bottom"))
+    ax.text(x, y_r, f"$r$ = {cal['r_binned']:.2f}", transform=ax.transAxes,
+            ha=ha, va=va, fontsize=9, fontweight="bold")
+    ax.text(x, y_s,
             f"binned (decile) points\n{rb[5]:.2f}/{rb[10]:.2f}/{rb[20]:.2f} at 5/10/20 bins\n"
             f"raw pairs: $r$ = {cal['r_raw']:.2f} [{cal['r_ci'][0]:.2f}, {cal['r_ci'][1]:.2f}]\n"
             f"mean abs. bin deviation = {cal['mad']:.3f}",
-            transform=ax.transAxes, ha="right", va="bottom", fontsize=5, color="#555",
+            transform=ax.transAxes, ha=ha, va=va, fontsize=5, color="#555",
             linespacing=1.4)
 
 
@@ -192,7 +195,8 @@ def main():
     fig, axes = plt.subplots(2, 2, figsize=(7.0, 5.0), sharey=True)
     for ax, key in zip(axes.flat, ["population_PN", "updater_PN", "non_updater_PN",
                                    "non_updater_FTM"]):
-        panel(ax, res[key], titles[key], ftm_roles if key == "non_updater_FTM" else None)
+        panel(ax, res[key], titles[key], ftm_roles if key == "non_updater_FTM" else None,
+              top_left=key == "non_updater_PN")
     for ax in axes[:, 0]:
         ax.set_ylabel("Fraction of reports naming role")
     for ax in axes[0]:
