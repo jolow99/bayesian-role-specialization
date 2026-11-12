@@ -129,10 +129,8 @@ def main():
 
     fig, axes = plt.subplots(2, 1, figsize=(3.42, 3.9), gridspec_kw={"hspace": 0.35})
     up = {m: v for m, v in up.items() if m != "Bayesian-Threshold-BR"}
-    used = panel(axes[0], up, "Updaters (n = {n}): Bayesian model best for {k}/{n}",
-                 summary, "updaters")
-    used += panel(axes[1], nu_base, "Non-updaters (n = {n}): baselines and Prior Sampling",
-                  summary, "non_updaters")
+    used = panel(axes[0], up, "Updaters (n = {n})", summary, "updaters")
+    used += panel(axes[1], nu_base, "Non-updaters (n = {n})", summary, "non_updaters")
     axes[1].set_xlabel("Participants (sorted by best-fitting model)")
     legends(fig, used, 0.04)
     savefig(fig, "indiv_fits")
