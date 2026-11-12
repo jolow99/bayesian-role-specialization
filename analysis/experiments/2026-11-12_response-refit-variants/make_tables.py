@@ -17,7 +17,7 @@ player on the stat-prior posterior).
 Verification (verify.log): beliefs match the 2026-11-02 code; U-mixed and NU-paper reproduce the
 2026-11-02 fits exactly; every table reproduces the agg-LL and combo-r values reported on 2026-11-12.
 
-Outputs: fit-results/<table>.json, tables.md, verify.log
+Outputs: tables/{fit-results/<table>.json, tables.md, verify.log}
 
 Run from analysis/:
     uv run python experiments/2026-11-12_response-refit-variants/make_tables.py
@@ -48,7 +48,8 @@ from models.data import Obs, load_records  # noqa: E402
 from models.predict import BAYES, bayes_marginals  # noqa: E402
 from models.scoring import combo_r, metrics, participant_lls  # noqa: E402
 
-OUT_DIR = SCRIPT_DIR / "fit-results"
+TABLE_DIR = SCRIPT_DIR / "tables"
+OUT_DIR = TABLE_DIR / "fit-results"
 ORDER = ["Bayesian-BR", "Bayesian-Walk-BR", "Bayesian-Threshold-BR",
          "Bayesian-PS", "Bayesian-Walk-PS", "Bayesian-Threshold-PS"]
 TABLES = {  # name: (group, title)
@@ -155,7 +156,7 @@ def main():
     n_p = {g: len(np.unique(ob.pid[m])) for g, m in masks.items()}
     check(n_p == {"updaters": 50, "non-updaters": 52}, f"participants per group {n_p}")
 
-    OUT_DIR.mkdir(exist_ok=True)
+    OUT_DIR.mkdir(parents=True, exist_ok=True)
     R = {}
     for name, (g, _) in TABLES.items():
         log(f"fitting {name} ...")
@@ -184,8 +185,8 @@ def main():
             md += ["## Non-updaters", ""]
         md += table_md(title, R[name], n_p[g], int(masks[g].sum()))
     md += ["In NU-paper, Bayesian-PS is the paper's Prior Sampling (sampling from the FTM prior)."]
-    (SCRIPT_DIR / "tables.md").write_text("\n".join(md) + "\n")
-    (SCRIPT_DIR / "verify.log").write_text("\n".join(LOG) + "\n")
+    (TABLE_DIR / "tables.md").write_text("\n".join(md) + "\n")
+    (TABLE_DIR / "verify.log").write_text("\n".join(LOG) + "\n")
     log("done")
 
 
