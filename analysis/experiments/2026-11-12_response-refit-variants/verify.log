@@ -1,0 +1,19 @@
+Belief checks
+  [PASS] mixed = 2026-11-02 updater belief on every row
+  [PASS] unmixed == mixed at stage 1
+  [PASS] mixed == (1 − β)·unmixed + β·P_0 at stages ≥ 2 (max abs err 1.1e-16)
+  [PASS] unmixed ≠ mixed on all 1551 later-stage rows (median |ΔPM| 0.356)
+  [PASS] participants per group {'updaters': 50, 'non-updaters': 52}
+fitting U-mixed ...
+fitting U-unmixed ...
+fitting NU-paper ...
+fitting NU-mixed ...
+fitting NU-unmixed ...
+Fit checks
+  [PASS] U-mixed reproduces the 2026-11-02 updater fit exactly
+  [PASS] NU-paper reproduces the 2026-11-02 non-updater fit exactly
+  [PASS] U-mixed: agg-LL and combo-r match the values reported in chat
+  [PASS] U-unmixed: agg-LL and combo-r match the values reported in chat
+  [PASS] NU-paper: agg-LL and combo-r match the values reported in chat
+  [PASS] NU-mixed: agg-LL and combo-r match the values reported in chat
+  [PASS] NU-unmixed: agg-LL and combo-r match the values reported in chat
