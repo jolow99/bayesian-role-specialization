@@ -11,7 +11,7 @@ models are covered.
 
 `beliefs.py` is the updater belief chain from the stat prior, with both the mixed and the unmixed posterior.
 
-Each script checks itself and writes `verify.log`; all checks pass. combo-r is team-level over all
+Each script asserts its own checks (the run stops on any failure); all pass. combo-r is team-level over all
 teams, so it is not specific to one group.
 
 Run from `analysis/`, `make_tables.py` first:

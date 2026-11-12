@@ -14,10 +14,10 @@ combo-r is team-level on all teams; teammates hold the paper beliefs (updaters m
 non-updaters FTM) except in U-unmixed (updaters unmixed) and NU-mixed / NU-unmixed (every
 player on the stat-prior posterior).
 
-Verification (verify.log): beliefs match the 2026-11-02 code; U-mixed and NU-paper reproduce the
+Verification (asserted; the run stops on any failure): beliefs match the 2026-11-02 code; U-mixed and NU-paper reproduce the
 2026-11-02 fits exactly; every table reproduces the agg-LL and combo-r values reported on 2026-11-12.
 
-Outputs: tables/{fit-results/<table>.json, tables.md, verify.log}
+Outputs: tables/{fit-results/<table>.json, tables.md}
 
 Run from analysis/:
     uv run python experiments/2026-11-12_response-refit-variants/make_tables.py
@@ -186,7 +186,6 @@ def main():
         md += table_md(title, R[name], n_p[g], int(masks[g].sum()))
     md += ["In NU-paper, Bayesian-PS is the paper's Prior Sampling (sampling from the FTM prior)."]
     (TABLE_DIR / "tables.md").write_text("\n".join(md) + "\n")
-    (TABLE_DIR / "verify.log").write_text("\n".join(LOG) + "\n")
     log("done")
 
 

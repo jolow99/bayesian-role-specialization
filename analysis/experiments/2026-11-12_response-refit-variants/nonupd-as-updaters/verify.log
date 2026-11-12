@@ -1,4 +1,0 @@
-Checks
-  [PASS] updater params = 2026-11-02 updater fit
-  [PASS] scoring updaters at their params reproduces U-mixed
-  [PASS] 52 non-updaters, 1099 choices

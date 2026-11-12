@@ -15,7 +15,7 @@ Checks: updater params equal the 2026-11-02 updater fit; scoring the updaters' o
 params reproduces U-mixed (agg-LL, mean-LL, marg-r, participant LLs).
 
 Outputs (nonupd-as-updaters/): nonupd_as_updaters.md, bayes-models.json, indiv_fits_summary.json,
-indiv_fits.{png,pdf} (top: all models; bottom: Bayesian models only), verify.log
+indiv_fits.{png,pdf} (top: all models; bottom: Bayesian models only)
 
 Run from analysis/:
     uv run python experiments/2026-11-12_response-refit-variants/nonupd_as_updaters.py
@@ -143,7 +143,6 @@ def main():
         if cu[m] or cr[m]:
             md.append(f"| {m} | {cu[m]} | {cr[m]} |")
     (OUT / "nonupd_as_updaters.md").write_text("\n".join(md) + "\n")
-    (OUT / "verify.log").write_text("\n".join(mt.LOG) + "\n")
     print("\n".join(md))
 
 
